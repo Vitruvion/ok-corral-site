@@ -1,0 +1,164 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.bullet {
+  border-top: 1px solid rgba(235,228,212,0.12);
+  padding-top: 24px;
+}
+
+.bulletLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.bulletTitle {
+  font-family: var(--ff-display);
+  font-size: 28px;
+  color: var(--bone);
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  margin-bottom: 8px;
+}
+
+.bulletDesc {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--bone-dim);
+  line-height: 1.45;
+}
+
+.directContact {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(235,228,212,0.12);
+}
+
+.directLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.directInfo {
+  font-family: var(--ff-serif);
+  font-size: 20px;
+  color: var(--bone);
+  line-height: 1.6;
+}
+
+.directLink {
+  text-decoration: underline;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 4px;
+  transition: color 180ms ease;
+}
+
+.directLink:hover { color: var(--ember); }
+
+/* Form */
+.form {
+  padding: 40px;
+  background: var(--ink-2);
+  border: 1px solid rgba(235,228,212,0.12);
+}
+
+.formLabel {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.formTitle {
+  font-family: var(--ff-display);
+  font-size: 32px;
+  color: var(--bone);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+/* Success */
+.success {
+  padding: 32px 0;
+  text-align: center;
+}
+
+.successLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.successTitle {
+  font-family: var(--ff-display);
+  font-size: 44px;
+  color: var(--bone);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.successDesc {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--bone-dim);
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; gap: 48px; }
+  .form { padding: 28px 22px; }
+}
+
+.errorMsg {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--rust);
+  background: rgba(139,58,31,0.1);
+  border: 1px solid rgba(139,58,31,0.3);
+  padding: 10px 12px;
+  border-radius: 2px;
+}
+
+@media (max-width: 540px) {
+  .row { flex-direction: column; }
+}

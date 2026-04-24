@@ -1,0 +1,90 @@
+.inline {
+  font-family: var(--ff-display);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.inlineThe { color: var(--bone); }
+.inlineOK {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ember);
+  font-weight: 400;
+}
+.inlineCorral { color: var(--bone); }
+
+/* Stacked (footer) */
+.stacked { text-align: left; }
+
+.stackedKicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.stackedMain {
+  font-family: var(--ff-display);
+  font-size: clamp(32px, 4vw, 56px);
+  text-transform: uppercase;
+  color: var(--bone);
+  line-height: 1;
+}
+
+/* Full (age gate, hero) */
+.full {
+  text-align: center;
+}
+
+.fullRule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.fullMain {
+  font-family: var(--ff-display);
+  font-size: clamp(48px, 8.5vw, 130px);
+  text-transform: uppercase;
+  color: var(--bone);
+  letter-spacing: 0.005em;
+  line-height: 0.95;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+}
+
+.fullSub {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: var(--ember);
+  white-space: nowrap;
+}
+
+.ruleLine {
+  flex: 1;
+  height: 1px;
+  background: rgba(235,228,212,0.45);
+  max-width: 80px;
+}
+
+.kickerText {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.5em;
+  color: rgba(235,228,212,0.9);
+  padding-left: 0.5em;
+}
+
+.diamond {
+  width: 8px;
+  height: 8px;
+  background: var(--ember);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .full { transform: scale(0.8); }
+}

@@ -1,0 +1,84 @@
+.rail {
+  position: fixed;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  z-index: 90;
+  pointer-events: auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(235,228,212,0.28);
+  padding: 0;
+  cursor: pointer;
+  transition: all 220ms ease;
+  position: relative;
+}
+
+.dot::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+}
+
+.dot:hover {
+  background: var(--bone);
+  transform: scale(1.4);
+}
+
+.dotActive {
+  background: var(--ember);
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 0 3px rgba(217,119,66,0.18);
+}
+
+.dotActive:hover {
+  background: var(--ember);
+}
+
+.tip {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone);
+  background: rgba(11,9,8,0.92);
+  border: 1px solid rgba(235,228,212,0.14);
+  padding: 6px 10px;
+  border-radius: 2px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.item:hover .tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+@media (max-width: 1100px) {
+  .rail { display: none; }
+}

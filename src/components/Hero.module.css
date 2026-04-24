@@ -1,0 +1,227 @@
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 120px var(--rail) 60px;
+  overflow: hidden;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('/assets/gallery/storefront.jpg') center/cover no-repeat;
+  filter: contrast(1.05) brightness(0.55);
+  will-change: transform;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(11,9,8,0.65) 0%, rgba(11,9,8,0.15) 40%, rgba(11,9,8,0.95) 100%),
+    radial-gradient(ellipse at 70% 40%, transparent 0%, rgba(11,9,8,0.6) 80%);
+}
+
+.dust {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Live Badge */
+.top {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: rgba(11,9,8,0.75);
+  border: 1px solid rgba(235,228,212,0.25);
+  border-radius: 999px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone);
+  backdrop-filter: blur(8px);
+  animation: fade-up 800ms ease 2s both;
+  text-decoration: none;
+  transition: border-color 180ms ease;
+}
+
+.liveBadge:hover {
+  border-color: var(--ember);
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ember);
+  animation: live-pulse 1.6s infinite;
+}
+
+.liveSep {
+  color: var(--bone-mute);
+}
+
+.liveName {
+  color: var(--ember);
+  font-style: italic;
+  font-family: var(--ff-serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+}
+
+/* Wordmark */
+.wordmark {
+  text-align: center;
+  line-height: 1;
+}
+
+.wmRuleTop, .wmRuleBottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.wmRuleTop { margin-bottom: 12px; }
+.wmRuleBottom { margin-top: 14px; }
+
+.wmLine {
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: rgba(235,228,212,0.45);
+}
+
+.wmLineDim {
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: rgba(235,228,212,0.35);
+}
+
+.wmKicker {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.5em;
+  color: rgba(235,228,212,0.9);
+  padding-left: 0.5em;
+}
+
+.wmMain {
+  font-family: var(--ff-display);
+  font-size: clamp(48px, 8.5vw, 130px);
+  text-transform: uppercase;
+  color: var(--bone);
+  letter-spacing: 0.005em;
+  line-height: 0.95;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+  display: inline-block;
+}
+
+.heroLetter {
+  display: inline-block;
+  animation: hero-letter-drop 700ms cubic-bezier(0.34,1.3,0.64,1) both;
+}
+
+.wmSub {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: var(--ember);
+  white-space: nowrap;
+}
+
+/* Bottom section */
+.bottom {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: end;
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(235,228,212,0.15);
+  animation: fade-up 900ms ease 600ms both;
+}
+
+.tagline {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: clamp(22px, 2.4vw, 32px);
+  line-height: 1.25;
+  color: var(--bone);
+  max-width: 560px;
+}
+
+.tagEmber {
+  color: var(--ember);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: right;
+}
+
+.metaRow {
+  display: flex;
+  gap: 32px;
+  justify-content: flex-end;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.metaRow strong {
+  color: var(--bone);
+}
+
+.metaActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1100px) {
+  .bottom { grid-template-columns: 1fr; }
+  .meta { text-align: left; }
+  .metaRow { justify-content: flex-start; }
+  .metaActions { justify-content: flex-start; }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    padding: 100px var(--rail) 48px;
+    min-height: 92vh;
+  }
+  .metaRow { flex-wrap: wrap; font-size: 10px; }
+}

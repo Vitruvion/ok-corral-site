@@ -1,0 +1,73 @@
+.marquee {
+  border-top: 1px solid rgba(235,228,212,0.1);
+  border-bottom: 1px solid rgba(235,228,212,0.1);
+  padding: 22px 0;
+  background: var(--ink-2);
+  overflow: hidden;
+  position: relative;
+}
+
+.track {
+  display: flex;
+  gap: 60px;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee 40s linear infinite;
+}
+
+.paused {
+  animation-play-state: paused;
+  opacity: 0.3;
+  transition: opacity 300ms ease;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.text {
+  font-family: var(--ff-display);
+  font-size: 32px;
+  text-transform: uppercase;
+  color: var(--bone);
+  letter-spacing: 0.02em;
+}
+
+.accent {
+  font-family: var(--ff-display);
+  font-size: 32px;
+  text-transform: uppercase;
+  color: var(--ember);
+  letter-spacing: 0.02em;
+}
+
+.diamond {
+  width: 10px;
+  height: 10px;
+  background: var(--ember);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.hoverMsg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ember);
+  color: var(--ink);
+  font-family: var(--ff-mono);
+  font-size: clamp(12px, 1.4vw, 16px);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 600;
+  animation: fade-in 150ms ease;
+}
+
+@media (max-width: 760px) {
+  .marquee { padding: 16px 0; }
+  .text, .accent { font-size: 22px; }
+}

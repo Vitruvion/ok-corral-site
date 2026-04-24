@@ -1,0 +1,441 @@
+/* ═══════════════════════════════════════════════════
+   THE OK CORRAL — Design System
+   Moody cinematic western. Wood-type slab display,
+   clean sans body, subtle grain, ember accents on ink black.
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── 1. Design Tokens ─────────────────────────────── */
+:root {
+  /* Color palette */
+  --ink:        #0b0908;
+  --ink-2:      #141110;
+  --ink-3:      #1d1916;
+  --ink-4:      #2a2420;
+  --bone:       #ebe4d4;
+  --bone-dim:   #c8bfa8;
+  --bone-mute:  #8e8773;
+  --ember:      #d97742;
+  --ember-deep: #b45a2a;
+  --tobacco:    #6b4e2e;
+  --rust:       #8b3a1f;
+  --green:      #6fd17a;
+  --live-red:   #ff4433;
+
+  /* Typography */
+  --ff-display: 'Alfa Slab One', 'Rockwell', 'Clarendon', Georgia, serif;
+  --ff-serif:   'DM Serif Display', 'Playfair Display', Georgia, serif;
+  --ff-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ff-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Spacing */
+  --edge: 24px;
+  --rail: 32px;
+}
+
+/* ── 2. Reset & Base ──────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--bone);
+  background: var(--ink);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font: inherit; }
+img { display: block; max-width: 100%; }
+ul, ol { list-style: none; }
+
+/* ── 3. Film Grain & Vignette ─────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%);
+}
+
+/* ── 4. Typography Helpers ────────────────────────── */
+.display {
+  font-family: var(--ff-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.serif {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.mono {
+  font-family: var(--ff-mono);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+/* ── 5. Container ─────────────────────────────────── */
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--rail);
+}
+
+.section {
+  padding: 120px 0;
+  position: relative;
+}
+
+/* ── 6. Buttons ───────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border: 1px solid var(--bone);
+  background: transparent;
+  color: var(--bone);
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: all 180ms ease;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: var(--bone);
+  color: var(--ink);
+}
+
+.btn-primary {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--ink);
+}
+
+.btn-primary:hover {
+  background: #f0884a;
+  border-color: #f0884a;
+}
+
+.btn-ghost {
+  border-color: rgba(235,228,212,0.22);
+  color: var(--bone);
+}
+
+.btn-ghost:hover {
+  border-color: var(--bone);
+  color: var(--ember);
+}
+
+.btn-door .arrow {
+  transition: transform 180ms ease;
+}
+
+.btn-door:hover .arrow {
+  transform: rotate(-20deg) translateX(3px);
+}
+
+/* ── 7. Ornaments ─────────────────────────────────── */
+.diamond {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--ember);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.diamond-lg {
+  width: 10px;
+  height: 10px;
+}
+
+.section-label {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--ember);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.rule {
+  height: 1px;
+  background: rgba(235,228,212,0.18);
+  position: relative;
+  width: 100%;
+}
+
+.rule::before,
+.rule::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--ember);
+  transform: rotate(45deg);
+  top: -2.5px;
+}
+
+.rule::before { left: -2px; }
+.rule::after { right: -2px; }
+
+/* ── 8. Section Head ──────────────────────────────── */
+.section-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 32px;
+  margin-bottom: 64px;
+}
+
+.section-title {
+  font-family: var(--ff-display);
+  font-size: clamp(48px, 7vw, 96px);
+  text-transform: uppercase;
+  line-height: 0.9;
+  color: var(--bone);
+  margin-top: 12px;
+}
+
+.section-title em {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ember);
+  font-size: 0.75em;
+  text-transform: none;
+  font-weight: 400;
+}
+
+.section-intro {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--bone-dim);
+  max-width: 420px;
+  line-height: 1.4;
+}
+
+/* ── 9. Placeholder (for missing images) ──────────── */
+.placeholder {
+  background-color: var(--ink-3);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 12px,
+    rgba(235,228,212,0.035) 12px,
+    rgba(235,228,212,0.035) 13px
+  );
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.placeholder-label {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+/* ── 10. Form Inputs ──────────────────────────────── */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: var(--ink);
+  border: 1px solid rgba(235,228,212,0.15);
+  color: var(--bone);
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  padding: 12px 14px;
+  border-radius: 2px;
+  transition: border-color 180ms ease;
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--ember);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--bone-mute);
+}
+
+.form-label {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ── 11. Animations ───────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes hero-letter-drop {
+  from { opacity: 0; transform: translateY(-50px) rotateX(-40deg); }
+  to   { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(217,119,66,0.5); }
+  100% { box-shadow: 0 0 0 10px rgba(217,119,66,0); }
+}
+
+@keyframes live-pulse-red {
+  0%   { box-shadow: 0 0 0 0 rgba(255,68,51,0.5); }
+  100% { box-shadow: 0 0 0 12px rgba(255,68,51,0); }
+}
+
+@keyframes scorp-pulse {
+  0%, 100% { opacity: 0.18; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(1.1); }
+}
+
+@keyframes loader-drop {
+  from { opacity: 0; transform: translateY(-30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes age-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fade-up 900ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.reveal-delay-1 { animation-delay: 120ms; }
+.reveal-delay-2 { animation-delay: 240ms; }
+.reveal-delay-3 { animation-delay: 360ms; }
+.reveal-delay-4 { animation-delay: 480ms; }
+.reveal-delay-5 { animation-delay: 600ms; }
+
+/* ── 12. Responsive ───────────────────────────────── */
+@media (max-width: 1100px) {
+  :root { --rail: 32px; }
+  .section-head { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  :root { --rail: 24px; }
+}
+
+@media (max-width: 760px) {
+  :root { --rail: 20px; }
+  .section { padding: 72px 0; }
+  .section-intro { font-size: 16px; }
+}
+
+@media (max-width: 600px) {
+  :root { --rail: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── 13. Utility ──────────────────────────────────── */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}

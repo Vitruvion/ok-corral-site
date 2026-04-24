@@ -1,0 +1,124 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(11,9,8,0.85);
+  backdrop-filter: blur(8px);
+  animation: fade-in 220ms ease;
+}
+
+.sheet {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: min(420px, 88vw);
+  background: var(--ink-2);
+  border-left: 1px solid rgba(235,228,212,0.08);
+  padding: 24px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  animation: slide-in-right 280ms cubic-bezier(0.2,0.7,0.2,1);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.headLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(235,228,212,0.18);
+  border-radius: 2px;
+  color: var(--bone);
+  font-size: 22px;
+  transition: all 180ms ease;
+}
+
+.close:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.nav {
+  flex: 1;
+}
+
+.navLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 0;
+  border-top: 1px solid rgba(235,228,212,0.08);
+  font-family: var(--ff-display);
+  font-size: 28px;
+  text-transform: uppercase;
+  color: var(--bone);
+  transition: all 200ms ease;
+}
+
+.navLink:last-child {
+  border-bottom: 1px solid rgba(235,228,212,0.08);
+}
+
+.navLink:hover,
+.navLink:active {
+  color: var(--ember);
+  padding-left: 6px;
+}
+
+.navLink:hover .navArrow {
+  transform: translateX(4px);
+}
+
+.navArrow {
+  font-family: var(--ff-mono);
+  font-size: 14px;
+  color: var(--ember);
+  transition: transform 200ms ease;
+}
+
+.foot {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid rgba(235,228,212,0.08);
+}
+
+.footLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.footAddr {
+  font-family: var(--ff-serif);
+  font-size: 18px;
+  color: var(--bone);
+  line-height: 1.4;
+  margin-bottom: 20px;
+}
+
+.footActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}

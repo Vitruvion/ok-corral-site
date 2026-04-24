@@ -1,0 +1,329 @@
+/* Scorpion Card */
+.scorpCard {
+  margin: 0 0 64px;
+  padding: 48px;
+  border: 1px solid rgba(217,95,31,0.4);
+  background: linear-gradient(135deg, rgba(217,95,31,0.08) 0%, rgba(11,9,8,0.9) 70%);
+  overflow: hidden;
+  border-radius: 2px;
+  position: relative;
+}
+
+.scorpInk {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 600px 400px at 30% 30%, rgba(217,95,31,0.15), transparent 60%);
+  pointer-events: none;
+}
+
+.scorpGlow {
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ember) 0%, transparent 60%);
+  opacity: 0.2;
+  animation: scorp-pulse 4s infinite;
+  pointer-events: none;
+}
+
+.scorpInner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 48px;
+  align-items: center;
+}
+
+.scorpLeft { max-width: 520px; }
+
+.scorpLabel {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.scorpTitle {
+  font-family: var(--ff-display);
+  font-size: clamp(48px, 7vw, 110px);
+  color: var(--bone);
+  text-transform: uppercase;
+  line-height: 0.88;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.scorpTitle em {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ember);
+  font-size: 0.85em;
+  text-transform: none;
+  font-weight: 400;
+}
+
+.scorpBody {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--bone-dim);
+  line-height: 1.4;
+  margin-bottom: 28px;
+}
+
+.scorpMeta {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.scorpCell {}
+
+.scorpCellLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.scorpCellValue {
+  font-family: var(--ff-display);
+  font-size: 22px;
+  color: var(--bone);
+  text-transform: uppercase;
+}
+
+.scorpRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.scorpGlass {
+  width: 160px;
+  height: 224px;
+  filter: drop-shadow(0 10px 30px rgba(217,95,31,0.4));
+}
+
+.scorpStamp {
+  border: 1px solid var(--ember);
+  padding: 6px 14px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+/* Tabs */
+.tabs {
+  border-bottom: 1px solid rgba(235,228,212,0.15);
+  margin-bottom: 32px;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 18px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+
+.tab:hover { color: var(--bone); }
+
+.tabActive {
+  color: var(--ember);
+  border-bottom-color: var(--ember);
+}
+
+/* Drink Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px 60px;
+  margin-bottom: 48px;
+}
+
+.card {}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.cardName {
+  font-family: var(--ff-display);
+  font-size: 26px;
+  color: var(--bone);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  display: block;
+}
+
+.cardTagline {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--bone-mute);
+  margin-top: 4px;
+  display: block;
+}
+
+.cardPrice {
+  font-family: var(--ff-mono);
+  font-size: 18px;
+  color: var(--ember);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.cardRule {
+  height: 1px;
+  background: rgba(235,228,212,0.15);
+  margin: 14px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardRuleDiamond {
+  font-size: 8px;
+  color: var(--ember);
+  background: var(--ink);
+  padding: 0 8px;
+  position: relative;
+}
+
+.cardDesc {
+  font-family: var(--ff-serif);
+  font-size: 15px;
+  color: var(--bone-dim);
+  line-height: 1.5;
+}
+
+.foot {
+  text-align: center;
+  padding: 24px 0 0;
+  border-top: 1px solid rgba(235,228,212,0.15);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+/* Scorpion Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(11,9,8,0.85);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  animation: fade-in 200ms ease;
+}
+
+.modal {
+  background: var(--ink-2);
+  border: 1px solid var(--ember);
+  padding: 48px 40px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(217,95,31,0.2);
+  animation: scale-in 300ms ease;
+  position: relative;
+}
+
+.modalClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  background: rgba(11,9,8,0.7);
+  border: 1px solid rgba(235,228,212,0.2);
+  color: var(--bone);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.modalLabel {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 20px;
+  display: block;
+}
+
+.modalTitle {
+  font-family: var(--ff-display);
+  font-size: clamp(40px, 5vw, 64px);
+  color: var(--bone);
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.modalTitle em {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ember);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.modalDesc {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--bone-dim);
+  line-height: 1.4;
+  margin-bottom: 28px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .scorpInner { grid-template-columns: 1fr; }
+  .scorpCard { padding: 28px; }
+}
+
+@media (max-width: 760px) {
+  .grid { grid-template-columns: 1fr; }
+}
