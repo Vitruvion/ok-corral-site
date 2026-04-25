@@ -3,10 +3,9 @@
   inset: 0;
   z-index: 10000;
   background: var(--ink);
-  padding: 40px 20px;
-  display: grid;
-  place-items: center;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .overlay::before {
@@ -16,11 +15,14 @@
   background: url('/assets/gallery/storefront.jpg') center/cover no-repeat;
   opacity: 0.08;
   filter: grayscale(0.6) contrast(1.2);
+  pointer-events: none;
 }
 
 .inner {
+  margin: auto;
   max-width: 720px;
   width: 100%;
+  padding: 40px 20px;
   text-align: center;
   position: relative;
   animation: age-fade-in 600ms ease both;

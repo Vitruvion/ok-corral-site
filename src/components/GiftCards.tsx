@@ -49,7 +49,21 @@ function GiftCardModal({ onClose }: { onClose: () => void }) {
   const [amount, setAmount] = useState(100)
   const [to, setTo] = useState('')
   const [from, setFrom] = useState('')
+  const [email, setEmail] = useState('')
+  const [note, setNote] = useState('')
+  const [touched, setTouched] = useState(false)
   const presets = [25, 50, 100, 200]
+
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+  const step2Valid = to.trim().length > 0 && emailValid
+
+  const tryAdvanceFromStep2 = () => {
+    if (!step2Valid) {
+      setTouched(true)
+      return
+    }
+    setStep(3)
+  }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -88,37 +102,79 @@ function GiftCardModal({ onClose }: { onClose: () => void }) {
             <h3 className={styles.modalTitle}>Who&apos;s it for?</h3>
             <div className={styles.gcForm}>
               <div>
-                <label className="form-label">To</label>
-                <input className="input" placeholder="Their name" value={to} onChange={e => setTo(e.target.value)} />
+                <label className="form-label">To <span className={styles.required}>*</span></label>
+                <input
+                  className="input"
+                  placeholder="Their name"
+                  value={to}
+                  onChange={e => setTo(e.target.value)}
+                  required
+                  aria-invalid={touched && to.trim().length === 0 ? 'true' : undefined}
+                />
               </div>
               <div>
                 <label className="form-label">From</label>
                 <input className="input" placeholder="Your name" value={from} onChange={e => setFrom(e.target.value)} />
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Their Email</label>
-                <input className="input" type="email" placeholder="you@example.com" />
+                <label className="form-label">Their Email <span className={styles.required}>*</span></label>
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="them@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  aria-invalid={touched && !emailValid ? 'true' : undefined}
+                />
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label className="form-label">A note (optional)</label>
-                <textarea className="textarea" rows={3} placeholder="Happy birthday, now go get a Scorpion Shot." />
+                <textarea
+                  className="textarea"
+                  rows={3}
+                  placeholder="Happy birthday, now go get a Scorpion Shot."
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                />
               </div>
             </div>
+            {touched && !step2Valid && (
+              <p className={styles.validationMsg}>
+                <em>Recipient name and a valid email are required.</em>
+              </p>
+            )}
             <div className={styles.modalFoot}>
               <button className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>
-              <button className="btn btn-primary" onClick={() => setStep(3)}>Next →</button>
+              <button
+                className="btn btn-primary"
+                onClick={tryAdvanceFromStep2}
+                disabled={touched && !step2Valid}
+                aria-disabled={touched && !step2Valid}
+              >
+                Next →
+              </button>
             </div>
           </>
         )}
 
         {step === 3 && (
           <div className={styles.delivered}>
-            <span className={styles.stepLabel}>◆ DELIVERED</span>
-            <h3 className={styles.modalTitle}>On its way.</h3>
+            <span className={styles.stepLabel}>◆ STEP 3 / 3 · CHECKOUT</span>
+            <h3 className={styles.modalTitle}>Coming<br /><em>soon.</em></h3>
             <p className={styles.deliveredDesc}>
-              <em>We&apos;ll email <strong>{to || 'them'}</strong> a <strong>${amount}</strong> gift card from <strong>{from || 'you'}</strong> — good at the bar, online, and everywhere in between.</em>
+              <em>
+                Online gift card checkout is wrapping up — we&apos;re wiring in Stripe.
+                In the meantime, swing by the bar (3633 Main St, Cottonwood) and
+                we&apos;ll set up a <strong>${amount}</strong> card for{' '}
+                <strong>{to}</strong> on the spot, or shoot us an email and we&apos;ll
+                handle it manually.
+              </em>
             </p>
-            <button className="btn btn-primary" onClick={onClose}>Close</button>
+            <div className={styles.modalFoot} style={{ justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <a href="mailto:howdy@okcorralsaloon.com" className="btn btn-primary">Email Us →</a>
+              <button className="btn btn-ghost" onClick={onClose}>Close</button>
+            </div>
           </div>
         )}
       </div>

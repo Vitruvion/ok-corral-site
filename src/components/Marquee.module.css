@@ -12,7 +12,13 @@
   gap: 60px;
   width: max-content;
   white-space: nowrap;
-  animation: marquee 40s linear infinite;
+  animation: marqueeScroll 60s linear infinite;
+  will-change: transform;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .paused {

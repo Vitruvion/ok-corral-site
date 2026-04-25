@@ -32,8 +32,8 @@ export default function Marquee() {
   }, [])
 
   const items = MARQUEE_ITEMS
-  // Triple for seamless loop
-  const repeated = [...items, ...items, ...items]
+  // Doubled so translating the track by -50% lands on an identical frame (seamless loop)
+  const repeated = [...items, ...items]
 
   return (
     <div

@@ -12,7 +12,7 @@ type Props = {
 }
 
 export default function Events({ events = EVENTS, recurring = RECURRING, onReserve }: Props = {}) {
-  const [openId, setOpenId] = useState<string>(events[0]?.id || '')
+  const [openId, setOpenId] = useState<string>('')
 
   return (
     <section className="section" id="events">
