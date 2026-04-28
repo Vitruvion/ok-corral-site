@@ -221,14 +221,14 @@ export const GALLERY: GalleryItem[] = [
   { id: 'g6',  label: 'Regulars',                   image: '/assets/gallery/customer-805.jpg',   cols: 3, rows: 3 },
   { id: 'g7',  label: 'Break Shot',                 image: '/assets/gallery/pool-shot.jpg',      cols: 4, rows: 3 },
   { id: 'g8',  label: 'Saturday Night',             image: '/assets/gallery/cowgirls.jpg',       cols: 4, rows: 3 },
-  { id: 'g9',  label: 'Cold One',                   image: '/assets/gallery/beer-man.jpg',       cols: 4, rows: 3 },
+  { id: 'g9',  label: 'Patio Night · Heaters & Wood', image: '/assets/gallery/patio-night.jpg',    cols: 4, rows: 3 },
   { id: 'g10', label: 'Dollar Bill Ceiling',         image: '/assets/gallery/dollar-ceiling.jpg', cols: 4, rows: 3 },
   { id: 'g11', label: 'The Crowd · Show Night',     image: '/assets/gallery/crowd-stage.jpg',    cols: 4, rows: 3 },
   { id: 'g12', label: 'Pool Table · 805 Neon',      image: '/assets/gallery/pool-table.jpg',     cols: 4, rows: 3 },
-  { id: 'g13', label: 'Car Show · Out Front',       image: '/assets/gallery/car-show.jpg',       cols: 12, rows: 3 },
-  { id: 'g14', label: 'Patio · Cigars & Cold Ones',  image: '/assets/gallery/patio-cigars.jpg',   cols: 4,  rows: 3 },
-  { id: 'g15', label: 'Rack Em Up · 805 Neon',       image: '/assets/gallery/cowboy-pool-2.jpg',  cols: 4,  rows: 3 },
-  { id: 'g16', label: 'The Boys · Behind The Bar',   image: '/assets/gallery/boys-at-bar.jpg',    cols: 4,  rows: 3 },
+  { id: 'g13', label: 'Patio · Cigars & Cold Ones',  image: '/assets/gallery/patio-cigars.jpg',   cols: 4,  rows: 3 },
+  { id: 'g14', label: 'Rack Em Up · 805 Neon',       image: '/assets/gallery/cowboy-pool-2.jpg',  cols: 4,  rows: 3 },
+  { id: 'g15', label: 'The Boys · Behind The Bar',   image: '/assets/gallery/boys-at-bar.jpg',    cols: 4,  rows: 3 },
+  { id: 'g16', label: 'Car Show · Out Front',       image: '/assets/gallery/car-show.jpg',       cols: 12, rows: 3 },
 ]
 
 export type InstagramPost = {
