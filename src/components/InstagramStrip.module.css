@@ -85,6 +85,40 @@
   font-size: 12px;
   line-height: 1.3;
   color: var(--bone);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fallback {
+  border: 1px solid rgba(235,228,212,0.12);
+  background: rgba(11,9,8,0.5);
+  padding: 48px 36px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  border-radius: 2px;
+}
+
+.fallbackBody {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--bone-dim);
+  max-width: 480px;
+  line-height: 1.4;
+}
+
+.fallbackBody strong {
+  color: var(--ember);
+  font-style: normal;
+  font-family: var(--ff-mono);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
 }
 
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }

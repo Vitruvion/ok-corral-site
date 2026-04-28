@@ -226,16 +226,29 @@ export const GALLERY: GalleryItem[] = [
   { id: 'g11', label: 'The Crowd · Show Night',     image: '/assets/gallery/crowd-stage.jpg',    cols: 4, rows: 3 },
   { id: 'g12', label: 'Pool Table · 805 Neon',      image: '/assets/gallery/pool-table.jpg',     cols: 4, rows: 3 },
   { id: 'g13', label: 'Car Show · Out Front',       image: '/assets/gallery/car-show.jpg',       cols: 12, rows: 3 },
+  { id: 'g14', label: 'Patio · Cigars & Cold Ones',  image: '/assets/gallery/patio-cigars.jpg',   cols: 4,  rows: 3 },
+  { id: 'g15', label: 'Rack Em Up · 805 Neon',       image: '/assets/gallery/cowboy-pool-2.jpg',  cols: 4,  rows: 3 },
+  { id: 'g16', label: 'The Boys · Behind The Bar',   image: '/assets/gallery/boys-at-bar.jpg',    cols: 4,  rows: 3 },
 ]
 
-export const IG_POSTS = [
-  { id: 'ig1', image: '/assets/gallery/cowboy-bar.jpg',  caption: 'Monday nights.', likes: 342, days: 2 },
-  { id: 'ig2', image: '/assets/gallery/performer.jpg',   caption: 'Camo Cali tore the house down.', likes: 512, days: 4 },
-  { id: 'ig3', image: '/assets/gallery/pool-shot.jpg',   caption: 'Break shot of the week.', likes: 198, days: 5 },
-  { id: 'ig4', image: '/assets/gallery/camel-sign.jpg',  caption: 'Camel Day 2026. Wild one.', likes: 1104, days: 8 },
-  { id: 'ig5', image: '/assets/gallery/crowd-stage.jpg', caption: 'Sold out again.', likes: 428, days: 10 },
-  { id: 'ig6', image: '/assets/gallery/beer-man.jpg',    caption: '$5 tall boys · all night.', likes: 267, days: 13 },
-]
+export type InstagramPost = {
+  id: string
+  image: string
+  caption: string
+  permalink: string
+  /** Days since posted, computed at fetch time. */
+  days?: number
+  /** Optional — Graph API only exposes this for Business/Creator accounts. */
+  likes?: number
+}
+
+/**
+ * No static IG posts — they used to reuse gallery photos which is misleading.
+ * Real posts come from the Instagram Graph API (see src/lib/instagram.ts).
+ * If the API isn't configured or fails, the InstagramStrip renders a CTA
+ * pointing to the live profile rather than fake content.
+ */
+export const IG_POSTS: InstagramPost[] = []
 
 export const BOOKING_TYPES = ['Birthday', 'Wedding', 'Rehearsal', 'Corporate', 'Wrap', 'Full Buyout', 'Fundraiser', 'Other']
 export const PARTY_SIZES = ['10-20', '20-40', '40-80', '80-150', 'Full Buyout (200)']

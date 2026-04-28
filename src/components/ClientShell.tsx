@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { CartProvider } from '@/lib/cart'
-import type { EventData, DrinkData, MerchItem } from '@/lib/data'
+import type { EventData, DrinkData, MerchItem, InstagramPost } from '@/lib/data'
 import Loader from '@/components/Loader'
 import AgeGate from '@/components/AgeGate'
 import Topbar from '@/components/Topbar'
@@ -27,9 +27,10 @@ type Props = {
   recurring: RecurringData[]
   drinks: Record<string, DrinkData[]>
   merch: MerchItem[]
+  igPosts: InstagramPost[] | null
 }
 
-export default function ClientShell({ events, recurring, drinks, merch }: Props) {
+export default function ClientShell({ events, recurring, drinks, merch, igPosts }: Props) {
   const [reserveEvent, setReserveEvent] = useState<EventData | null>(null)
 
   return (
@@ -43,7 +44,7 @@ export default function ClientShell({ events, recurring, drinks, merch }: Props)
       <DrinkMenu drinks={drinks} />
       <MerchSection merch={merch} />
       <GallerySection />
-      <InstagramStrip />
+      <InstagramStrip posts={igPosts} />
       <Bookings />
       <GiftCards />
       <Location />

@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase'
+import { fetchInstagramPosts } from './instagram'
 import {
   EVENTS as FALLBACK_EVENTS,
   RECURRING as FALLBACK_RECURRING,
@@ -7,6 +8,7 @@ import {
   type EventData,
   type DrinkData,
   type MerchItem,
+  type InstagramPost,
 } from './data'
 
 type RecurringData = (typeof FALLBACK_RECURRING)[number]
@@ -134,11 +136,14 @@ export async function fetchMerch(): Promise<MerchItem[]> {
 }
 
 export async function fetchAll() {
-  const [events, recurring, drinks, merch] = await Promise.all([
+  const [events, recurring, drinks, merch, igPosts] = await Promise.all([
     fetchEvents(),
     fetchRecurring(),
     fetchDrinks(),
     fetchMerch(),
+    fetchInstagramPosts(6),
   ])
-  return { events, recurring, drinks, merch }
+  return { events, recurring, drinks, merch, igPosts }
 }
+
+export type { InstagramPost }
