@@ -138,42 +138,25 @@ export type DrinkData = {
 }
 
 export const DRINKS: Record<string, DrinkData[]> = {
-  Signature: [
-    { name: 'Corral Mule', tagline: 'Copper mug · ginger · Old Grand-Dad', price: '$11', description: 'Old Grand-Dad 100, house ginger syrup, fresh lime, copper mug. The house twist on the mule — more bite than you expect.' },
-    { name: 'Palomita Picante', tagline: 'Mezcal · grapefruit · tajin', price: '$11', description: 'Del Maguey mezcal, grapefruit, lime, tajin rim. Smoke, sour, heat. Drinks like a sunset.' },
-    { name: 'Dusty Old Fashioned', tagline: 'Rye · mesquite honey · bitters', price: '$13', description: 'Rittenhouse rye, mesquite honey, house bitters, big rock. A proper old fashioned with a desert streak.' },
+  'Saloon Cocktails': [
+    { name: 'Damn Good Old Fashioned', tagline: 'Buffalo Trace · bitters · large rock',     price: '$13', description: "Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you've had. Ask for it smoked." },
+    { name: 'In Cold Blood',           tagline: 'Rye · Cynar 70 · sweet vermouth',          price: '$13', description: 'Rittenhouse 100 Rye, Cynar 70, sweet vermouth, large rock, expressed orange. Bitter, bold, with just a touch of sweetness.' },
+    { name: 'Outlaw Vesper Martini',   tagline: 'Amass Gin · vodka · Lillet Blanc',         price: '$14', description: 'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.' },
+    { name: 'Giddy Up',                tagline: 'Vodka · Kahlúa · cold brew',               price: '$7',  description: "Happy Cow Vodka, Kahlúa, cold brew, served over ice. Easy drinkin' pick-me-up." },
+    { name: 'Dive Bar Spritz',         tagline: 'High Life · Aperol · lemon',               price: '$6',  description: 'Miller High Life bottle, Aperol, fresh lemon.' },
   ],
-  Cocktails: [
-    { name: 'Margarita', tagline: 'Blanco · lime · salt', price: '$10', description: 'The classic. Blanco tequila, fresh lime, agave, salted rim.' },
-    { name: 'Whiskey Sour', tagline: 'Bourbon · lemon · egg white', price: '$10', description: 'Bulleit bourbon, lemon, demerara, egg white foam.' },
-    { name: 'Paloma', tagline: 'Tequila · grapefruit · soda', price: '$10', description: 'Blanco tequila, grapefruit, lime, soda, salt rim.' },
-    { name: 'Negroni', tagline: 'Gin · Campari · sweet vermouth', price: '$12', description: 'Equal parts. Stirred, not shaken. Orange peel.' },
+  'Shots & Bombs': [
+    { name: 'Smoked Steak Shot',  tagline: 'Jameson · Worcestershire · black pepper', price: '$8', description: 'Jameson, chased with smoked Worcestershire and cracked black pepper.' },
+    { name: 'Scorpion Shooter',   tagline: '+$3 add-on to any shot',                  price: '$3', description: 'Add an edible scorpion to any shot.' },
+    { name: 'Bull Dozer',         tagline: 'Jäger · Red Bull',                        price: '$8', description: 'Jägermeister & Red Bull in a double shot glass.' },
+    { name: 'Iceberg',            tagline: 'Vodka · triple sec · Red Bull',           price: '$9', description: 'Vodka, triple sec, lime, topped with Coconut Berry Red Bull.' },
   ],
-  Beer: [
-    { name: 'Coors Banquet', tagline: 'The Original', price: '$5', description: 'The yellow-belly. Ice cold.' },
-    { name: 'Modelo Especial', tagline: '12 oz', price: '$6', description: 'Always on. Lime on request.' },
-    { name: 'Sierra Nevada Pale Ale', tagline: 'On Draft · Chico, CA', price: '$7', description: 'Local to the neighborhood. Always fresh.' },
-    { name: 'Lagunitas IPA', tagline: 'On Draft', price: '$7', description: 'Hoppy, balanced, dangerous at 6.2%.' },
-    { name: 'Tecate', tagline: '24 oz can', price: '$5', description: 'Big can, small price. Lime and salt on request.' },
-    { name: 'Pacifico', tagline: '12 oz', price: '$6', description: 'A light, clean Mexican lager.' },
-  ],
-  Shots: [
-    { name: 'Scorpion Shot', tagline: 'House secret', price: '$12', description: 'See above. Still not telling.' },
-    { name: 'Jameson', tagline: 'Irish whiskey', price: '$7', description: 'Neat, rocks, or pickle-backed.' },
-    { name: 'Fernet-Branca', tagline: "The bartender's handshake", price: '$8', description: 'Bitter, menthol, essential.' },
-    { name: 'Don Julio Blanco', tagline: 'Tequila', price: '$10', description: 'Clean, citrus-forward, sipping quality.' },
-    { name: 'Rumple Minze', tagline: 'Peppermint schnapps', price: '$7', description: 'Served ice cold. Clears the head.' },
-  ],
-  'Non-Alc': [
-    { name: 'Mexican Coke', tagline: 'Glass bottle · cane sugar', price: '$4', description: 'Imported. Just better.' },
-    { name: 'Topo Chico', tagline: 'Sparkling mineral water', price: '$4', description: 'With lime wedge.' },
-    { name: 'Cold Brew', tagline: 'House made', price: '$5', description: 'Iced, black, or splash of cream.' },
-    { name: 'Virgin Mule', tagline: 'Ginger · lime · mint', price: '$7', description: 'The Corral Mule, minus the Grand-Dad.' },
-    { name: 'Fresh Lemonade', tagline: 'House squeezed', price: '$5', description: 'Tart, not too sweet. Add a shot if you like.' },
+  'Featured Beer': [
+    { name: "I'm Your Hucklebeer", tagline: "Woody's Brewing collab · huckleberry wheat", price: '$7', description: "Exclusive collab with Woody's Brewing Company. Huckleberry Wheat Ale • 5.2% ABV • 20 IBU. Only available at The OK Corral." },
   ],
 }
 
-export const DRINK_TABS = ['Signature', 'Cocktails', 'Beer', 'Shots', 'Non-Alc']
+export const DRINK_TABS = ['Saloon Cocktails', 'Shots & Bombs', 'Featured Beer']
 
 export type MerchItem = {
   id: string

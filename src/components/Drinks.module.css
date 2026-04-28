@@ -1,132 +1,170 @@
-/* Scorpion Card */
-.scorpCard {
+/* ════════════════════════════════════════════════
+   Hucklebeer Feature Card — Woody's Brewing collab.
+   Warm bone/cream background to make the cowboy art
+   pop against the rest of the dark site.
+   ════════════════════════════════════════════════ */
+.featCard {
   margin: 0 0 64px;
-  padding: 48px;
-  border: 1px solid rgba(217,95,31,0.4);
-  background: linear-gradient(135deg, rgba(217,95,31,0.08) 0%, rgba(11,9,8,0.9) 70%);
+  padding: 56px 56px 48px;
+  border: 1px solid rgba(217,119,66,0.35);
+  background:
+    /* subtle paper grain */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(11,9,8,0.018) 2px,
+      rgba(11,9,8,0.018) 3px
+    ),
+    /* warm wash with darker corner so it doesn't read flat */
+    radial-gradient(ellipse at 80% 100%, rgba(180,90,42,0.18) 0%, transparent 55%),
+    linear-gradient(135deg, #f1e9d6 0%, #e6dcc4 60%, #d8cbac 100%);
   overflow: hidden;
   border-radius: 2px;
   position: relative;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(255,255,255,0.18);
 }
 
-.scorpInk {
+.featGlow {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 600px 400px at 30% 30%, rgba(217,95,31,0.15), transparent 60%);
-  pointer-events: none;
-}
-
-.scorpGlow {
-  position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 400px;
-  height: 400px;
+  top: -120px;
+  right: -120px;
+  width: 480px;
+  height: 480px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--ember) 0%, transparent 60%);
-  opacity: 0.2;
+  opacity: 0.35;
   animation: scorp-pulse 4s infinite;
   pointer-events: none;
+  mix-blend-mode: multiply;
 }
 
-.scorpInner {
+.featInner {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 48px;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 56px;
   align-items: center;
 }
 
-.scorpLeft { max-width: 520px; }
+.featLeft { max-width: 540px; }
 
-.scorpLabel {
+.featLabel {
   font-family: var(--ff-mono);
   font-size: 11px;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--ember);
-  margin-bottom: 16px;
+  color: var(--rust);
+  margin-bottom: 18px;
   display: block;
 }
 
-.scorpTitle {
+.featTitle {
   font-family: var(--ff-display);
   font-size: clamp(48px, 7vw, 110px);
-  color: var(--bone);
+  color: var(--ink);
   text-transform: uppercase;
   line-height: 0.88;
   letter-spacing: -0.02em;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 
-.scorpTitle em {
+.featTitle em {
   font-family: var(--ff-serif);
   font-style: italic;
-  color: var(--ember);
-  font-size: 0.85em;
+  color: var(--rust);
+  font-size: 0.92em;
   text-transform: none;
   font-weight: 400;
+  text-shadow: none;
 }
 
-.scorpBody {
+.featBody {
   font-family: var(--ff-serif);
   font-style: italic;
-  font-size: 20px;
-  color: var(--bone-dim);
-  line-height: 1.4;
+  font-size: 19px;
+  color: rgba(11,9,8,0.78);
+  line-height: 1.45;
   margin-bottom: 28px;
 }
 
-.scorpMeta {
-  display: flex;
-  gap: 40px;
+.featMeta {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 28px 36px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(11,9,8,0.18);
+  border-bottom: 1px solid rgba(11,9,8,0.18);
 }
 
-.scorpCell {}
+.featCell {
+  min-width: 0;
+}
 
-.scorpCellLabel {
+.featCellLabel {
   font-family: var(--ff-mono);
   font-size: 10px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--bone-mute);
+  color: var(--tobacco);
   display: block;
   margin-bottom: 4px;
 }
 
-.scorpCellValue {
+.featCellValue {
   font-family: var(--ff-display);
-  font-size: 22px;
-  color: var(--bone);
+  font-size: 20px;
+  color: var(--ink);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.scorpRight {
+.featCta {
+  /* Override .btn-primary so it reads against the cream bg.
+     Using rust-deep for the dark button keeps it on-palette. */
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bone);
+}
+
+.featCta:hover {
+  background: var(--rust);
+  border-color: var(--rust);
+  color: var(--bone);
+}
+
+.featRight {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
-.scorpGlass {
-  width: 160px;
-  height: 224px;
-  filter: drop-shadow(0 10px 30px rgba(217,95,31,0.4));
+.featArt {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 32px rgba(11,9,8,0.35));
 }
 
-.scorpStamp {
-  border: 1px solid var(--ember);
-  padding: 6px 14px;
+.featStamp {
+  border: 1px solid var(--rust);
+  padding: 7px 16px;
   font-family: var(--ff-mono);
   font-size: 10px;
   letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: var(--ember);
+  color: var(--rust);
+  background: rgba(255,255,255,0.25);
 }
 
-/* Tabs */
+/* ── Tabs ──────────────────────────────────────── */
 .tabs {
   border-bottom: 1px solid rgba(235,228,212,0.15);
   margin-bottom: 32px;
@@ -141,7 +179,6 @@
   -webkit-mask-image: linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%);
 }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { scroll-snap-align: start; }
 
 .tab {
   background: transparent;
@@ -155,6 +192,7 @@
   color: var(--bone-dim);
   transition: all 180ms ease;
   white-space: nowrap;
+  scroll-snap-align: start;
 }
 
 .tab:hover { color: var(--bone); }
@@ -164,7 +202,7 @@
   border-bottom-color: var(--ember);
 }
 
-/* Drink Grid */
+/* ── Drink Grid ──────────────────────────────────── */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -243,109 +281,34 @@
   color: var(--bone-mute);
 }
 
-/* Scorpion Modal */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(11,9,8,0.85);
-  backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
-  padding: 32px;
-  animation: fade-in 200ms ease;
-}
-
-.modal {
-  background: var(--ink-2);
-  border: 1px solid var(--ember);
-  padding: 48px 40px;
-  max-width: 520px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(217,95,31,0.2);
-  animation: scale-in 300ms ease;
-  position: relative;
-}
-
-.modalClose {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 36px;
-  height: 36px;
-  background: rgba(11,9,8,0.7);
-  border: 1px solid rgba(235,228,212,0.2);
-  color: var(--bone);
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2px;
-}
-
-.modalLabel {
-  font-family: var(--ff-mono);
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--ember);
-  margin-bottom: 20px;
-  display: block;
-}
-
-.modalTitle {
-  font-family: var(--ff-display);
-  font-size: clamp(40px, 5vw, 64px);
-  color: var(--bone);
-  text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 16px;
-}
-
-.modalTitle em {
-  font-family: var(--ff-serif);
-  font-style: italic;
-  color: var(--ember);
-  font-weight: 400;
-  text-transform: none;
-}
-
-.modalDesc {
-  font-family: var(--ff-serif);
-  font-style: italic;
-  font-size: 20px;
-  color: var(--bone-dim);
-  line-height: 1.4;
-  margin-bottom: 28px;
-}
-
-.modalActions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 1100px) {
+  .featInner { grid-template-columns: 1fr; gap: 32px; }
+  .featLeft { max-width: none; }
+  .featRight { order: -1; }
+  .featArt { max-width: 280px; }
 }
 
 @media (max-width: 900px) {
-  .scorpInner { grid-template-columns: 1fr; }
-  .scorpCard { padding: 28px; }
+  .featCard { padding: 36px 32px 32px; }
 }
 
 @media (max-width: 760px) {
   .grid { grid-template-columns: 1fr; gap: 28px; }
-  .scorpCard { padding: 24px; }
-  .scorpTitle { font-size: clamp(40px, 11vw, 64px); }
-  .scorpBody { font-size: 17px; }
-  .scorpMeta { gap: 24px; }
-  .scorpCellValue { font-size: 18px; }
+  .featCard { padding: 28px 24px 24px; }
+  .featTitle { font-size: clamp(40px, 11vw, 64px); }
+  .featBody { font-size: 17px; }
+  .featMeta { grid-template-columns: repeat(2, 1fr); gap: 18px 24px; }
+  .featCellValue { font-size: 18px; }
+  .featArt { max-width: 220px; }
   .tab { padding: 12px 14px; font-size: 10px; letter-spacing: 0.18em; }
 }
 
 @media (max-width: 480px) {
-  .scorpCard { padding: 20px; }
-  .scorpTitle { font-size: 38px; }
-  .scorpBody { font-size: 16px; }
+  .featCard { padding: 22px 18px 20px; }
+  .featTitle { font-size: 40px; }
+  .featBody { font-size: 16px; }
+  .featCellValue { font-size: 16px; }
   .cardName { font-size: 22px; }
   .cardPrice { font-size: 16px; }
 }

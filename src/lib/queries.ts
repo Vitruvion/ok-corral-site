@@ -5,6 +5,7 @@ import {
   RECURRING as FALLBACK_RECURRING,
   DRINKS as FALLBACK_DRINKS,
   MERCH as FALLBACK_MERCH,
+  DRINK_TABS,
   type EventData,
   type DrinkData,
   type MerchItem,
@@ -98,6 +99,15 @@ export async function fetchDrinks(): Promise<DrinksByCategory> {
         price: d.price,
         description: d.description ?? '',
       })
+    }
+    // Schema-mismatch guard: if the DB has rows but none of its categories
+    // match the current DRINK_TABS (e.g. an old seed wasn't re-run after a
+    // menu overhaul), fall back to data.ts so the UI doesn't render empty
+    // tabs. Re-run supabase/seed.sql to fix.
+    const overlap = Object.keys(grouped).filter(c => DRINK_TABS.includes(c))
+    if (overlap.length === 0) {
+      log('drinks', `Supabase categories [${Object.keys(grouped).join(', ')}] do not overlap with DRINK_TABS — re-run supabase/seed.sql`)
+      return FALLBACK_DRINKS
     }
     return grouped
   } catch (e) {

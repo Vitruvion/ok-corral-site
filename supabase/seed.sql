@@ -39,34 +39,19 @@ values
 -- ── Drinks ──────────────────────────────────────────────────────
 delete from drinks;
 insert into drinks (category, name, tagline, price, description, sort_order) values
-  -- Signature
-  ('Signature', 'Corral Mule',         'Copper mug · ginger · Old Grand-Dad', '$11', 'Old Grand-Dad 100, house ginger syrup, fresh lime, copper mug. The house twist on the mule — more bite than you expect.', 1),
-  ('Signature', 'Palomita Picante',    'Mezcal · grapefruit · tajin',         '$11', 'Del Maguey mezcal, grapefruit, lime, tajin rim. Smoke, sour, heat. Drinks like a sunset.', 2),
-  ('Signature', 'Dusty Old Fashioned', 'Rye · mesquite honey · bitters',      '$13', 'Rittenhouse rye, mesquite honey, house bitters, big rock. A proper old fashioned with a desert streak.', 3),
-  -- Cocktails
-  ('Cocktails', 'Margarita',     'Blanco · lime · salt',          '$10', 'The classic. Blanco tequila, fresh lime, agave, salted rim.', 1),
-  ('Cocktails', 'Whiskey Sour',  'Bourbon · lemon · egg white',   '$10', 'Bulleit bourbon, lemon, demerara, egg white foam.', 2),
-  ('Cocktails', 'Paloma',        'Tequila · grapefruit · soda',   '$10', 'Blanco tequila, grapefruit, lime, soda, salt rim.', 3),
-  ('Cocktails', 'Negroni',       'Gin · Campari · sweet vermouth','$12', 'Equal parts. Stirred, not shaken. Orange peel.', 4),
-  -- Beer
-  ('Beer', 'Coors Banquet',           'The Original',           '$5', 'The yellow-belly. Ice cold.', 1),
-  ('Beer', 'Modelo Especial',         '12 oz',                  '$6', 'Always on. Lime on request.', 2),
-  ('Beer', 'Sierra Nevada Pale Ale',  'On Draft · Chico, CA',   '$7', 'Local to the neighborhood. Always fresh.', 3),
-  ('Beer', 'Lagunitas IPA',           'On Draft',               '$7', 'Hoppy, balanced, dangerous at 6.2%.', 4),
-  ('Beer', 'Tecate',                  '24 oz can',              '$5', 'Big can, small price. Lime and salt on request.', 5),
-  ('Beer', 'Pacifico',                '12 oz',                  '$6', 'A light, clean Mexican lager.', 6),
-  -- Shots
-  ('Shots', 'Scorpion Shot',     'House secret',                  '$12', 'See above. Still not telling.', 1),
-  ('Shots', 'Jameson',           'Irish whiskey',                 '$7',  'Neat, rocks, or pickle-backed.', 2),
-  ('Shots', 'Fernet-Branca',     'The bartender''s handshake',    '$8',  'Bitter, menthol, essential.', 3),
-  ('Shots', 'Don Julio Blanco',  'Tequila',                       '$10', 'Clean, citrus-forward, sipping quality.', 4),
-  ('Shots', 'Rumple Minze',      'Peppermint schnapps',           '$7',  'Served ice cold. Clears the head.', 5),
-  -- Non-Alc
-  ('Non-Alc', 'Mexican Coke',     'Glass bottle · cane sugar', '$4', 'Imported. Just better.', 1),
-  ('Non-Alc', 'Topo Chico',       'Sparkling mineral water',   '$4', 'With lime wedge.', 2),
-  ('Non-Alc', 'Cold Brew',        'House made',                '$5', 'Iced, black, or splash of cream.', 3),
-  ('Non-Alc', 'Virgin Mule',      'Ginger · lime · mint',      '$7', 'The Corral Mule, minus the Grand-Dad.', 4),
-  ('Non-Alc', 'Fresh Lemonade',   'House squeezed',            '$5', 'Tart, not too sweet. Add a shot if you like.', 5);
+  -- Saloon Cocktails
+  ('Saloon Cocktails', 'Damn Good Old Fashioned', 'Buffalo Trace · bitters · large rock',     '$13', 'Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you''ve had. Ask for it smoked.', 1),
+  ('Saloon Cocktails', 'In Cold Blood',           'Rye · Cynar 70 · sweet vermouth',          '$13', 'Rittenhouse 100 Rye, Cynar 70, sweet vermouth, large rock, expressed orange. Bitter, bold, with just a touch of sweetness.', 2),
+  ('Saloon Cocktails', 'Outlaw Vesper Martini',   'Amass Gin · vodka · Lillet Blanc',         '$14', 'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.', 3),
+  ('Saloon Cocktails', 'Giddy Up',                'Vodka · Kahlúa · cold brew',               '$7',  'Happy Cow Vodka, Kahlúa, cold brew, served over ice. Easy drinkin'' pick-me-up.', 4),
+  ('Saloon Cocktails', 'Dive Bar Spritz',         'High Life · Aperol · lemon',               '$6',  'Miller High Life bottle, Aperol, fresh lemon.', 5),
+  -- Shots & Bombs
+  ('Shots & Bombs', 'Smoked Steak Shot', 'Jameson · Worcestershire · black pepper', '$8', 'Jameson, chased with smoked Worcestershire and cracked black pepper.', 1),
+  ('Shots & Bombs', 'Scorpion Shooter',  '+$3 add-on to any shot',                  '$3', 'Add an edible scorpion to any shot.', 2),
+  ('Shots & Bombs', 'Bull Dozer',        'Jäger · Red Bull',                        '$8', 'Jägermeister & Red Bull in a double shot glass.', 3),
+  ('Shots & Bombs', 'Iceberg',           'Vodka · triple sec · Red Bull',           '$9', 'Vodka, triple sec, lime, topped with Coconut Berry Red Bull.', 4),
+  -- Featured Beer
+  ('Featured Beer', 'I''m Your Hucklebeer', 'Woody''s Brewing collab · huckleberry wheat', '$7', 'Exclusive collab with Woody''s Brewing Company. Huckleberry Wheat Ale • 5.2% ABV • 20 IBU. Only available at The OK Corral.', 1);
 
 -- ── Merch ───────────────────────────────────────────────────────
 insert into merch (slug, name, category, price, badge, color, sizes, image_url, image_bg, description, sort_order)
