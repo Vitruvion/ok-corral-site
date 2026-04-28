@@ -110,6 +110,15 @@
 }
 
 @media (max-width: 760px) {
+  .grid { gap: 40px; }
+  .info { gap: 32px; min-width: 0; }
   .blockText { font-size: 18px; }
-  .mapWrap { aspect-ratio: 1.2; min-height: 320px; }
+  .hoursGrid { font-size: 11px; column-gap: 16px; }
+  .actions { flex-wrap: wrap; }
+  .actions .btn { flex: 1; min-width: 140px; justify-content: center; }
+  .mapWrap { aspect-ratio: 4/5; min-height: 0; max-width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .actions .btn { padding: 14px 16px; font-size: 10px; letter-spacing: 0.18em; }
 }

@@ -268,7 +268,23 @@
   }
   .day { font-size: 44px; }
   .name { font-size: 24px; }
-  .expand { grid-template-columns: 1fr; }
+  .expand { grid-template-columns: 1fr; gap: 24px; padding-top: 24px; }
+  .weekly { margin-top: 56px; padding-top: 32px; }
+  .weeklyCard {
+    padding: 24px;
+    gap: 20px;
+  }
+  .weeklyDay { font-size: 40px; }
+  .weeklyName { font-size: 22px; }
+  .weeklySupport { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+  .weeklyCard { padding: 20px; gap: 16px; grid-template-columns: 60px 1fr; }
+  .weeklyDay { font-size: 32px; }
+  .weeklyName { font-size: 18px; }
+  .weeklySupport { font-size: 13px; }
+  .weeklyMeta { font-size: 9px; letter-spacing: 0.14em; }
 }
 
 @media (max-width: 420px) {

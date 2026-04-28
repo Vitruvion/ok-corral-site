@@ -46,12 +46,14 @@
 
 .fullMain {
   font-family: var(--ff-display);
-  font-size: clamp(48px, 8.5vw, 130px);
+  font-size: clamp(38px, 9vw, 130px);
   text-transform: uppercase;
   color: var(--bone);
   letter-spacing: 0.005em;
   line-height: 0.95;
   text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .fullSub {
@@ -86,5 +88,16 @@
 }
 
 @media (max-width: 600px) {
-  .full { transform: scale(0.8); }
+  .full { transform: scale(0.85); transform-origin: center top; }
+}
+
+@media (max-width: 480px) {
+  .full { transform: scale(0.75); }
+  .fullMain { font-size: clamp(32px, 10vw, 48px); }
+  .ruleLine { max-width: 32px; }
+}
+
+@media (max-width: 380px) {
+  .full { transform: scale(0.7); }
+  .fullMain { font-size: 28px; letter-spacing: 0; }
 }

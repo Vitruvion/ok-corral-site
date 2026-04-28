@@ -133,7 +133,15 @@
   display: flex;
   gap: 2px;
   overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  /* fade right edge to hint at scroll */
+  mask-image: linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%);
 }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { scroll-snap-align: start; }
 
 .tab {
   background: transparent;
@@ -325,5 +333,19 @@
 }
 
 @media (max-width: 760px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr; gap: 28px; }
+  .scorpCard { padding: 24px; }
+  .scorpTitle { font-size: clamp(40px, 11vw, 64px); }
+  .scorpBody { font-size: 17px; }
+  .scorpMeta { gap: 24px; }
+  .scorpCellValue { font-size: 18px; }
+  .tab { padding: 12px 14px; font-size: 10px; letter-spacing: 0.18em; }
+}
+
+@media (max-width: 480px) {
+  .scorpCard { padding: 20px; }
+  .scorpTitle { font-size: 38px; }
+  .scorpBody { font-size: 16px; }
+  .cardName { font-size: 22px; }
+  .cardPrice { font-size: 16px; }
 }

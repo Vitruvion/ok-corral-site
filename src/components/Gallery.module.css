@@ -173,12 +173,21 @@
     grid-column: span 6 !important;
   }
   .caption { opacity: 0.92; transform: translateY(0); }
-  .follow { flex-direction: column; align-items: flex-start; }
-  .followTitle { font-size: 28px; }
+  .follow {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 32px;
+    padding-top: 20px;
+    gap: 14px;
+  }
+  .followTitle { font-size: 26px; }
+  .followSub { font-size: 10px; }
 }
 
 @media (max-width: 420px) {
   .item { grid-column: span 6 !important; }
+  .followTitle { font-size: 22px; }
+  .follow { margin-top: 24px; padding-top: 16px; gap: 12px; }
 }
 
 @media (max-width: 600px) {
