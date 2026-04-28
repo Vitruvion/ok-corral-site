@@ -1,5 +1,6 @@
 'use client'
 import { IG_POSTS, BRAND } from '@/lib/data'
+import ImageOrPlaceholder from './ImageOrPlaceholder'
 import styles from './InstagramStrip.module.css'
 
 export default function InstagramStrip() {
@@ -18,9 +19,11 @@ export default function InstagramStrip() {
         <div className={styles.grid}>
           {IG_POSTS.map(post => (
             <a key={post.id} href={BRAND.instagramUrl} target="_blank" rel="noopener noreferrer" className={styles.post}>
-              <div className="placeholder" style={{ width: '100%', height: '100%' }}>
-                <span className="placeholder-label">{post.caption}</span>
-              </div>
+              <ImageOrPlaceholder
+                src={post.image}
+                alt={post.caption}
+                label={post.caption}
+              />
               <div className={styles.over}>
                 <div className={styles.stats}>
                   <span>♥ {post.likes}</span>

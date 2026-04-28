@@ -4,8 +4,9 @@ import { BRAND, EVENTS } from '@/lib/data'
 import styles from './Hero.module.css'
 
 export default function Hero() {
-  const bgRef = useRef<HTMLDivElement>(null)
+  const bgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [bgFailed, setBgFailed] = useState(false)
 
   // Parallax
   useEffect(() => {
@@ -82,7 +83,20 @@ export default function Hero() {
 
   return (
     <section className={styles.hero}>
-      <div className={styles.bg} ref={bgRef} />
+      {bgFailed ? (
+        <div className={styles.bg} aria-hidden="true" />
+      ) : (
+        <img
+          ref={bgRef}
+          className={styles.bg}
+          src="/assets/gallery/storefront.jpg"
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          fetchPriority="high"
+          onError={() => setBgFailed(true)}
+        />
+      )}
       <div className={styles.vignette} />
       <canvas className={styles.dust} ref={canvasRef} />
 

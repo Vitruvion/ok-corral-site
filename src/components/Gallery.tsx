@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { GALLERY, BRAND } from '@/lib/data'
+import ImageOrPlaceholder from './ImageOrPlaceholder'
 import styles from './Gallery.module.css'
 
 export default function GallerySection() {
@@ -35,9 +36,12 @@ export default function GallerySection() {
               }}
               onClick={() => openLb(i)}
             >
-              <div className="placeholder" style={{ width: '100%', height: '100%' }}>
-                <span className="placeholder-label">{item.label}</span>
-              </div>
+              <ImageOrPlaceholder
+                src={item.image}
+                alt={item.label}
+                label={item.label}
+                loading={i < 4 ? 'eager' : 'lazy'}
+              />
               <span className={styles.caption}>{item.label}</span>
               <span className={styles.zoom}>⤢</span>
             </button>
@@ -61,8 +65,14 @@ export default function GallerySection() {
       {lightbox !== null && (
         <div className={styles.lightbox} onClick={closeLb}>
           <div className={styles.lbStage} onClick={e => e.stopPropagation()}>
-            <div className="placeholder" style={{ width: '100%', maxWidth: '90vw', maxHeight: '75vh', aspectRatio: '16/10' }}>
-              <span className="placeholder-label">{GALLERY[lightbox].label}</span>
+            <div className={styles.lbImageWrap}>
+              <ImageOrPlaceholder
+                src={GALLERY[lightbox].image}
+                alt={GALLERY[lightbox].label}
+                label={GALLERY[lightbox].label}
+                cover={false}
+                loading="eager"
+              />
             </div>
             <span className={styles.lbCaption}>{GALLERY[lightbox].label}</span>
           </div>

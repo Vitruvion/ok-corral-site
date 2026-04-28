@@ -110,6 +110,23 @@
   max-height: 85vh;
 }
 
+.lbImageWrap {
+  width: 100%;
+  max-width: 90vw;
+  max-height: 75vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lbImageWrap > img,
+.lbImageWrap > div {
+  max-width: 90vw;
+  max-height: 75vh;
+  width: auto !important;
+  height: auto !important;
+}
+
 .lbCaption {
   font-family: var(--ff-display);
   font-size: 20px;
