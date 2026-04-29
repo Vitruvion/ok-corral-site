@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import { CartProvider } from '@/lib/cart'
 import type { EventData, DrinkData, MerchItem, InstagramPost } from '@/lib/data'
 import Loader from '@/components/Loader'
@@ -18,7 +17,6 @@ import Location from '@/components/Location'
 import Footer from '@/components/Footer'
 import ProgressRail from '@/components/ProgressRail'
 import CartDrawer from '@/components/CartDrawer'
-import ReserveModal from '@/components/ReserveModal'
 
 type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
 
@@ -31,8 +29,6 @@ type Props = {
 }
 
 export default function ClientShell({ events, recurring, drinks, merch, igPosts }: Props) {
-  const [reserveEvent, setReserveEvent] = useState<EventData | null>(null)
-
   return (
     <CartProvider>
       <Loader />
@@ -40,7 +36,7 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts 
       <Topbar />
       <Hero />
       <Marquee />
-      <Events events={events} recurring={recurring} onReserve={setReserveEvent} />
+      <Events events={events} recurring={recurring} />
       <DrinkMenu drinks={drinks} />
       <MerchSection merch={merch} />
       <GallerySection />
@@ -51,7 +47,6 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts 
       <Footer />
       <ProgressRail />
       <CartDrawer />
-      <ReserveModal event={reserveEvent} onClose={() => setReserveEvent(null)} />
     </CartProvider>
   )
 }

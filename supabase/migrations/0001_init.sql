@@ -6,22 +6,23 @@
 -- ── Tables ──────────────────────────────────────────────────────
 
 create table if not exists events (
-  id           uuid default gen_random_uuid() primary key,
-  slug         text unique not null,
-  date         date not null,
-  weekday      text not null,
-  name         text not null,
-  support      text,
-  time         text not null,
-  doors        text,
-  genre        text,
-  tickets      text,
-  tags         text[] default '{}',
-  description  text,
-  poster_url   text,
-  active       boolean default true,
-  sort_order   int default 0,
-  created_at   timestamptz default now()
+  id              uuid default gen_random_uuid() primary key,
+  slug            text unique not null,
+  date            date not null,
+  weekday         text not null,
+  name            text not null,
+  support         text,
+  time            text not null,
+  doors           text,
+  genre           text,
+  tickets         text,
+  tags            text[] default '{}',
+  description     text,
+  poster_url      text,
+  eventbrite_url  text,
+  active          boolean default true,
+  sort_order      int default 0,
+  created_at      timestamptz default now()
 );
 
 create index if not exists events_date_idx on events (date);

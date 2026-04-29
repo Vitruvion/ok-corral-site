@@ -55,6 +55,11 @@ export type EventData = {
   tickets: string
   tags: string[]
   description: string
+  /**
+   * If set, the Events UI shows a "Get Tickets →" button that links here.
+   * If null/empty, the event renders a "Free Admission · No Cover" badge.
+   */
+  eventbrite_url: string | null
 }
 
 export const EVENTS: EventData[] = [
@@ -67,9 +72,10 @@ export const EVENTS: EventData[] = [
     time: '9 PM',
     doors: '8 PM',
     genre: 'Country · Outlaw',
-    tickets: '$15 · At the Door',
+    tickets: '$15 · Advance',
     tags: ['live music', 'special event'],
     description: "Reno's dirtiest honky-tonk four-piece roll into the Corral for one night of outlaw country, whiskey-soaked waltzes, and amp hum that rattles the pool balls. The Low Lonesome opens with acoustic originals and Jenny Rae kicks the night off at 8.",
+    eventbrite_url: 'https://www.eventbrite.com/e/dust-devils-at-the-ok-corral-tickets-PLACEHOLDER',
   },
   {
     id: 'ev2',
@@ -83,6 +89,7 @@ export const EVENTS: EventData[] = [
     tickets: 'Free · No Cover',
     tags: ['lessons', 'no cover'],
     description: "Beginners welcome. Miss Dee runs lessons from 7 to 8, then the floor opens up. Boots encouraged but not required. Two-steppers, line dancers, and wallflowers all welcome.",
+    eventbrite_url: null,
   },
   {
     id: 'ev3',
@@ -93,9 +100,10 @@ export const EVENTS: EventData[] = [
     time: '10 PM',
     doors: '9 PM',
     genre: 'DJ · Late',
-    tickets: '$10 · Advance',
+    tickets: 'Free · No Cover',
     tags: ['late night', 'special event'],
     description: "One turntable, one man, three hours of rare country, cosmic Americana, and Bakersfield bangers you forgot existed. DJ Sundown spins vinyl only — no laptops, no requests, no apologies.",
+    eventbrite_url: null,
   },
 ]
 

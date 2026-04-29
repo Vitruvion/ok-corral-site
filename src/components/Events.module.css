@@ -137,6 +137,23 @@
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 24px;
+  align-items: center;
+}
+
+.freeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: rgba(111,209,122,0.08);
+  border: 1px solid rgba(111,209,122,0.4);
+  border-radius: 2px;
+  white-space: nowrap;
 }
 
 .tags {

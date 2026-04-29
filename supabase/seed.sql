@@ -5,28 +5,35 @@
 -- ════════════════════════════════════════════════════════════════
 
 -- ── Events ──────────────────────────────────────────────────────
-insert into events (slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, sort_order)
+-- eventbrite_url: paste the Eventbrite URL for ticketed shows.
+-- Leave it null for free shows — the UI auto-renders a "Free
+-- Admission · No Cover" badge when there's no URL.
+insert into events (slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url, sort_order)
 values
   ('dust-devils-2026-05-02', '2026-05-02', 'Saturday', 'Dust Devils',
-   'w/ The Low Lonesome & Jenny Rae', '9 PM', '8 PM', 'Country · Outlaw', '$15 · At the Door',
+   'w/ The Low Lonesome & Jenny Rae', '9 PM', '8 PM', 'Country · Outlaw', '$15 · Advance',
    array['live music','special event'],
    'Reno''s dirtiest honky-tonk four-piece roll into the Corral for one night of outlaw country, whiskey-soaked waltzes, and amp hum that rattles the pool balls. The Low Lonesome opens with acoustic originals and Jenny Rae kicks the night off at 8.',
+   'https://www.eventbrite.com/e/dust-devils-at-the-ok-corral-tickets-PLACEHOLDER',
    1),
   ('line-dance-2026-05-09', '2026-05-09', 'Saturday', 'Line Dance Night',
    'Hosted by Miss Dee · Lessons 7–8 PM', '8 PM', '7 PM', 'Dance · Weekly', 'Free · No Cover',
    array['lessons','no cover'],
    'Beginners welcome. Miss Dee runs lessons from 7 to 8, then the floor opens up. Boots encouraged but not required. Two-steppers, line dancers, and wallflowers all welcome.',
+   null,
    2),
   ('midnight-rodeo-2026-05-16', '2026-05-16', 'Saturday', 'Midnight Rodeo',
-   'DJ Sundown · Vinyl Only', '10 PM', '9 PM', 'DJ · Late', '$10 · Advance',
+   'DJ Sundown · Vinyl Only', '10 PM', '9 PM', 'DJ · Late', 'Free · No Cover',
    array['late night','special event'],
    'One turntable, one man, three hours of rare country, cosmic Americana, and Bakersfield bangers you forgot existed. DJ Sundown spins vinyl only — no laptops, no requests, no apologies.',
+   null,
    3)
 on conflict (slug) do update set
   date = excluded.date, weekday = excluded.weekday, name = excluded.name,
   support = excluded.support, time = excluded.time, doors = excluded.doors,
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
-  description = excluded.description, sort_order = excluded.sort_order;
+  description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  sort_order = excluded.sort_order;
 
 -- ── Recurring Events ────────────────────────────────────────────
 delete from recurring_events;

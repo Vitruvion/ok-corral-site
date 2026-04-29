@@ -8,10 +8,9 @@ type RecurringData = { day: string; name: string; support: string; time: string;
 type Props = {
   events?: EventData[]
   recurring?: RecurringData[]
-  onReserve?: (ev: EventData) => void
 }
 
-export default function Events({ events = EVENTS, recurring = RECURRING, onReserve }: Props = {}) {
+export default function Events({ events = EVENTS, recurring = RECURRING }: Props = {}) {
   const [openId, setOpenId] = useState<string>('')
 
   return (
@@ -69,12 +68,24 @@ export default function Events({ events = EVENTS, recurring = RECURRING, onReser
                       <h4 className={styles.expandHeading}>◆ About the night</h4>
                       <p className={styles.expandDesc}>{ev.description}</p>
                       <div className={styles.expandActions}>
-                        <button
-                          className="btn btn-primary"
-                          onClick={(e) => { e.stopPropagation(); onReserve?.(ev) }}
-                        >
-                          Reserve Tickets →
-                        </button>
+                        {ev.eventbrite_url ? (
+                          <a
+                            href={ev.eventbrite_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Get Tickets →
+                          </a>
+                        ) : (
+                          <span
+                            className={styles.freeBadge}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            ◆ Free Admission · No Cover
+                          </span>
+                        )}
                         <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>Add to Calendar</button>
                         <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>Share</button>
                       </div>
