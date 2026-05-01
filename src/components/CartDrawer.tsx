@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useCart, lineKeyOf } from '@/lib/cart'
 import styles from './CartDrawer.module.css'
 
@@ -8,6 +8,38 @@ const TAX_RATE = 0.0775
 
 export default function CartDrawer() {
   const { lines, open, setOpen, subtotal, removeLine, setQty } = useCart()
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+
+  const handleCheckout = async () => {
+    if (lines.length === 0) return
+    setCheckingOut(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'merch',
+          items: lines.map(l => ({
+            name: l.name,
+            price: l.price,
+            qty: l.qty,
+            size: l.size,
+            color: l.color,
+          })),
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Checkout failed.')
+      if (!json.url) throw new Error('No checkout URL returned.')
+      // Hand off to Stripe — page navigates away.
+      window.location.href = json.url as string
+    } catch (e: any) {
+      setCheckoutError(e?.message || 'Something went wrong. Try again.')
+      setCheckingOut(false)
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -105,8 +137,15 @@ export default function CartDrawer() {
                   <em>${(SHIPPING_THRESHOLD - subtotal).toFixed(2)} from free shipping.</em>
                 </p>
               )}
-              <button className={`btn btn-primary ${styles.checkout}`}>
-                Checkout →
+              {checkoutError && (
+                <p className={styles.checkoutError}><em>{checkoutError}</em></p>
+              )}
+              <button
+                className={`btn btn-primary ${styles.checkout}`}
+                onClick={handleCheckout}
+                disabled={checkingOut || lines.length === 0}
+              >
+                {checkingOut ? 'Redirecting…' : 'Checkout →'}
               </button>
               <p className={styles.secure}>◆ Secure checkout · powered by Stripe</p>
             </footer>

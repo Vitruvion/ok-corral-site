@@ -52,6 +52,8 @@ function GiftCardModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
   const [touched, setTouched] = useState(false)
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const presets = [25, 50, 100, 200]
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -63,6 +65,32 @@ function GiftCardModal({ onClose }: { onClose: () => void }) {
       return
     }
     setStep(3)
+  }
+
+  const handleCheckout = async () => {
+    setCheckingOut(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'gift_card',
+          amount,
+          to_name: to,
+          to_email: email,
+          from_name: from || undefined,
+          note: note || undefined,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Checkout failed.')
+      if (!json.url) throw new Error('No checkout URL returned.')
+      window.location.href = json.url as string
+    } catch (e: any) {
+      setCheckoutError(e?.message || 'Something went wrong. Try again.')
+      setCheckingOut(false)
+    }
   }
 
   return (
@@ -159,23 +187,55 @@ function GiftCardModal({ onClose }: { onClose: () => void }) {
         )}
 
         {step === 3 && (
-          <div className={styles.delivered}>
+          <>
             <span className={styles.stepLabel}>◆ STEP 3 / 3 · CHECKOUT</span>
-            <h3 className={styles.modalTitle}>Coming<br /><em>soon.</em></h3>
-            <p className={styles.deliveredDesc}>
-              <em>
-                Online gift card checkout is wrapping up — we&apos;re wiring in Stripe.
-                In the meantime, swing by the bar (3633 Main St, Cottonwood) and
-                we&apos;ll set up a <strong>${amount}</strong> card for{' '}
-                <strong>{to}</strong> on the spot, or shoot us an email and we&apos;ll
-                handle it manually.
-              </em>
+            <h3 className={styles.modalTitle}>
+              Review &amp;<br /><em>send it.</em>
+            </h3>
+            <ul className={styles.review}>
+              <li>
+                <span className={styles.reviewLabel}>Amount</span>
+                <span className={styles.reviewValue}>${amount}</span>
+              </li>
+              <li>
+                <span className={styles.reviewLabel}>To</span>
+                <span className={styles.reviewValue}>{to}</span>
+              </li>
+              <li>
+                <span className={styles.reviewLabel}>Email</span>
+                <span className={styles.reviewValue}>{email}</span>
+              </li>
+              {from && (
+                <li>
+                  <span className={styles.reviewLabel}>From</span>
+                  <span className={styles.reviewValue}>{from}</span>
+                </li>
+              )}
+              {note && (
+                <li>
+                  <span className={styles.reviewLabel}>Note</span>
+                  <span className={styles.reviewValue}>{note}</span>
+                </li>
+              )}
+            </ul>
+            <p className={styles.reviewFine}>
+              <em>You&apos;ll be redirected to Stripe to complete payment. The card is delivered to {email} as soon as the charge clears.</em>
             </p>
-            <div className={styles.modalFoot} style={{ justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <a href="mailto:howdy@okcorralsaloon.com" className="btn btn-primary">Email Us →</a>
-              <button className="btn btn-ghost" onClick={onClose}>Close</button>
+            {checkoutError && (
+              <p className={styles.validationMsg}><em>{checkoutError}</em></p>
+            )}
+            <div className={styles.modalFoot}>
+              <button className="btn btn-ghost" onClick={() => setStep(2)} disabled={checkingOut}>← Back</button>
+              <button
+                className="btn btn-primary"
+                onClick={handleCheckout}
+                disabled={checkingOut}
+              >
+                {checkingOut ? 'Redirecting…' : `Pay $${amount} →`}
+              </button>
             </div>
-          </div>
+            <p className={styles.secureNote}>◆ Secure checkout · powered by Stripe</p>
+          </>
         )}
       </div>
     </div>

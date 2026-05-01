@@ -17,6 +17,7 @@ import Location from '@/components/Location'
 import Footer from '@/components/Footer'
 import ProgressRail from '@/components/ProgressRail'
 import CartDrawer from '@/components/CartDrawer'
+import StripeReturnHandler from '@/components/StripeReturnHandler'
 
 type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
 
@@ -47,6 +48,7 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts 
       <Footer />
       <ProgressRail />
       <CartDrawer />
+      <StripeReturnHandler />
     </CartProvider>
   )
 }

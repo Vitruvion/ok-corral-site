@@ -22,6 +22,8 @@ type CartCtx = {
   addItem: (item: MerchItem, size?: string) => void
   removeLine: (key: string) => void
   setQty: (key: string, qty: number) => void
+  /** Empty the cart (used after a successful Stripe checkout). */
+  clear: () => void
 }
 
 const Ctx = createContext<CartCtx | null>(null)
@@ -84,6 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (qty <= 0) return prev.filter(l => lineKey(l) !== key)
       return prev.map(l => lineKey(l) === key ? { ...l, qty } : l)
     }),
+    clear: () => setLines([]),
   }), [lines, open])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

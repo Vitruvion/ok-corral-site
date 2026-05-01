@@ -1,0 +1,114 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(5,4,3,0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fade-in 200ms ease;
+}
+
+.modal {
+  position: relative;
+  background: var(--ink-2);
+  border: 1px solid var(--ember);
+  border-radius: 4px;
+  padding: 44px 44px 36px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  animation: scale-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(217,119,66,0.18);
+}
+
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  background: rgba(11,9,8,0.7);
+  border: 1px solid rgba(235,228,212,0.2);
+  border-radius: 50%;
+  color: var(--bone);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 180ms ease;
+}
+
+.close:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.label {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ember);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.labelMuted {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: var(--ff-display);
+  font-size: 44px;
+  text-transform: uppercase;
+  color: var(--bone);
+  line-height: 0.95;
+  margin-bottom: 14px;
+}
+
+.title em {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ember);
+  font-size: 0.85em;
+  text-transform: none;
+}
+
+.body {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--bone-dim);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.sessionId {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  margin-bottom: 22px;
+}
+
+.cta {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 540px) {
+  .modal {
+    padding: 32px 24px 28px;
+  }
+  .title { font-size: 36px; }
+}

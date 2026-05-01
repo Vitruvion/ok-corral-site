@@ -35,6 +35,25 @@ export default function Bookings() {
         })
         if (insertErr) throw insertErr
       }
+      // Fire-and-forget email notification. Failure here doesn't block the
+      // user — the inquiry was already saved to Supabase.
+      try {
+        await fetch('/api/booking-notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email,
+            phone: phone || undefined,
+            event_type: eventType || undefined,
+            party_size: partySize || undefined,
+            preferred_date: preferredDate || undefined,
+            notes: notes || undefined,
+          }),
+        })
+      } catch (notifyErr) {
+        console.warn('[booking-notify] call failed', notifyErr)
+      }
       setSubmitted(true)
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Try again or email us direct.')

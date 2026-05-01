@@ -274,6 +274,58 @@
   border-color: var(--rust);
 }
 
+.review {
+  list-style: none;
+  margin: 8px 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.review li {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(235,228,212,0.08);
+}
+
+.review li:last-child { border-bottom: none; }
+
+.reviewLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+.reviewValue {
+  font-family: var(--ff-serif);
+  font-size: 16px;
+  color: var(--bone);
+  word-break: break-word;
+}
+
+.reviewFine {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--bone-dim);
+  margin: 8px 0 16px;
+  line-height: 1.5;
+}
+
+.secureNote {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  text-align: center;
+  margin-top: 14px;
+}
+
 @media (max-width: 900px) {
   .card { grid-template-columns: 1fr; gap: 40px; }
 }
