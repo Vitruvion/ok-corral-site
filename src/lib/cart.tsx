@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react'
 import type { MerchItem } from './data'
 
 export type CartLine = {
@@ -35,8 +35,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([])
   const [open, setOpen] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  // Sentinel: true once a clear() has wiped the cart. The hydration effect
+  // honors it so it doesn't refill from localStorage. The persist effect
+  // honors it so it doesn't immediately re-write an empty array.
+  // (Reset on next addItem.)
+  const clearedRef = useRef(false)
 
   useEffect(() => {
+    if (clearedRef.current) {
+      // A clear() ran before hydration finished (typical on Stripe-success
+      // landing where StripeReturnHandler.useEffect fires before this one).
+      // Skip the localStorage read so we don't refill the cart we just
+      // intentionally emptied.
+      setHydrated(true)
+      return
+    }
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) setLines(JSON.parse(raw))
@@ -46,6 +59,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return
+    if (clearedRef.current) return
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(lines)) } catch {}
   }, [lines, hydrated])
 
@@ -56,6 +70,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     open,
     setOpen,
     addItem: (item, size) => {
+      // Re-engage persistence on the next add after a clear.
+      clearedRef.current = false
       const chosenSize = size ?? (item.sizes?.[0] || undefined)
       const key = lineKey({ id: item.id, size: chosenSize })
       setLines(prev => {
@@ -86,7 +102,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (qty <= 0) return prev.filter(l => lineKey(l) !== key)
       return prev.map(l => lineKey(l) === key ? { ...l, qty } : l)
     }),
-    clear: () => setLines([]),
+    clear: () => {
+      // Three things, in order, to defeat the React effect-ordering race:
+      //  1. Mark the sentinel so subsequent hydration/persist effects skip.
+      //  2. Wipe localStorage synchronously so even if hydration runs
+      //     after this in the same commit, getItem() returns null.
+      //  3. Empty the in-memory state.
+      clearedRef.current = true
+      try { localStorage.removeItem(STORAGE_KEY) } catch {}
+      setLines([])
+      setOpen(false)
+    },
   }), [lines, open])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
