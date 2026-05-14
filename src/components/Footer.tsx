@@ -39,6 +39,8 @@ export default function Footer() {
           <h5 className={styles.colTitle}>Say Howdy</h5>
           <ul>
             <li><a href={BRAND.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram · @{BRAND.instagram}</a></li>
+            <li><a href={BRAND.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook · {BRAND.facebook}</a></li>
+            <li><a href={BRAND.tiktokUrl} target="_blank" rel="noopener noreferrer">TikTok · @{BRAND.tiktok}</a></li>
             <li><a href={`mailto:${BRAND.email}`}>{BRAND.email}</a></li>
             <li><a href={BRAND.phoneHref}>{BRAND.phone}</a></li>
           </ul>

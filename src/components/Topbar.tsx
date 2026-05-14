@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Wordmark from './Wordmark'
 import MobileMenu from './MobileMenu'
+import { FacebookIcon, TikTokIcon } from './SocialIcons'
 import { NAV_LINKS, BRAND } from '@/lib/data'
 import { useCart } from '@/lib/cart'
 import styles from './Topbar.module.css'
@@ -37,14 +38,36 @@ export default function Topbar() {
             <HoursDot />
           </div>
 
-          <a
-            href={BRAND.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.igLink}
-          >
-            @{BRAND.instagram}
-          </a>
+          <div className={styles.socials}>
+            <a
+              href={BRAND.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.igLink}
+            >
+              @{BRAND.instagram}
+            </a>
+            <a
+              href={BRAND.facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.socialBtn}
+              aria-label="Facebook"
+              title="Facebook"
+            >
+              <FacebookIcon />
+            </a>
+            <a
+              href={BRAND.tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.socialBtn}
+              aria-label="TikTok"
+              title="TikTok"
+            >
+              <TikTokIcon />
+            </a>
+          </div>
 
           <button className={styles.cartBtn} onClick={() => setCartOpen(true)} aria-label="Open cart">
             <span className={styles.cartLabel}>Cart</span>

@@ -19,6 +19,10 @@ export const BRAND = {
   email: 'howdy@okcorralsaloon.com',
   instagram: 'okcorralsaloon',
   instagramUrl: 'https://instagram.com/okcorralsaloon',
+  facebook: 'The OK Corral',
+  facebookUrl: 'https://www.facebook.com/profile.php?id=61575694323377',
+  tiktok: 'okcorralsaloon',
+  tiktokUrl: 'https://www.tiktok.com/@okcorralsaloon',
   mapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=3633+Main+Street,+Cottonwood,+CA+96022',
   // Basic embed URL — Google's public embed doesn't accept style params,
   // so we apply a CSS filter on the iframe instead (see Location.module.css).

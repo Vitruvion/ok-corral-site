@@ -122,3 +122,50 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+
+.socials {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(235,228,212,0.08);
+}
+
+.socialsLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.socialsRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(235,228,212,0.18);
+  border-radius: 2px;
+  color: var(--bone-dim);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: all 180ms ease;
+}
+
+.socialLink:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.socialLink svg {
+  width: 14px;
+  height: 14px;
+}

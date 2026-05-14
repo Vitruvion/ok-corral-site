@@ -78,6 +78,14 @@
   background: var(--bone-mute);
 }
 
+/* Cluster of social-link chips. Uses its own tighter gap (6px) so they
+   read as one group rather than as three separately-spaced topbar items. */
+.socials {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .igLink {
   font-family: var(--ff-mono);
   font-size: 10px;
@@ -92,6 +100,30 @@
 .igLink:hover {
   border-color: var(--ember);
   color: var(--ember);
+}
+
+/* Icon-only square chip matching the igLink border/hover but sized for
+   a 16px SVG inside. Same focus visuals as the rest of the bar. */
+.socialBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(235,228,212,0.18);
+  border-radius: 2px;
+  color: var(--bone-dim);
+  transition: all 180ms ease;
+}
+
+.socialBtn:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.socialBtn svg {
+  width: 15px;
+  height: 15px;
 }
 
 .cartBtn {
@@ -160,7 +192,7 @@
 }
 
 @media (max-width: 1100px) {
-  .hoursPill, .igLink { display: none; }
+  .hoursPill, .socials { display: none; }
 }
 
 @media (max-width: 760px) {
