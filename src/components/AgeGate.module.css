@@ -1,24 +1,17 @@
+/* Bare-bones full-viewport grid centering. No flex tricks, no min-height,
+   no dvh, no margin auto. Just fixed fullscreen + grid place-items center.
+   The single .inner wrapper holds both the wordmark and the card so grid
+   centers them as one unit. */
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
   background: var(--ink);
-  overflow-y: auto;
-  /* Direct alignment instead of margin:auto — easier to reason about and
-     bypasses the flex-column quirks some browsers exhibit when content
-     varies in height. `safe center` falls back to start-alignment when
-     content overflows the viewport so the top isn't clipped. */
-  display: flex;
-  align-items: safe center;
-  justify-content: safe center;
-  /* dvh on top, plain vh as fallback for older browsers. */
-  min-height: 100vh;
-  min-height: 100dvh;
-  /* Padding covers both desktop gutter and iOS safe-area. */
-  padding: 40px 20px;
-  padding-top: max(40px, env(safe-area-inset-top, 40px));
-  padding-bottom: max(40px, env(safe-area-inset-bottom, 40px));
+  display: grid;
+  place-items: center;
+  padding: 20px;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .overlay::before {
@@ -32,7 +25,6 @@
 }
 
 .inner {
-  /* Centered by the overlay's flex alignment — no margin tricks needed. */
   max-width: 720px;
   width: 100%;
   text-align: center;
@@ -42,9 +34,6 @@
 }
 
 .wordmark {
-  /* Tightened from 36px so the wordmark + card read as one cohesive
-     unit. With margin auto/flex centering, a tighter unit feels more
-     centered to the eye. */
   margin-bottom: 24px;
 }
 

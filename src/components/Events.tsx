@@ -30,9 +30,7 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
 
         <div className={styles.list}>
           {events.map(ev => {
-            const d = new Date(ev.date)
-            const day = d.getDate()
-            const month = d.toLocaleString('en-US', { month: 'long' })
+            const { day, month } = parseEventDate(ev.date)
             const isOpen = openId === ev.id
 
             return (
@@ -142,4 +140,24 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
       </div>
     </section>
   )
+}
+
+/**
+ * Parses an event's date string for display. Handles both formats:
+ *   - "YYYY-MM-DD" (from Supabase) → would be interpreted as UTC midnight
+ *     by the Date constructor, causing getDate() in negative-offset zones
+ *     to roll back one day. We build the Date with explicit local args so
+ *     "2026-06-25" stays June 25 regardless of viewer timezone.
+ *   - "Month DD YYYY" (from data.ts) → constructor parses as local time
+ *     already, so no special handling needed.
+ */
+function parseEventDate(s: string): { day: number; month: string } {
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  const d = iso
+    ? new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+    : new Date(s)
+  return {
+    day: d.getDate(),
+    month: d.toLocaleString('en-US', { month: 'long' }),
+  }
 }

@@ -79,11 +79,8 @@
   width: 100%;
   height: 100%;
   border: none;
-  /* Dark-themed Google Maps via the invert + hue-rotate trick, dialed
-     back from full invert(1) so streets and labels stay legible. The
-     0.85 invert leaves a hint of mid-tone, and hue-rotate(180deg) keeps
-     blues looking like water. */
-  filter: invert(0.85) hue-rotate(180deg) saturate(0.4) contrast(0.9) brightness(0.95);
+  /* No CSS filter — the embed URL itself carries the style params for an
+     Apple-Maps-dark-style palette. */
 }
 
 .mapOverlay {

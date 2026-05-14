@@ -20,7 +20,25 @@ export const BRAND = {
   instagram: 'okcorralsaloon',
   instagramUrl: 'https://instagram.com/okcorralsaloon',
   mapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=3633+Main+Street,+Cottonwood,+CA+96022',
-  mapsEmbed: 'https://www.google.com/maps?q=3633+Main+Street,+Cottonwood,+CA+96022&output=embed',
+  // Styled embed with dark/warm palette matching the site aesthetic.
+  // Style params are appended in Apple-Maps-dark style; if Google ignores them
+  // on basic embeds, the map still renders correctly (just untinted), and the
+  // iframe has no CSS filter on it so it stays readable.
+  mapsEmbed: 'https://www.google.com/maps?q=3633+Main+Street,+Cottonwood,+CA+96022&output=embed' +
+    '&style=feature:all|element:geometry|color:0x242f3e' +
+    '&style=feature:all|element:labels.text.stroke|color:0x242f3e' +
+    '&style=feature:all|element:labels.text.fill|color:0x746855' +
+    '&style=feature:administrative.locality|element:labels.text.fill|color:0xd59563' +
+    '&style=feature:poi|element:labels.text.fill|color:0xd59563' +
+    '&style=feature:poi.park|element:geometry|color:0x263c3f' +
+    '&style=feature:poi.park|element:labels.text.fill|color:0x6b9a76' +
+    '&style=feature:road|element:geometry|color:0x38414e' +
+    '&style=feature:road|element:geometry.stroke|color:0x212a37' +
+    '&style=feature:road.highway|element:geometry|color:0x746855' +
+    '&style=feature:road.highway|element:geometry.stroke|color:0x1f2835' +
+    '&style=feature:transit|element:geometry|color:0x2f3948' +
+    '&style=feature:water|element:geometry|color:0x17263c' +
+    '&style=feature:water|element:labels.text.fill|color:0x515c6d',
   coords: { lat: 40.384, lon: -122.281 },
 }
 
