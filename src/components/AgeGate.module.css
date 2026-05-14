@@ -25,7 +25,10 @@
 }
 
 .inner {
-  max-width: 720px;
+  /* Wide enough to hold the natural-size wordmark (~910px at 130px font)
+     without forcing it to overflow asymmetrically. The card inside
+     constrains itself to 720px so visual hierarchy is preserved. */
+  max-width: min(1100px, calc(100vw - 40px));
   width: 100%;
   text-align: center;
   position: relative;
@@ -38,6 +41,8 @@
 }
 
 .body {
+  max-width: 720px;
+  margin: 0 auto;
   border: 1px solid rgba(235,228,212,0.15);
   background: rgba(11,9,8,0.85);
   backdrop-filter: blur(6px);
