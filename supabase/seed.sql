@@ -22,31 +22,29 @@ set client_encoding to E'UTF8';
 -- eventbrite_url: paste the Eventbrite URL for ticketed shows.
 -- Leave it null for free shows - the UI auto-renders a "Free
 -- Admission . No Cover" badge when there's no URL.
+--
+-- Old placeholder events (dust-devils, line-dance, midnight-rodeo)
+-- are deactivated below so they stop showing without losing history.
+update events set active = false where slug in (
+  E'dust-devils-2026-05-02',
+  E'line-dance-2026-05-09',
+  E'midnight-rodeo-2026-05-16'
+);
+
 insert into events (slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url, sort_order)
 values
-  (E'dust-devils-2026-05-02', E'2026-05-02', E'Saturday', E'Dust Devils',
-   E'w/ The Low Lonesome & Jenny Rae', E'9 PM', E'8 PM', E'Country \u00B7 Outlaw', E'$15 \u00B7 Advance',
-   array[E'live music',E'special event'],
-   E'Reno''s dirtiest honky-tonk four-piece roll into the Corral for one night of outlaw country, whiskey-soaked waltzes, and amp hum that rattles the pool balls. The Low Lonesome opens with acoustic originals and Jenny Rae kicks the night off at 8.',
-   E'https://www.eventbrite.com/e/dust-devils-at-the-ok-corral-tickets-PLACEHOLDER',
-   1),
-  (E'line-dance-2026-05-09', E'2026-05-09', E'Saturday', E'Line Dance Night',
-   E'Hosted by Miss Dee \u00B7 Lessons 7\u20138 PM', E'8 PM', E'7 PM', E'Dance \u00B7 Weekly', E'Free \u00B7 No Cover',
-   array[E'lessons',E'no cover'],
-   E'Beginners welcome. Miss Dee runs lessons from 7 to 8, then the floor opens up. Boots encouraged but not required. Two-steppers, line dancers, and wallflowers all welcome.',
+  (E'dustin-gaspard-2026-06-25', E'2026-06-25', E'Thursday', E'Dustin Gaspard',
+   E'', E'8 PM', E'', E'', E'TBA',
+   array[]::text[],
+   E'Details coming soon.',
    null,
-   2),
-  (E'midnight-rodeo-2026-05-16', E'2026-05-16', E'Saturday', E'Midnight Rodeo',
-   E'DJ Sundown \u00B7 Vinyl Only', E'10 PM', E'9 PM', E'DJ \u00B7 Late', E'Free \u00B7 No Cover',
-   array[E'late night',E'special event'],
-   E'One turntable, one man, three hours of rare country, cosmic Americana, and Bakersfield bangers you forgot existed. DJ Sundown spins vinyl only \u2014 no laptops, no requests, no apologies.',
-   null,
-   3)
+   1)
 on conflict (slug) do update set
   date = excluded.date, weekday = excluded.weekday, name = excluded.name,
   support = excluded.support, time = excluded.time, doors = excluded.doors,
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
   description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  active = true,
   sort_order = excluded.sort_order;
 
 -- -- Recurring Events --------------------------------------------

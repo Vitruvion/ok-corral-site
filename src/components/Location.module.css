@@ -79,11 +79,11 @@
   width: 100%;
   height: 100%;
   border: none;
-  /* Force the embed into a dark theme via the classic invert + hue-rotate
-     stack: invert flips light→dark, hue-rotate(180deg) restores the original
-     hues (water blue, roads tan, etc.), then we drop saturation and tone the
-     contrast down so it sits with the rest of the dark site. */
-  filter: invert(1) hue-rotate(180deg) saturate(0.5) contrast(0.95) brightness(0.9);
+  /* Dark-themed Google Maps via the invert + hue-rotate trick, dialed
+     back from full invert(1) so streets and labels stay legible. The
+     0.85 invert leaves a hint of mid-tone, and hue-rotate(180deg) keeps
+     blues looking like water. */
+  filter: invert(0.85) hue-rotate(180deg) saturate(0.4) contrast(0.9) brightness(0.95);
 }
 
 .mapOverlay {

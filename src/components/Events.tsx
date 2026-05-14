@@ -89,17 +89,28 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                         <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>Add to Calendar</button>
                         <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>Share</button>
                       </div>
-                      <div className={styles.tags}>
-                        {ev.tags.map(t => (
-                          <span key={t} className={styles.tag}>◆ {t}</span>
-                        ))}
-                      </div>
+                      {ev.tags.length > 0 && (
+                        <div className={styles.tags}>
+                          {ev.tags.map(t => (
+                            <span key={t} className={styles.tag}>◆ {t}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
             )
           })}
+
+          {events.length < 3 && (
+            <div className={styles.comingSoon}>
+              <span className={styles.comingSoonLabel}>◆ More shows coming soon</span>
+              <p className={styles.comingSoonBody}>
+                <em>New dates land every couple of weeks. Want a heads-up when they drop? Sign up for the bulletin at the bottom of the page.</em>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Weekly Strip */}
