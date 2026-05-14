@@ -22,6 +22,40 @@ const log = (label: string, err: unknown) => {
   }
 }
 
+/**
+ * Self-heal mojibake (UTF-8 bytes that were interpreted as Latin-1 and then
+ * re-encoded back to UTF-8 — e.g. "·" becomes "Â·", "—" becomes "â€\"") .
+ *
+ * The transformation is exact: every char in the input is treated as a
+ * single byte (low 8 bits of its codepoint), the resulting byte stream is
+ * decoded as UTF-8, and on success that's the original string.
+ *
+ * Guarded so legitimate strings without telltale chars pass through
+ * untouched, and falls back to the original on any decode error.
+ */
+function unmojibake(s: string): string {
+  if (!s) return s
+  // Only attempt if the input contains characters that strongly suggest
+  // mojibake — bare Â or â means we're almost certainly looking at
+  // UTF-8-as-Latin-1 round-tripping.
+  if (!/[À-ÿ]/.test(s)) return s
+  try {
+    const bytes = new Uint8Array(s.length)
+    for (let i = 0; i < s.length; i++) {
+      const cp = s.charCodeAt(i)
+      if (cp > 0xff) return s // contains a codepoint that can't have come from a byte
+      bytes[i] = cp
+    }
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  } catch {
+    return s
+  }
+}
+
+/** Apply unmojibake to a possibly-null/undefined string field, preserving nullishness. */
+const m = (v: string | null | undefined): string => v ? unmojibake(v) : ''
+const mn = (v: string | null | undefined): string | null => v ? unmojibake(v) : null
+
 export async function fetchEvents(): Promise<EventData[]> {
   const sb = getSupabase()
   if (!sb) return FALLBACK_EVENTS
@@ -37,15 +71,15 @@ export async function fetchEvents(): Promise<EventData[]> {
     return data.map(row => ({
       id: row.slug ?? row.id,
       date: typeof row.date === 'string' ? row.date : new Date(row.date).toISOString().slice(0, 10),
-      weekday: row.weekday,
-      name: row.name,
-      support: row.support ?? '',
-      time: row.time,
-      doors: row.doors ?? '',
-      genre: row.genre ?? '',
-      tickets: row.tickets ?? '',
-      tags: row.tags ?? [],
-      description: row.description ?? '',
+      weekday: m(row.weekday),
+      name: m(row.name),
+      support: m(row.support),
+      time: m(row.time),
+      doors: m(row.doors),
+      genre: m(row.genre),
+      tickets: m(row.tickets),
+      tags: (row.tags ?? []).map(unmojibake),
+      description: m(row.description),
       eventbrite_url: row.eventbrite_url ?? null,
     }))
   } catch (e) {
@@ -66,11 +100,11 @@ export async function fetchRecurring(): Promise<RecurringData[]> {
     if (error) throw error
     if (!data || data.length === 0) return FALLBACK_RECURRING
     return data.map(r => ({
-      day: r.day_abbr,
-      name: r.name,
-      support: r.support ?? '',
-      time: r.time ?? '',
-      tickets: r.tickets ?? '',
+      day: m(r.day_abbr),
+      name: m(r.name),
+      support: m(r.support),
+      time: m(r.time),
+      tickets: m(r.tickets),
     }))
   } catch (e) {
     log('recurring', e)
@@ -92,13 +126,13 @@ export async function fetchDrinks(): Promise<DrinksByCategory> {
     if (!data || data.length === 0) return FALLBACK_DRINKS
     const grouped: DrinksByCategory = {}
     for (const d of data) {
-      const cat = d.category as string
+      const cat = unmojibake(d.category as string)
       if (!grouped[cat]) grouped[cat] = []
       grouped[cat].push({
-        name: d.name,
-        tagline: d.tagline ?? '',
-        price: d.price,
-        description: d.description ?? '',
+        name: m(d.name),
+        tagline: m(d.tagline),
+        price: m(d.price),
+        description: m(d.description),
       })
     }
     // Schema-mismatch guard: if the DB has rows but none of its categories
@@ -128,17 +162,17 @@ export async function fetchMerch(): Promise<MerchItem[]> {
       .order('sort_order', { ascending: true })
     if (error) throw error
     if (!data || data.length === 0) return FALLBACK_MERCH
-    return data.map(m => ({
-      id: m.slug ?? m.id,
-      name: m.name,
-      category: m.category,
-      price: Number(m.price),
-      badge: m.badge ?? undefined,
-      color: m.color ?? '',
-      sizes: m.sizes ?? [],
-      image: m.image_url ?? undefined,
-      imageBg: m.image_bg === 'bone' ? 'bone' : undefined,
-      description: m.description ?? '',
+    return data.map(row => ({
+      id: row.slug ?? row.id,
+      name: m(row.name),
+      category: m(row.category),
+      price: Number(row.price),
+      badge: row.badge ? unmojibake(row.badge) : undefined,
+      color: m(row.color),
+      sizes: (row.sizes ?? []).map(unmojibake),
+      image: row.image_url ?? undefined,
+      imageBg: row.image_bg === 'bone' ? 'bone' : undefined,
+      description: m(row.description),
     }))
   } catch (e) {
     log('merch', e)
