@@ -95,19 +95,18 @@ export default function DrinkMenu({ drinks = DRINKS }: Props = {}) {
         {/* Drink Grid */}
         <div className={styles.grid}>
           {drinks[tab]?.map((drink, i) => (
-            <div key={i} className={styles.card}>
-              <div className={styles.cardHead}>
-                <div>
-                  <span className={styles.cardName}>{drink.name}</span>
-                  <span className={styles.cardTagline}>{drink.tagline}</span>
-                </div>
+            <article key={i} className={styles.card}>
+              <header className={styles.cardHead}>
+                <h4 className={styles.cardName}>{drink.name}</h4>
                 <span className={styles.cardPrice}>{drink.price}</span>
-              </div>
-              <div className={styles.cardRule}>
-                <span className={styles.cardRuleDiamond}>◆</span>
-              </div>
-              <p className={styles.cardDesc}>{drink.description}</p>
-            </div>
+              </header>
+              {drink.tagline && (
+                <p className={styles.cardTagline}>{drink.tagline}</p>
+              )}
+              {drink.description && (
+                <p className={styles.cardDesc}>{drink.description}</p>
+              )}
+            </article>
           ))}
         </div>
 

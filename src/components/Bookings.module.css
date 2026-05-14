@@ -11,37 +11,31 @@
   gap: 32px;
 }
 
-.bullet {
+.intro {
   border-top: 1px solid rgba(235,228,212,0.12);
-  padding-top: 24px;
+  padding-top: 28px;
 }
 
-.bulletLabel {
+.introBody {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--bone-dim);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.comingSoon {
   font-family: var(--ff-mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--ember);
-  margin-bottom: 8px;
-  display: block;
-}
-
-.bulletTitle {
-  font-family: var(--ff-display);
-  font-size: 28px;
-  color: var(--bone);
-  text-transform: uppercase;
-  line-height: 1;
-  letter-spacing: -0.005em;
-  margin-bottom: 8px;
-}
-
-.bulletDesc {
-  font-family: var(--ff-serif);
-  font-style: italic;
-  font-size: 16px;
-  color: var(--bone-dim);
-  line-height: 1.45;
+  padding: 10px 14px;
+  border: 1px solid rgba(217,119,66,0.4);
+  background: rgba(217,119,66,0.06);
+  border-radius: 2px;
+  display: inline-block;
 }
 
 .directContact {
