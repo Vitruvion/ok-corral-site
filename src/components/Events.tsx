@@ -4,6 +4,7 @@ import { EVENTS, RECURRING, type EventData, type RelatedLink } from '@/lib/data'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
 import { downloadIcs } from '@/lib/ics'
 import { shareOrCopy } from '@/lib/share'
+import { InstagramIcon, FacebookIcon, TikTokIcon } from './SocialIcons'
 import styles from './Events.module.css'
 
 type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
@@ -113,11 +114,14 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                         </div>
                       )}
 
-                      {/* Related-artist sidebar — small thumbnails for any
-                          related_links entries that have an image. */}
-                      {ev.related_links?.some(l => l.image) && (
+                      {/* Related-artist sidebar — one card per related_links
+                          entry. Entries with an image show the photo on the
+                          left; entries without an image show a platform icon
+                          (auto-detected from the URL host) so the layout stays
+                          consistent. */}
+                      {ev.related_links && ev.related_links.length > 0 && (
                         <div className={styles.related}>
-                          {ev.related_links.filter(l => l.image).map(link => (
+                          {ev.related_links.map(link => (
                             <a
                               key={link.url}
                               href={link.url}
@@ -126,14 +130,20 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                               className={styles.relatedCard}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className={styles.relatedThumb}>
-                                <ImageOrPlaceholder
-                                  src={link.image!}
-                                  alt={link.name}
-                                  label={link.name}
-                                  loading="lazy"
-                                />
-                              </div>
+                              {link.image ? (
+                                <div className={styles.relatedThumb}>
+                                  <ImageOrPlaceholder
+                                    src={link.image}
+                                    alt={link.name}
+                                    label={link.name}
+                                    loading="lazy"
+                                  />
+                                </div>
+                              ) : (
+                                <div className={styles.relatedIcon} aria-hidden="true">
+                                  <SocialGlyph url={link.url} />
+                                </div>
+                              )}
                               <div className={styles.relatedMeta}>
                                 <span className={styles.relatedName}>{link.name}</span>
                                 {link.role && (
@@ -262,6 +272,20 @@ function parseEventDate(s: string): { day: number; month: string } {
     day: d.getDate(),
     month: d.toLocaleString('en-US', { month: 'long' }),
   }
+}
+
+/**
+ * Picks a platform icon to display in a related-link card when the entry
+ * has no image. Returns a generic external-link arrow if the URL isn't
+ * one of the recognized social platforms.
+ */
+function SocialGlyph({ url }: { url: string }) {
+  let host = ''
+  try { host = new URL(url).hostname.toLowerCase() } catch {}
+  if (host.includes('instagram.com')) return <InstagramIcon />
+  if (host.includes('facebook.com'))  return <FacebookIcon />
+  if (host.includes('tiktok.com'))    return <TikTokIcon />
+  return <span aria-hidden="true">→</span>
 }
 
 /**

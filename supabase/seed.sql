@@ -55,7 +55,7 @@ values
     E'https://www.eventbrite.com/e/dustin-dale-gaspard-tickets-1989628449251?aff=oddtdtcreator',
     E'/assets/gallery/dustin-gaspard.jpg',
     true,
-    E'[{"name":"Tanner Bingaman","url":"https://tannerbingaman.com/","image":"/assets/gallery/tanner-bingaman.jpg","role":"Support \u00B7 8:30 PM"}]'::jsonb,
+    E'[{"name":"Tanner Bingaman","url":"https://tannerbingaman.com/","image":"/assets/gallery/tanner-bingaman.jpg","role":"Support \u00B7 8:30 PM"},{"name":"Dustin Dale Gaspard","url":"https://www.instagram.com/dustindalegaspard/","role":"@dustindalegaspard"}]'::jsonb,
     1
   )
 on conflict (slug) do update set

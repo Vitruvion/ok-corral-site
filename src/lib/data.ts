@@ -108,6 +108,11 @@ export const EVENTS: EventData[] = [
         image: '/assets/gallery/tanner-bingaman.jpg',
         role: 'Support · 8:30 PM',
       },
+      {
+        name: 'Dustin Dale Gaspard',
+        url: 'https://www.instagram.com/dustindalegaspard/',
+        role: '@dustindalegaspard',
+      },
     ],
   },
 ]

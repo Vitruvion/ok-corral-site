@@ -165,6 +165,32 @@
   border-radius: 2px;
 }
 
+/* Same 56x56 slot as the thumbnail but with a platform icon centered on a
+   subtle ink-tinted background. Used when a related_links entry has no
+   image (e.g. an artist's social handle vs. a press photo). */
+.relatedIcon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  background: var(--ink-3);
+  color: var(--bone-dim);
+  transition: color 200ms ease, background 200ms ease;
+}
+
+.relatedCard:hover .relatedIcon {
+  color: var(--ember);
+  background: rgba(217,119,66,0.08);
+}
+
+.relatedIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
 .relatedMeta {
   display: flex;
   flex-direction: column;
