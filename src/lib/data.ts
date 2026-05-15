@@ -13,6 +13,13 @@
  */
 export const SHOW_MERCH = false
 
+/**
+ * Feature flag: when false, the GiftCards section and the Footer Shop
+ * "Gift Cards" link disappear. Flip to true when gift card checkout is
+ * ready to launch (Stripe wiring already in place).
+ */
+export const SHOW_GIFT_CARDS = false
+
 export const BRAND = {
   name: 'The OK Corral',
   location: 'Cottonwood, California',

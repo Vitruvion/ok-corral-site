@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Wordmark from './Wordmark'
-import { BRAND, SHOW_MERCH } from '@/lib/data'
+import { BRAND, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Footer.module.css'
 
@@ -32,7 +32,7 @@ export default function Footer() {
             <li><a href="#">Shipping &amp; Returns</a></li>
             <li><a href="#">Size Guide</a></li>
             <li><a href="#">Wholesale</a></li>
-            <li><a href="#">Gift Cards</a></li>
+            {SHOW_GIFT_CARDS && <li><a href="#">Gift Cards</a></li>}
           </ul>
         </div>
         <div className={styles.col}>
