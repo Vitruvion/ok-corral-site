@@ -206,6 +206,45 @@
   text-decoration-color: var(--ember);
 }
 
+/* Fixed-position toast for Share/Add-to-Calendar feedback. Lives on the
+   Events section so it scopes correctly; positioned to the bottom center
+   of the viewport like a saloon-style snack notification. */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 850;
+  padding: 14px 22px;
+  background: rgba(11,9,8,0.96);
+  border: 1px solid var(--ember);
+  color: var(--bone);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  animation: toast-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  pointer-events: none;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 540px) {
+  .toast {
+    bottom: 20px;
+    padding: 12px 18px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    max-width: calc(100% - 40px);
+    text-align: center;
+  }
+}
+
 .expandHeading {
   font-family: var(--ff-display);
   font-size: 16px;

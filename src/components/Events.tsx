@@ -1,7 +1,9 @@
 'use client'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { EVENTS, RECURRING, type EventData, type RelatedLink } from '@/lib/data'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
+import { downloadIcs } from '@/lib/ics'
+import { shareOrCopy } from '@/lib/share'
 import styles from './Events.module.css'
 
 type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
@@ -21,6 +23,32 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
     if (events.length === 1) return events[0].id
     return ''
   })
+
+  // Single-slot toast for action feedback ("Link copied!", ".ics downloaded", etc.)
+  const [toast, setToast] = useState<string | null>(null)
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 2000)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  const onAddToCalendar = (ev: EventData) => {
+    const ok = downloadIcs(ev)
+    setToast(ok ? 'Calendar file saved' : 'Could not generate calendar file')
+  }
+
+  const onShare = async (ev: EventData) => {
+    const fallbackUrl = typeof window !== 'undefined' ? window.location.origin + '#events' : ''
+    const url = ev.eventbrite_url || fallbackUrl
+    const result = await shareOrCopy({
+      title: `${ev.name} at The OK Corral`,
+      text: ev.support ? `${ev.name} ${ev.support}` : ev.name,
+      url,
+    })
+    if (result.kind === 'copied') setToast('Link copied!')
+    else if (result.kind === 'failed') setToast('Couldn’t copy link')
+    // 'shared' and 'canceled' → no toast (native UI already gave feedback)
+  }
 
   return (
     <section className="section" id="events">
@@ -142,8 +170,18 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                             ◆ Free Admission · No Cover
                           </span>
                         )}
-                        <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>Add to Calendar</button>
-                        <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>Share</button>
+                        <button
+                          className="btn btn-ghost"
+                          onClick={(e) => { e.stopPropagation(); onAddToCalendar(ev) }}
+                        >
+                          Add to Calendar
+                        </button>
+                        <button
+                          className="btn btn-ghost"
+                          onClick={(e) => { e.stopPropagation(); onShare(ev) }}
+                        >
+                          Share
+                        </button>
                       </div>
                       {ev.tags.length > 0 && (
                         <div className={styles.tags}>
@@ -196,6 +234,12 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
           <button className="btn btn-ghost">View Full Calendar →</button>
         </div>
       </div>
+
+      {toast && (
+        <div className={styles.toast} role="status" aria-live="polite">
+          ◆ {toast}
+        </div>
+      )}
     </section>
   )
 }
