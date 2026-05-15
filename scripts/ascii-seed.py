@@ -49,21 +49,55 @@ def asciify_comment(s: str) -> str:
     return ''.join(out)
 
 
+_HEX = set('0123456789abcdefABCDEF')
+
+
 def escape_e_body(s: str) -> str:
-    """Encode each non-ASCII char as \\uXXXX inside an E-string body."""
+    """Encode each non-ASCII char as \\uXXXX inside an E-string body.
+
+    Idempotent: already-escaped sequences (\\uXXXX, \\UXXXXXXXX) pass through
+    unchanged so re-running this script doesn't double-escape backslashes.
+    Stray backslashes that aren't part of a recognized escape do get doubled.
+    """
     out = []
-    for ch in s:
+    i = 0
+    n = len(s)
+    while i < n:
+        ch = s[i]
         cp = ord(ch)
-        if cp < 128:
-            # backslashes need doubling in E-strings
-            if ch == '\\':
-                out.append('\\\\')
+        if cp >= 128:
+            # Raw non-ASCII char → escape it.
+            if cp <= 0xFFFF:
+                out.append(f'\\u{cp:04X}')
             else:
-                out.append(ch)
-        elif cp <= 0xFFFF:
-            out.append(f'\\u{cp:04X}')
-        else:
-            out.append(f'\\U{cp:08X}')
+                out.append(f'\\U{cp:08X}')
+            i += 1
+            continue
+        if ch == '\\':
+            # Count consecutive backslashes, then look at what follows.
+            j = i
+            while j < n and s[j] == '\\':
+                j += 1
+            # If any run of backslashes is followed by uXXXX or UXXXXXXXX,
+            # collapse to a single \uXXXX / \UXXXXXXXX. This makes the script
+            # idempotent: prior buggy runs that over-escaped (\\u00B7,
+            # \\·, …) get normalized back to · on the next pass.
+            if j + 4 < n and s[j] == 'u' and all(s[j + 1 + k] in _HEX for k in range(4)):
+                out.append('\\u' + s[j + 1:j + 5])
+                i = j + 5
+                continue
+            if j + 8 < n and s[j] == 'U' and all(s[j + 1 + k] in _HEX for k in range(8)):
+                out.append('\\U' + s[j + 1:j + 9])
+                i = j + 9
+                continue
+            # Stray backslashes not followed by a recognized escape — pass
+            # through as-is. (Our seed data has no legitimate literal
+            # backslashes, so this branch is mostly defensive.)
+            out.append(s[i:j])
+            i = j
+            continue
+        out.append(ch)
+        i += 1
     return ''.join(out)
 
 

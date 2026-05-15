@@ -56,10 +56,7 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                     </span>
                   </div>
                   <div className={styles.meta}>
-                    <span>
-                      <strong>{ev.time}</strong>
-                      {ev.doors ? ` · Doors ${ev.doors}` : ''}
-                    </span>
+                    <span><strong>{ev.time}</strong></span>
                     {ev.genre && <span>{ev.genre}</span>}
                     {ev.tickets && <span>{ev.tickets}</span>}
                   </div>
