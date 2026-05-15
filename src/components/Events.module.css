@@ -132,6 +132,27 @@
   border-radius: 4px;
 }
 
+/* YouTube embed below the poster. Uses the classic padding-bottom trick
+   instead of aspect-ratio because the latter doesn't reliably constrain
+   absolute-positioned children across browsers. 56.25% = 9/16 = 16:9. */
+.video {
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%;
+  background: var(--ink-3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
 /* Related-artist card stack (e.g. support acts). Sits below the poster
    in the left column. */
 .related {

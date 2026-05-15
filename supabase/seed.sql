@@ -37,7 +37,8 @@ update events set active = false where slug in (
 -- the support/description text and renders an optional sidebar thumbnail.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
-  description, eventbrite_url, poster_url, featured, related_links, sort_order
+  description, eventbrite_url, poster_url, featured, related_links,
+  youtube_url, sort_order
 )
 values
   (
@@ -56,6 +57,7 @@ values
     E'/assets/gallery/dustin-gaspard.jpg',
     true,
     E'[{"name":"Tanner Bingaman","url":"https://tannerbingaman.com/","image":"/assets/gallery/tanner-bingaman.jpg","role":"Support \u00B7 8:30 PM"},{"name":"Dustin Dale Gaspard","url":"https://www.instagram.com/dustindalegaspard/","role":"@dustindalegaspard"}]'::jsonb,
+    E'https://www.youtube.com/watch?v=_6SMeYNM8gM',
     1
   )
 on conflict (slug) do update set
@@ -64,7 +66,8 @@ on conflict (slug) do update set
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
   description = excluded.description, eventbrite_url = excluded.eventbrite_url,
   poster_url = excluded.poster_url, featured = excluded.featured,
-  related_links = excluded.related_links, active = true,
+  related_links = excluded.related_links, youtube_url = excluded.youtube_url,
+  active = true,
   sort_order = excluded.sort_order;
 
 -- Ensure no other event is marked featured (the partial unique index in

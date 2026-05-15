@@ -114,6 +114,26 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                         </div>
                       )}
 
+                      {/* Optional YouTube embed — only renders when youtube_url
+                          is set on the event. Lazy-loaded so it doesn't block
+                          first paint for visitors who don't expand the row. */}
+                      {ev.youtube_url && (() => {
+                        const id = youtubeIdFromUrl(ev.youtube_url)
+                        if (!id) return null
+                        return (
+                          <div className={styles.video}>
+                            <iframe
+                              src={`https://www.youtube.com/embed/${id}`}
+                              title={`${ev.name} on YouTube`}
+                              loading="lazy"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )
+                      })()}
+
                       {/* Related-artist sidebar — one card per related_links
                           entry. Entries with an image show the photo on the
                           left; entries without an image show a platform icon
@@ -272,6 +292,33 @@ function parseEventDate(s: string): { day: number; month: string } {
     day: d.getDate(),
     month: d.toLocaleString('en-US', { month: 'long' }),
   }
+}
+
+/**
+ * Extracts the video ID from any common YouTube URL form:
+ *   - https://www.youtube.com/watch?v=ID
+ *   - https://youtu.be/ID
+ *   - https://www.youtube.com/embed/ID
+ *   - https://www.youtube.com/shorts/ID
+ * Returns null if the URL isn't recognizably YouTube.
+ */
+function youtubeIdFromUrl(url: string): string | null {
+  try {
+    const u = new URL(url)
+    const host = u.hostname.toLowerCase()
+    if (host === 'youtu.be' || host.endsWith('.youtu.be')) {
+      const seg = u.pathname.replace(/^\//, '').split('/')[0]
+      return seg || null
+    }
+    if (host.endsWith('youtube.com')) {
+      if (u.pathname === '/watch') return u.searchParams.get('v')
+      const m = u.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)
+      if (m) return m[1]
+    }
+  } catch {
+    // fall through
+  }
+  return null
 }
 
 /**
