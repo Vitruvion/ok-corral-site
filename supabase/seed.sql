@@ -49,7 +49,7 @@ values
     E'9 PM',
     E'',
     E'Alternative Folk \u00B7 Cajun',
-    E'$13',
+    E'$15',
     array[E'live music', E'special event'],
     E'Singer-songwriter Dustin Dale Gaspard of Cow Island, Louisiana brings his alternative folk sound to The OK Corral for one unforgettable night. A Season 28 contestant on NBC''s The Voice, Dustin is born and raised in deep Southern Louisiana \u2014 his music is steeped in Cajun soul, raw storytelling, and a voice that fills every corner of the room. Opening the night at 8:30 is Tanner Bingaman \u2014 a songwriter, banjoist, and poet from the hills of Appalachia. Featured on NPR, awarded Emerging Artist of the Year by the Susquehanna Folk Music Society, and currently touring with Dustin on a 10,000-mile run down the West Coast. Two artists, one stage, one hell of a Thursday night.',
     E'https://www.eventbrite.com/e/dustin-dale-gaspard-tickets-1989628449251?aff=oddtdtcreator',
