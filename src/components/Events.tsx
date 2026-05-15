@@ -114,26 +114,6 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                         </div>
                       )}
 
-                      {/* Optional YouTube embed — only renders when youtube_url
-                          is set on the event. Lazy-loaded so it doesn't block
-                          first paint for visitors who don't expand the row. */}
-                      {ev.youtube_url && (() => {
-                        const id = youtubeIdFromUrl(ev.youtube_url)
-                        if (!id) return null
-                        return (
-                          <div className={styles.video}>
-                            <iframe
-                              src={`https://www.youtube.com/embed/${id}`}
-                              title={`${ev.name} on YouTube`}
-                              loading="lazy"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                        )
-                      })()}
-
                       {/* Related-artist sidebar — one card per related_links
                           entry. Entries with an image show the photo on the
                           left; entries without an image show a platform icon
@@ -181,6 +161,28 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                       <p className={styles.expandDesc}>
                         {linkify(ev.description, ev.related_links)}
                       </p>
+
+                      {/* Optional YouTube embed — lazy-loaded so it doesn't
+                          block first paint for visitors who don't expand the
+                          row. Sized to ~80% column width to keep some breathing
+                          room next to the description. */}
+                      {ev.youtube_url && (() => {
+                        const id = youtubeIdFromUrl(ev.youtube_url)
+                        if (!id) return null
+                        return (
+                          <div className={styles.video}>
+                            <iframe
+                              src={`https://www.youtube.com/embed/${id}`}
+                              title={`${ev.name} on YouTube`}
+                              loading="lazy"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )
+                      })()}
+
                       <div className={styles.expandActions}>
                         {ev.eventbrite_url ? (
                           <a

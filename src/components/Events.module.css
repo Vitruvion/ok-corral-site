@@ -132,16 +132,29 @@
   border-radius: 4px;
 }
 
-/* YouTube embed below the poster. Uses the classic padding-bottom trick
-   instead of aspect-ratio because the latter doesn't reliably constrain
-   absolute-positioned children across browsers. 56.25% = 9/16 = 16:9. */
+/* YouTube embed in the right column, between description and actions.
+   Uses the classic padding-bottom trick instead of aspect-ratio because
+   the latter doesn't reliably constrain absolute-positioned children
+   across browsers. padding-bottom: 80% of 56.25% = 45% (still 16:9 at
+   the reduced width). */
 .video {
-  width: 100%;
+  width: 80%;
+  margin: 4px 0 20px;
   position: relative;
-  padding-bottom: 56.25%;
+  padding-bottom: 45%;
   background: var(--ink-3);
   border-radius: 4px;
   overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  /* On narrow viewports the right column stacks below the left and
+     'breathing room' matters less — let the video go full width so it's
+     actually viewable. */
+  .video {
+    width: 100%;
+    padding-bottom: 56.25%;
+  }
 }
 
 .video iframe {
