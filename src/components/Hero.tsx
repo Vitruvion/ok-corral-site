@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { BRAND, EVENTS } from '@/lib/data'
+import { BRAND, EVENTS, SHOW_MERCH } from '@/lib/data'
 import styles from './Hero.module.css'
 
 export default function Hero() {
@@ -146,9 +146,11 @@ export default function Hero() {
               <a href="#events" className="btn btn-primary btn-door">
                 What&apos;s On <span className="arrow">→</span>
               </a>
-              <a href="#merch" className="btn btn-ghost btn-door">
-                Shop Merch <span className="arrow">→</span>
-              </a>
+              {SHOW_MERCH && (
+                <a href="#merch" className="btn btn-ghost btn-door">
+                  Shop Merch <span className="arrow">→</span>
+                </a>
+              )}
             </div>
           </div>
         </div>

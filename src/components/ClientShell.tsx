@@ -1,6 +1,6 @@
 'use client'
 import { CartProvider } from '@/lib/cart'
-import type { EventData, DrinkData, MerchItem, InstagramPost } from '@/lib/data'
+import { SHOW_MERCH, type EventData, type DrinkData, type MerchItem, type InstagramPost } from '@/lib/data'
 import Loader from '@/components/Loader'
 import AgeGate from '@/components/AgeGate'
 import Topbar from '@/components/Topbar'
@@ -39,7 +39,7 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts 
       <Marquee />
       <Events events={events} recurring={recurring} />
       <DrinkMenu drinks={drinks} />
-      <MerchSection merch={merch} />
+      {SHOW_MERCH && <MerchSection merch={merch} />}
       <GallerySection />
       <InstagramStrip posts={igPosts} />
       <Bookings />

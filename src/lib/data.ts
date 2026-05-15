@@ -5,6 +5,14 @@
    you can update and redeploy.
    ═══════════════════════════════════════════════════ */
 
+/**
+ * Feature flag: when false, the Merch section, the "Merch" nav links,
+ * the Topbar cart button, the Hero "Shop Merch" CTA, the Footer Explore
+ * merch link, and the ProgressRail merch dot all disappear. Flip to true
+ * when the store is ready to launch.
+ */
+export const SHOW_MERCH = false
+
 export const BRAND = {
   name: 'The OK Corral',
   location: 'Cottonwood, California',
@@ -43,7 +51,7 @@ export const HOURS = [
 export const NAV_LINKS = [
   { label: 'Events',   href: '#events' },
   { label: 'Bar',      href: '#drinks' },
-  { label: 'Merch',    href: '#merch' },
+  ...(SHOW_MERCH ? [{ label: 'Merch', href: '#merch' }] : []),
   { label: 'Gallery',  href: '#gallery' },
   { label: 'Bookings', href: '#bookings' },
   { label: 'Visit',    href: '#visit' },

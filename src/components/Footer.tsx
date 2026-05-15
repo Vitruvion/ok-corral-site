@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Wordmark from './Wordmark'
-import { BRAND } from '@/lib/data'
+import { BRAND, SHOW_MERCH } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Footer.module.css'
 
@@ -20,7 +20,7 @@ export default function Footer() {
           <h5 className={styles.colTitle}>Explore</h5>
           <ul>
             <li><a href="#events">Events</a></li>
-            <li><a href="#merch">Merch</a></li>
+            {SHOW_MERCH && <li><a href="#merch">Merch</a></li>}
             <li><a href="#gallery">Gallery</a></li>
             <li><a href="#bookings">Private Bookings</a></li>
             <li><a href="#visit">Visit</a></li>

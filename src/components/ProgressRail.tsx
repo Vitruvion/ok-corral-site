@@ -1,11 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { SHOW_MERCH } from '@/lib/data'
 import styles from './ProgressRail.module.css'
 
 const SECTIONS = [
   { id: 'events',   label: 'Events' },
   { id: 'drinks',   label: 'Bar' },
-  { id: 'merch',    label: 'Merch' },
+  ...(SHOW_MERCH ? [{ id: 'merch', label: 'Merch' }] : []),
   { id: 'gallery',  label: 'Gallery' },
   { id: 'bookings', label: 'Bookings' },
   { id: 'visit',    label: 'Visit' },

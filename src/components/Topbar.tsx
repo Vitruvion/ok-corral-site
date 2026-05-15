@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Wordmark from './Wordmark'
 import MobileMenu from './MobileMenu'
 import { FacebookIcon, TikTokIcon } from './SocialIcons'
-import { NAV_LINKS, BRAND } from '@/lib/data'
+import { NAV_LINKS, BRAND, SHOW_MERCH } from '@/lib/data'
 import { useCart } from '@/lib/cart'
 import styles from './Topbar.module.css'
 
@@ -69,10 +69,12 @@ export default function Topbar() {
             </a>
           </div>
 
-          <button className={styles.cartBtn} onClick={() => setCartOpen(true)} aria-label="Open cart">
-            <span className={styles.cartLabel}>Cart</span>
-            {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
-          </button>
+          {SHOW_MERCH && (
+            <button className={styles.cartBtn} onClick={() => setCartOpen(true)} aria-label="Open cart">
+              <span className={styles.cartLabel}>Cart</span>
+              {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
+            </button>
+          )}
 
           <button
             className={styles.menuBtn}
