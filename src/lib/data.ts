@@ -49,6 +49,17 @@ export const NAV_LINKS = [
   { label: 'Visit',    href: '#visit' },
 ]
 
+export type RelatedLink = {
+  /** Exact name as it appears in the description/support text. */
+  name: string
+  /** External URL — opens in a new tab. */
+  url: string
+  /** Optional thumbnail image path for sidebar display. */
+  image?: string
+  /** Optional one-line role shown under the thumbnail. */
+  role?: string
+}
+
 export type EventData = {
   id: string
   date: string
@@ -66,6 +77,12 @@ export type EventData = {
    * If null/empty, the event renders a "Free Admission · No Cover" badge.
    */
   eventbrite_url: string | null
+  /** Path to the event poster image (3:4-ish aspect). */
+  poster_url?: string | null
+  /** Auto-expand on page load. Used for the upcoming/headline show. */
+  featured?: boolean
+  /** Names that appear in `support` or `description` get auto-linkified. */
+  related_links?: RelatedLink[]
 }
 
 export const EVENTS: EventData[] = [
@@ -73,15 +90,25 @@ export const EVENTS: EventData[] = [
     id: 'ev1',
     date: 'June 25 2026',
     weekday: 'Thursday',
-    name: 'Dustin Gaspard',
-    support: '',
-    time: '8 PM',
-    doors: '',
-    genre: '',
-    tickets: 'TBA',
-    tags: [],
-    description: 'Details coming soon.',
+    name: 'Dustin Dale Gaspard',
+    support: 'w/ Tanner Bingaman · Doors 8 PM',
+    time: '9 PM',
+    doors: '8 PM',
+    genre: 'Alternative Folk · Cajun',
+    tickets: '$13',
+    tags: ['live music', 'special event', 'ticketed', 'the voice'],
+    description: "Singer-songwriter Dustin Dale Gaspard of Cow Island, Louisiana brings his alternative folk sound to The OK Corral for one unforgettable night. A Season 28 contestant on NBC's The Voice, Dustin is born and raised in deep Southern Louisiana — his music is steeped in Cajun soul, raw storytelling, and a voice that fills every corner of the room. Opening the night at 8:30 is Tanner Bingaman — a songwriter, banjoist, and poet from the hills of Appalachia. Featured on NPR, awarded Emerging Artist of the Year by the Susquehanna Folk Music Society, and currently touring with Dustin on a 10,000-mile run down the West Coast. Two artists, one stage, one hell of a Thursday night.",
     eventbrite_url: null,
+    poster_url: '/assets/gallery/dustin-gaspard.jpg',
+    featured: true,
+    related_links: [
+      {
+        name: 'Tanner Bingaman',
+        url: 'https://tannerbingaman.com/',
+        image: '/assets/gallery/tanner-bingaman.jpg',
+        role: 'Support · 8:30 PM',
+      },
+    ],
   },
 ]
 

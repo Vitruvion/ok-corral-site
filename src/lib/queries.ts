@@ -62,7 +62,7 @@ export async function fetchEvents(): Promise<EventData[]> {
   try {
     const { data, error } = await sb
       .from('events')
-      .select('id, slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url')
+      .select('id, slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url, poster_url, featured, related_links')
       .eq('active', true)
       .order('sort_order', { ascending: true })
       .order('date', { ascending: true })
@@ -81,6 +81,18 @@ export async function fetchEvents(): Promise<EventData[]> {
       tags: (row.tags ?? []).map(unmojibake),
       description: m(row.description),
       eventbrite_url: row.eventbrite_url ?? null,
+      poster_url: row.poster_url ?? null,
+      featured: !!row.featured,
+      // Normalize related_links: unmojibake the name/role strings on the way
+      // through. URL/image fields are pass-through.
+      related_links: Array.isArray(row.related_links)
+        ? row.related_links.map((l: any) => ({
+            name: l?.name ? unmojibake(String(l.name)) : '',
+            url: String(l?.url ?? ''),
+            image: l?.image ? String(l.image) : undefined,
+            role: l?.role ? unmojibake(String(l.role)) : undefined,
+          }))
+        : undefined,
     }))
   } catch (e) {
     log('events', e)

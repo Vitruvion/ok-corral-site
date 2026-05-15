@@ -112,12 +112,15 @@ def rewrite(text: str) -> str:
                 body.append(c)
                 j += 1
             body_str = ''.join(body)
+            # Always escape non-ASCII inside the body. The `already_e` flag
+            # only controls whether we emit an additional `E` prefix — if
+            # the prior char was already `E`, just emit `'...'` so we don't
+            # produce `EE'...'`.
+            escaped_body = escape_e_body(body_str)
             if already_e:
-                # leave as-is (already an E-string from a previous run)
-                result.append("'" + body_str + "'")
+                result.append("'" + escaped_body + "'")
             else:
-                # rewrite as E-string with \uXXXX escapes
-                result.append("E'" + escape_e_body(body_str) + "'")
+                result.append("E'" + escaped_body + "'")
             i = j + 1
             continue
         result.append(ch)

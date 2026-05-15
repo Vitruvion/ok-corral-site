@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
-import { EVENTS, RECURRING, type EventData } from '@/lib/data'
+import { useState, type ReactNode } from 'react'
+import { EVENTS, RECURRING, type EventData, type RelatedLink } from '@/lib/data'
+import ImageOrPlaceholder from './ImageOrPlaceholder'
 import styles from './Events.module.css'
 
 type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
@@ -11,7 +12,15 @@ type Props = {
 }
 
 export default function Events({ events = EVENTS, recurring = RECURRING }: Props = {}) {
-  const [openId, setOpenId] = useState<string>('')
+  // Pick which row should be open on first render: an event explicitly
+  // flagged featured, or the only event when the schedule has just one show.
+  // Lazy useState so this runs only on mount.
+  const [openId, setOpenId] = useState<string>(() => {
+    const featured = events.find(e => e.featured)
+    if (featured) return featured.id
+    if (events.length === 1) return events[0].id
+    return ''
+  })
 
   return (
     <section className="section" id="events">
@@ -42,12 +51,17 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                   </div>
                   <div className={styles.info}>
                     <span className={styles.name}>{ev.name}</span>
-                    <span className={styles.support}>{ev.support}</span>
+                    <span className={styles.support}>
+                      {linkify(ev.support, ev.related_links)}
+                    </span>
                   </div>
                   <div className={styles.meta}>
-                    <span><strong>{ev.time}</strong> · Doors {ev.doors}</span>
-                    <span>{ev.genre}</span>
-                    <span>{ev.tickets}</span>
+                    <span>
+                      <strong>{ev.time}</strong>
+                      {ev.doors ? ` · Doors ${ev.doors}` : ''}
+                    </span>
+                    {ev.genre && <span>{ev.genre}</span>}
+                    {ev.tickets && <span>{ev.tickets}</span>}
                   </div>
                   <button className={`btn btn-ghost ${styles.cta}`}>
                     {isOpen ? 'Close' : 'Details'}
@@ -58,13 +72,60 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                 {isOpen && (
                   <div className={styles.expand}>
                     <div className={styles.expandLeft}>
-                      <div className="placeholder" style={{ aspectRatio: '3/4', borderRadius: 4 }}>
-                        <span className="placeholder-label">{ev.name} · Poster 3:4</span>
-                      </div>
+                      {ev.poster_url ? (
+                        <ImageOrPlaceholder
+                          src={ev.poster_url}
+                          alt={`${ev.name} poster`}
+                          label={`${ev.name} · Poster`}
+                          cover
+                          loading="eager"
+                          className={styles.poster}
+                          style={{ aspectRatio: '3/4', borderRadius: 4 }}
+                        />
+                      ) : (
+                        <div className="placeholder" style={{ aspectRatio: '3/4', borderRadius: 4 }}>
+                          <span className="placeholder-label">{ev.name} · Poster 3:4</span>
+                        </div>
+                      )}
+
+                      {/* Related-artist sidebar — small thumbnails for any
+                          related_links entries that have an image. */}
+                      {ev.related_links?.some(l => l.image) && (
+                        <div className={styles.related}>
+                          {ev.related_links.filter(l => l.image).map(link => (
+                            <a
+                              key={link.url}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={styles.relatedCard}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className={styles.relatedThumb}>
+                                <ImageOrPlaceholder
+                                  src={link.image!}
+                                  alt={link.name}
+                                  label={link.name}
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className={styles.relatedMeta}>
+                                <span className={styles.relatedName}>{link.name}</span>
+                                {link.role && (
+                                  <span className={styles.relatedRole}>{link.role}</span>
+                                )}
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
+
                     <div className={styles.expandRight}>
                       <h4 className={styles.expandHeading}>◆ About the night</h4>
-                      <p className={styles.expandDesc}>{ev.description}</p>
+                      <p className={styles.expandDesc}>
+                        {linkify(ev.description, ev.related_links)}
+                      </p>
                       <div className={styles.expandActions}>
                         {ev.eventbrite_url ? (
                           <a
@@ -160,4 +221,35 @@ function parseEventDate(s: string): { day: number; month: string } {
     day: d.getDate(),
     month: d.toLocaleString('en-US', { month: 'long' }),
   }
+}
+
+/**
+ * Splits a string on any of the names in `links` and wraps the matching
+ * portions in anchor tags. Plain text passes through untouched when no
+ * links are supplied or no names match.
+ */
+function linkify(text: string, links?: RelatedLink[]): ReactNode {
+  if (!text) return text
+  if (!links || links.length === 0) return text
+  const names = links.filter(l => l.name && text.includes(l.name))
+  if (names.length === 0) return text
+  const escaped = names.map(l => l.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const re = new RegExp(`(${escaped.join('|')})`, 'g')
+  const parts = text.split(re)
+  return parts.map((part, i) => {
+    const link = links.find(l => l.name === part)
+    if (!link) return part
+    return (
+      <a
+        key={i}
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.descLink}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {part}
+      </a>
+    )
+  })
 }
