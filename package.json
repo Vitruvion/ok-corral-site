@@ -10,6 +10,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",
     "next": "^14.2.20",
+    "passkit-generator": "^3.5.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "resend": "^6.12.2",

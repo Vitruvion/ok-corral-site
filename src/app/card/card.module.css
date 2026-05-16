@@ -1,0 +1,288 @@
+/* Minimal saloon-styled landing for Phase 1. Phase 4 will polish to match
+   the HTML reference (wallet-pass mockup, gold gradients, animated tiers). */
+
+.page {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 80px 24px 96px;
+  font-family: var(--ff-sans);
+  color: var(--bone);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.kicker {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ember);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: var(--ff-display);
+  font-size: clamp(40px, 8vw, 64px);
+  line-height: 0.95;
+  color: var(--bone);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  margin-bottom: 18px;
+}
+
+.title em {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ember);
+  font-size: 0.85em;
+  text-transform: none;
+}
+
+.intro {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--bone-dim);
+  line-height: 1.5;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+/* ── Tier stack ──────────────────────────────────────────────── */
+
+.section {
+  margin-bottom: 56px;
+}
+
+.tierStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(235,228,212,0.1);
+  border: 1px solid rgba(235,228,212,0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tierRow {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  background: rgba(20,17,16,0.7);
+}
+
+.tierBadge {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--accent, var(--bone-dim));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--accent, var(--bone-dim));
+}
+
+.tierInfo {
+  min-width: 0;
+}
+
+.tierName {
+  font-family: var(--ff-display);
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent, var(--bone));
+  line-height: 1.1;
+}
+
+.tierPerk {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--bone-dim);
+  margin-top: 3px;
+}
+
+.tierThreshold {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  white-space: nowrap;
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+
+.formSection {
+  border: 1px solid rgba(235,228,212,0.12);
+  background: rgba(20,17,16,0.5);
+  padding: 32px 28px;
+  border-radius: 4px;
+  margin-bottom: 32px;
+}
+
+.formTitle {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+.input {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  padding: 12px 14px;
+  background: var(--ink);
+  border: 1px solid rgba(235,228,212,0.15);
+  color: var(--bone);
+  border-radius: 2px;
+  transition: border-color 180ms ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--ember);
+}
+
+.input:disabled {
+  opacity: 0.5;
+}
+
+.hint {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--bone-mute);
+  margin-top: 2px;
+}
+
+.submit {
+  margin-top: 8px;
+  padding: 14px 22px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border: 1px solid var(--ember);
+  background: var(--ember);
+  color: var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: #f0884a;
+  border-color: #f0884a;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.success {
+  font-family: var(--ff-serif);
+  font-size: 14px;
+  color: var(--green);
+  background: rgba(111,209,122,0.08);
+  border: 1px solid rgba(111,209,122,0.3);
+  padding: 12px 14px;
+  border-radius: 2px;
+  text-align: center;
+}
+
+.error {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--bone);
+  background: rgba(139,58,31,0.1);
+  border: 1px solid rgba(139,58,31,0.4);
+  padding: 14px 16px;
+  border-radius: 2px;
+}
+
+.error strong {
+  color: var(--rust);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.errorHelp {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--bone-dim);
+  margin-bottom: 8px;
+}
+
+.errorList {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.errorList li {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--bone-mute);
+  padding: 2px 0;
+}
+
+.errorList code {
+  color: var(--ember);
+  background: rgba(217,119,66,0.08);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+.foot {
+  text-align: center;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  margin-top: 16px;
+}
+
+@media (max-width: 540px) {
+  .page { padding: 60px 18px 80px; }
+  .formSection { padding: 24px 20px; }
+  .tierRow { padding: 14px 16px; gap: 12px; }
+  .tierName { font-size: 14px; letter-spacing: 0.16em; }
+}
