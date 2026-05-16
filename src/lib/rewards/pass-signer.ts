@@ -11,7 +11,6 @@
 
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { PKPass } from 'passkit-generator'
 import type { BuiltPass } from './pass-builder'
 
 // ── Env / image asset paths ───────────────────────────────────────────
@@ -113,6 +112,7 @@ export async function signWalletPass(built: BuiltPass): Promise<SignResult> {
   }
 
   try {
+    const { PKPass } = await import('passkit-generator')
     const pass = new PKPass(
       {
         ...imageBundle,
