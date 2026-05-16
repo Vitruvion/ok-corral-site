@@ -42,3 +42,8 @@ next-env.d.ts
 # verification artifacts
 .playwright-mcp/
 verify-*.png
+
+wallet-certs/
+
+# Claude Code debug screenshots
+card-page*.png

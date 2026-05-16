@@ -72,9 +72,9 @@ export function buildPass(member: MemberInput): BuiltPass {
     : 'Max rank'
 
   const pass: Record<string, unknown> = {
-    description: 'OK Corral Rewards',
+    description: 'The OK Corral Rewards',
     organizationName: 'The OK Corral',
-    logoText: 'OK CORRAL',
+    logoText: 'THE OK CORRAL',
     foregroundColor: tier.pass.foregroundColor,
     backgroundColor: tier.pass.backgroundColor,
     labelColor: tier.pass.labelColor,
@@ -83,7 +83,7 @@ export function buildPass(member: MemberInput): BuiltPass {
     // Phase 1: include the placeholder so the field is in the JSON shape
     // even though we don't host the endpoints yet.
     webServiceURL: 'https://okcorralsaloon.com/api/wallet/',
-    authenticationToken: serialNumber, // crude, but stable for Phase 1
+    authenticationToken: (serialNumber + '-okcorral-rewards').slice(0, 64), // 16+ chars required by Apple
 
     barcodes: [
       {

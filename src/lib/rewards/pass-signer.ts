@@ -120,6 +120,25 @@ export async function signWalletPass(built: BuiltPass): Promise<SignResult> {
       },
       certs as ConstructorParameters<typeof PKPass>[1],
     )
+    // The library wipes nested storeCard.*Fields arrays from pass.json
+    // and expects them to be populated via its own setters. Read the
+    // fields from our passJson and push them through the library's API.
+    ;(pass as unknown as { type: string }).type = 'storeCard'
+    type FieldsArray = { push: (...items: unknown[]) => number }
+    type PassWithFields = {
+      headerFields: FieldsArray
+      primaryFields: FieldsArray
+      secondaryFields: FieldsArray
+      auxiliaryFields: FieldsArray
+      backFields: FieldsArray
+    }
+    const sc = (passJson as { storeCard?: Record<string, unknown[]> }).storeCard || {}
+    const pwf = pass as unknown as PassWithFields
+    ;(sc.headerFields    || []).forEach(f => pwf.headerFields.push(f))
+    ;(sc.primaryFields   || []).forEach(f => pwf.primaryFields.push(f))
+    ;(sc.secondaryFields || []).forEach(f => pwf.secondaryFields.push(f))
+    ;(sc.auxiliaryFields || []).forEach(f => pwf.auxiliaryFields.push(f))
+    ;(sc.backFields      || []).forEach(f => pwf.backFields.push(f))
 
     return {
       ok: true,
