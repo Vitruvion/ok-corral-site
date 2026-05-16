@@ -124,7 +124,7 @@ export default function Hero() {
           </h1>
           <div className={styles.wmRuleBottom}>
             <span className={styles.wmLineDim} />
-            <span className={styles.wmSub}>COTTONWOOD · CA · EST. 2025</span>
+            <span className={styles.wmSub}>COTTONWOOD · CA · EST. 1954</span>
             <span className={styles.wmLineDim} />
           </div>
         </div>
@@ -132,9 +132,7 @@ export default function Hero() {
         <div className={styles.bottom}>
           <div className={styles.tagline}>
             <em>
-              A saloon for the present century.{' '}
-              <span className={styles.tagEmber}>Home of the Scorpion Shot.</span>{' '}
-              Cold beer, live music, and a hell of a jukebox.
+              NorCal&apos;s favorite western dive bar.
             </em>
           </div>
           <div className={styles.meta}>

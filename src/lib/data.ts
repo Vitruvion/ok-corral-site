@@ -23,8 +23,8 @@ export const SHOW_GIFT_CARDS = false
 export const BRAND = {
   name: 'The OK Corral',
   location: 'Cottonwood, California',
-  since: 'Est. 2025',
-  tagline: 'Home of the Scorpion Shot',
+  since: 'Est. 1954',
+  tagline: "NorCal's favorite western dive bar.",
   address: {
     line1: '3633 Main Street',
     line2: 'Cottonwood, CA 96022',
@@ -133,6 +133,7 @@ export const EVENTS: EventData[] = [
       {
         name: 'Dustin Dale Gaspard',
         url: 'https://www.instagram.com/dustindalegaspard/',
+        image: '/assets/gallery/dustin-ig.jpg',
         role: '@dustindalegaspard',
       },
     ],
@@ -164,10 +165,10 @@ export const RECURRING = [
 ]
 
 export const MARQUEE_ITEMS = [
-  { text: 'Every Tuesday', accent: 'Taco Tuesday · $2 Tacos' },
-  { text: 'Every Wednesday', accent: 'Free Pool All Night' },
-  { text: 'Every Sunday', accent: 'Karaoke Til Close' },
-  { text: 'Open Daily', accent: '8 AM · Til 2 AM' },
+  { text: 'Tuesday', accent: '$4 Tacos' },
+  { text: 'Wednesday', accent: 'Free Pool All Night' },
+  { text: 'Sunday', accent: 'Karaoke Til Close' },
+  { text: 'Daily', accent: '8 AM · Til 2 AM' },
 ]
 
 export type DrinkData = {
@@ -239,18 +240,18 @@ export const GALLERY: GalleryItem[] = [
   { id: 'g1',  label: 'Cowboy Up · At The Bar',   image: '/assets/gallery/cowboy-bar.jpg',     cols: 5, rows: 4 },
   { id: 'g2',  label: 'Live · Camo Cali',          image: '/assets/gallery/performer.jpg',      cols: 4, rows: 4 },
   { id: 'g3',  label: 'Pool Night',                 image: '/assets/gallery/pool-nails.jpg',     cols: 3, rows: 4 },
-  { id: 'g4',  label: 'Back Bar',                   image: '/assets/gallery/back-bar-girls.jpg', cols: 5, rows: 3 },
+  { id: 'g4',  label: 'Ladies',                     image: '/assets/gallery/back-bar-girls.jpg', cols: 5, rows: 3 },
   { id: 'g5',  label: 'Camel Day · Under The Sign', image: '/assets/gallery/camel-sign.jpg',     cols: 4, rows: 3 },
   { id: 'g6',  label: 'Regulars',                   image: '/assets/gallery/customer-805.jpg',   cols: 3, rows: 3 },
   { id: 'g7',  label: 'Break Shot',                 image: '/assets/gallery/pool-shot.jpg',      cols: 4, rows: 3 },
   { id: 'g8',  label: 'Saturday Night',             image: '/assets/gallery/cowgirls.jpg',       cols: 4, rows: 3 },
-  { id: 'g9',  label: 'Patio Night · Heaters & Wood', image: '/assets/gallery/patio-night.jpg',    cols: 4, rows: 3 },
+  { id: 'g9',  label: 'Patio Night',                  image: '/assets/gallery/patio-night.jpg',    cols: 4, rows: 3 },
   { id: 'g10', label: 'Spencer',                     image: '/assets/gallery/dollar-ceiling.jpg', cols: 4, rows: 3 },
   { id: 'g11', label: 'The Crowd · Show Night',     image: '/assets/gallery/crowd-stage.jpg',    cols: 4, rows: 3 },
-  { id: 'g12', label: 'Pool Table · 805 Neon',      image: '/assets/gallery/pool-table.jpg',     cols: 4, rows: 3 },
+  { id: 'g12', label: 'Locals',                     image: '/assets/gallery/pool-table.jpg',     cols: 4, rows: 3 },
   { id: 'g13', label: 'Patio · Cigars & Cold Ones',  image: '/assets/gallery/patio-cigars.jpg',   cols: 4,  rows: 3 },
-  { id: 'g14', label: 'Rack Em Up · 805 Neon',       image: '/assets/gallery/cowboy-pool-2.jpg',  cols: 4,  rows: 3 },
-  { id: 'g15', label: 'The Boys · Behind The Bar',   image: '/assets/gallery/boys-at-bar.jpg',    cols: 4,  rows: 3 },
+  { id: 'g14', label: 'Dillon',                      image: '/assets/gallery/cowboy-pool-2.jpg',  cols: 4,  rows: 3 },
+  { id: 'g15', label: 'The Boys',                    image: '/assets/gallery/boys-at-bar.jpg',    cols: 4,  rows: 3 },
   { id: 'g16', label: 'Car Show · Out Front',       image: '/assets/gallery/car-show.jpg',       cols: 12, rows: 3 },
 ]
 

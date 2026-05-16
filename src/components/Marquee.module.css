@@ -5,6 +5,12 @@
   background: var(--ink-2);
   overflow: hidden;
   position: relative;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.marquee:active {
+  cursor: grabbing;
 }
 
 .track {
@@ -12,25 +18,14 @@
   gap: 60px;
   width: max-content;
   white-space: nowrap;
-  animation: marqueeScroll 60s linear infinite;
   will-change: transform;
-}
-
-@keyframes marqueeScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-.paused {
-  animation-play-state: paused;
-  opacity: 0.3;
-  transition: opacity 300ms ease;
 }
 
 .item {
   display: flex;
   align-items: center;
   gap: 60px;
+  pointer-events: none;
 }
 
 .text {
@@ -71,9 +66,16 @@
   text-transform: uppercase;
   font-weight: 600;
   animation: fade-in 150ms ease;
+  pointer-events: none;
 }
 
 @media (max-width: 760px) {
-  .marquee { padding: 16px 0; }
-  .text, .accent { font-size: 22px; }
+  .marquee { padding: 14px 0; }
+  .track { gap: 40px; }
+  .item { gap: 40px; }
+  .text, .accent {
+    font-size: 16px;
+    letter-spacing: 0.04em;
+  }
+  .diamond { width: 7px; height: 7px; }
 }
