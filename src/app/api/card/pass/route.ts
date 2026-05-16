@@ -3,6 +3,7 @@ import { buildPass } from '@/lib/rewards/pass-builder'
 import { signWalletPass } from '@/lib/rewards/pass-signer'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 type Body = {
   name?: string
