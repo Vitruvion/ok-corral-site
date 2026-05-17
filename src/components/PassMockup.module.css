@@ -1,0 +1,428 @@
+/* ───────────────────────────────────────────────────────────────
+   Pass mockup — visual stand-in for the real .pkpass. Themed via
+   CSS custom properties set inline from the TIERS palette so the
+   card colors track the tier preview chips live.
+   ─────────────────────────────────────────────────────────────── */
+
+.scene {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  perspective: 1400px;
+  /* Subtle continuous float — runs even when the card isn't flipped. */
+  animation: passFloat 7s ease-in-out infinite;
+}
+
+.card {
+  --pad: 22px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.586;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  filter:
+    drop-shadow(0 6px 14px rgba(0,0,0,0.45))
+    drop-shadow(0 30px 60px rgba(0,0,0,0.35));
+}
+
+.card:hover {
+  transform: rotateY(2deg) rotateX(-1deg);
+}
+
+.cardFlipped {
+  transform: rotateY(180deg);
+}
+
+.cardFlipped:hover {
+  transform: rotateY(178deg) rotateX(-1deg);
+}
+
+/* Front + back faces share base styling; back also rotated 180°. */
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: var(--pad);
+  background:
+    /* paper-fine grain */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(255,255,255,0.012) 2px,
+      rgba(255,255,255,0.012) 3px
+    ),
+    /* card gradient — diagonal, accent corner */
+    linear-gradient(165deg, var(--card-bg2) 0%, var(--card-bg) 60%, #050403 100%);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--card-fg);
+  display: flex;
+  flex-direction: column;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 0 0 1px var(--card-glow);
+  overflow: hidden;
+}
+
+.faceBack {
+  transform: rotateY(180deg);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(255,255,255,0.012) 2px,
+      rgba(255,255,255,0.012) 3px
+    ),
+    linear-gradient(195deg, var(--card-bg) 0%, var(--card-bg2) 100%);
+  gap: 14px;
+}
+
+/* Slow diagonal shine sweep across the front. Sits above content but
+   ignores pointer events. */
+.shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255,255,255,0.08) 50%,
+    transparent 62%
+  );
+  background-size: 240% 100%;
+  animation: passShine 7s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* ── HEADER ──────────────────────────────────────────── */
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.monogram {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--card-accent);
+  color: var(--card-accent);
+  font-family: var(--ff-display);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brandThe {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--card-label);
+}
+
+.brandName {
+  font-family: var(--ff-display);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--card-fg);
+  text-transform: uppercase;
+}
+
+.tierChip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  padding: 6px 10px;
+  border: 1px solid var(--card-accent);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.18);
+  max-width: 50%;
+}
+
+.tierLabel {
+  font-family: var(--ff-mono);
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--card-label);
+}
+
+.tierValue {
+  font-family: var(--ff-display);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--card-accent);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── FIELDS ──────────────────────────────────────────── */
+.fieldLabel {
+  font-family: var(--ff-mono);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--card-label);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.fieldValue {
+  font-family: var(--ff-serif);
+  font-size: 15px;
+  color: var(--card-fg);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  display: block;
+}
+
+.primary {
+  margin-bottom: 14px;
+}
+
+.primaryValue {
+  font-family: var(--ff-display);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--card-fg);
+  display: block;
+  line-height: 1.1;
+}
+
+.secondary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldRight {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.progressTrack {
+  height: 3px;
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--card-label), var(--card-accent));
+  border-radius: 2px;
+  transition: width 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.auxiliary {
+  margin-bottom: auto;
+}
+
+/* ── FOOT (QR strip) ─────────────────────────────────── */
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.qr {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.qrMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.qrTitle {
+  font-family: var(--ff-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--card-fg);
+  line-height: 1.2;
+}
+
+.qrSerial {
+  font-family: var(--ff-mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--card-label);
+  text-transform: uppercase;
+}
+
+/* ── BACK FACE ───────────────────────────────────────── */
+.backHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.backKicker {
+  font-family: var(--ff-mono);
+  font-size: 8px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--card-accent);
+}
+
+.backTitle {
+  font-family: var(--ff-display);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: var(--card-fg);
+  text-transform: uppercase;
+}
+
+.perkBlock {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
+}
+
+.perkValue {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--card-fg);
+  line-height: 1.35;
+  display: block;
+}
+
+.ladder {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.ladderList {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ladderRow {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--card-label);
+  padding: 1px 0;
+}
+
+.ladderRowCurrent {
+  color: var(--card-accent);
+}
+
+.ladderDot {
+  font-size: 10px;
+  line-height: 1;
+  text-align: center;
+}
+
+.ladderName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ladderPts {
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--card-label);
+}
+
+.backFoot {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--ff-mono);
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  color: var(--card-label);
+  text-transform: uppercase;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes passFloat {
+  0%, 100% { transform: translateY(0) rotateX(0); }
+  50%      { transform: translateY(-6px) rotateX(0.6deg); }
+}
+
+@keyframes passShine {
+  0%   { background-position: 200% 50%; }
+  100% { background-position: -100% 50%; }
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 540px) {
+  .scene {
+    max-width: 320px;
+  }
+  .face {
+    --pad: 18px;
+  }
+  .brandName { font-size: 12px; }
+  .primaryValue { font-size: 20px; }
+  .ladderRow { font-size: 8.5px; letter-spacing: 0.14em; }
+}
