@@ -8,6 +8,20 @@
    exactly so visitors don't feel they've left the site.
    ─────────────────────────────────────────────────────────────── */
 
+/* Local copy of fade-up keyframes. globals.css defines `@keyframes
+   fade-up` unhashed, but every `animation: fade-up …` reference in
+   THIS file is rewritten by the CSS Modules loader to a hashed name
+   (e.g. card_fade-up__abc). The browser then can't match the hashed
+   reference to the global unhashed keyframes block, so the animation
+   never advances — visible as the ranks ladder rungs being stuck at
+   opacity 0 / translateY(16px) forever. The local block lives in the
+   same module file so the loader hashes both the reference AND the
+   keyframes name identically. */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .page {
   background: var(--ink);
   color: var(--bone);

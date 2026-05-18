@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   TIERS,
   getTier,
@@ -51,6 +52,7 @@ export default function PassMockup({
   className = '',
 }: Props) {
   const [flipped, setFlipped] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const tier = getTier(tierKey)
   const next = nextTier(tier)
 
@@ -92,6 +94,7 @@ export default function PassMockup({
   }
 
   return (
+    <>
     <div className={`${styles.scene} ${className}`} style={themeVars}>
       <button
         type="button"
@@ -147,15 +150,29 @@ export default function PassMockup({
             <span className={styles.fieldValue}>{sinceLabel}</span>
           </div>
 
-          <footer className={styles.foot}>
-            <div className={styles.qr} aria-hidden="true">
-              <FauxQR />
-            </div>
-            <div className={styles.qrMeta}>
-              <span className={styles.qrTitle}>Scan to share with a friend</span>
-              <span className={styles.qrSerial}>{serial}</span>
-            </div>
-          </footer>
+          {/* Corner QR icon. role/tabIndex on a span rather than a real
+              <button> because the outer .card is already a <button> and
+              nested buttons are invalid HTML. stopPropagation on the
+              click handler prevents the outer card from also flipping. */}
+          <span
+            role="button"
+            tabIndex={0}
+            className={styles.qrButton}
+            aria-label="Share The OK Corral — open share code"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShareOpen(true)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                e.stopPropagation()
+                setShareOpen(true)
+              }
+            }}
+          >
+            <FauxQR />
+          </span>
         </div>
 
         {/* ── BACK ─────────────────────────────────────────────── */}
@@ -204,6 +221,69 @@ export default function PassMockup({
           </div>
         </div>
       </button>
+    </div>
+    {shareOpen && typeof document !== 'undefined' &&
+      createPortal(
+        <ShareModal onClose={() => setShareOpen(false)} />,
+        document.body,
+      )
+    }
+    </>
+  )
+}
+
+/**
+ * Fullscreen share-the-card modal. Rendered via React portal into
+ * `document.body` so it escapes the chain of transformed ancestors
+ * (.heroPass fade-up + .scene passFloat both leave a transform on
+ * their elements, which would otherwise become the containing block
+ * for position:fixed descendants and break the fullscreen overlay).
+ */
+function ShareModal({ onClose }: { onClose: () => void }) {
+  // Lock background scroll while open.
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
+  // Esc-to-close.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      className={styles.modal}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Share The OK Corral Rewards"
+      onClick={onClose}
+    >
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className={styles.modalClose}
+          onClick={onClose}
+          aria-label="Close share dialog"
+        >
+          ×
+        </button>
+        <div className={styles.modalQr} aria-hidden="true">
+          <FauxQR />
+        </div>
+        <h3 className={styles.modalTitle}>Share The OK Corral</h3>
+        <p className={styles.modalSub}>
+          <em>Scan to send the rewards sign-up to a friend.</em>
+        </p>
+        <p className={styles.modalCaption}>okcorralsaloon.com/card</p>
+      </div>
     </div>
   )
 }
