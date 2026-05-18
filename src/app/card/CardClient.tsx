@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Topbar from '@/components/Topbar'
 import Footer from '@/components/Footer'
 import PassMockup from '@/components/PassMockup'
+import CardDebugOverlay from '@/components/CardDebugOverlay'
 import { CartProvider } from '@/lib/cart'
 import { TIERS, type TierKey } from '@/lib/rewards/tiers'
 import styles from './card.module.css'
@@ -175,6 +176,7 @@ function CardClientInner() {
   return (
     <>
       <Topbar />
+      <CardDebugOverlay />
 
       <main className={styles.page}>
         {/* ═══ HERO ═══════════════════════════════════════════ */}
