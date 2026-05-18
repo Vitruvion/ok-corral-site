@@ -17,12 +17,15 @@
   --pad: 22px;
   position: relative;
   width: 100%;
-  aspect-ratio: 1.586;
+  /* Slightly taller than a literal credit card so the bottom QR band
+     reads as a real scannable code, not a tiny inline glyph. */
+  aspect-ratio: 1.45;
   background: transparent;
   border: 0;
   padding: 0;
   cursor: pointer;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d; /* iOS Safari needs the prefix */
   transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
   /* Light drop-shadow that follows the 3D tilt; the .face box-shadow
      carries the main weight of the lift. */
@@ -35,14 +38,17 @@
 
 .card:hover {
   transform: rotateY(2deg) rotateX(-1deg);
+  -webkit-transform: rotateY(2deg) rotateX(-1deg);
 }
 
 .cardFlipped {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 
 .cardFlipped:hover {
   transform: rotateY(178deg) rotateX(-1deg);
+  -webkit-transform: rotateY(178deg) rotateX(-1deg);
 }
 
 /* Front + back faces share base styling; back also rotated 180°.
@@ -79,6 +85,12 @@
   flex-direction: column;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* Explicit 3D identity transform forces iOS Safari to composite each
+     face into its own GPU layer; without this, backface-visibility is
+     unreliable (combined with overflow:hidden) and the front face shows
+     through as mirrored text when the card flips. */
+  transform: rotateY(0);
+  -webkit-transform: rotateY(0);
   /* Outer shadows first (lift off dark hero), then inset highlight at
      the top edge, then the tier glow as ambient warmth on top. */
   box-shadow:
@@ -91,6 +103,7 @@
 
 .faceBack {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
   background:
     radial-gradient(80% 55% at 50% 100%, var(--ambient-bottom), transparent 70%),
     radial-gradient(65% 50% at 50% 55%, var(--ambient-center), transparent 75%),
@@ -274,25 +287,34 @@
 }
 
 .auxiliary {
-  margin-bottom: auto;
+  margin-bottom: 8px;
 }
 
-/* ── FOOT (QR strip) ─────────────────────────────────── */
+/* ── FOOT (QR band) ──────────────────────────────────────
+   Vertical centered band — QR card on top, label and serial
+   below in mono small caps. `margin-top: auto` lets the flex
+   column push this to the bottom of the card. */
 .foot {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
 .qr {
-  width: 46px;
-  height: 46px;
+  width: 80px;
+  height: 80px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
+  /* Cream/bone background so the QR pattern reads as a real QR card
+     even if the inner SVG fails to paint. */
+  background: var(--card-fg);
+  padding: 5px;
+  box-sizing: border-box;
 }
 
 .qr svg {
@@ -304,22 +326,26 @@
 .qrMeta {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   min-width: 0;
   gap: 2px;
 }
 
 .qrTitle {
-  font-family: var(--ff-sans);
-  font-size: 11px;
+  font-family: var(--ff-mono);
+  font-size: 9px;
   font-weight: 500;
-  color: var(--card-fg);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--card-label);
   line-height: 1.2;
 }
 
 .qrSerial {
   font-family: var(--ff-mono);
   font-size: 8px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   color: var(--card-label);
   text-transform: uppercase;
 }
@@ -612,30 +638,29 @@
 
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 540px) {
-  /* A bit wider so the 1.586 aspect ratio leaves enough vertical
-     room for the full content stack including the QR strip. */
   .scene {
     max-width: 340px;
   }
   .face {
     --pad: 16px;
   }
-  /* Tighten every gap on the front face so SINCE has breathing
-     room above the QR foot rather than colliding with it. */
-  .head        { margin-bottom: 10px; }
+  /* Tighten every gap so the QR band fits without colliding with the
+     SINCE row above it. The foot still hugs the bottom via margin-top:auto. */
+  .head        { margin-bottom: 8px; }
   .primary     { margin-bottom: 8px; }
   .secondary   { margin-bottom: 4px; }
-  .progressTrack { margin-bottom: 8px; }
+  .progressTrack { margin-bottom: 6px; }
+  .auxiliary   { margin-bottom: 4px; }
   .foot {
-    margin-top: 8px;
     padding-top: 8px;
-    gap: 10px;
+    gap: 6px;
   }
 
   .brandName    { font-size: 12px; }
   .primaryValue { font-size: 18px; }
   .fieldValue   { font-size: 13px; }
-  .qr           { width: 38px; height: 38px; }
-  .qrTitle      { font-size: 10px; }
+  .qr           { width: 64px; height: 64px; padding: 4px; }
+  .qrTitle      { font-size: 8.5px; }
+  .qrSerial     { font-size: 7.5px; }
   .ladderRow    { font-size: 8.5px; letter-spacing: 0.14em; }
 }

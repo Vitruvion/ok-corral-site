@@ -350,15 +350,29 @@
 
 .step {
   padding: 36px 30px;
-  border: 1px solid rgba(235,228,212,0.1);
-  background: rgba(20,17,16,0.5);
+  /* Stronger border + solid background so the cards always read as
+     distinct objects on top of the page ink. The previous 0.1/0.5
+     translucent treatment could appear to vanish on iOS Safari when
+     compositor layers were stressed. */
+  border: 1px solid rgba(235,228,212,0.18);
+  background: #1a1411;
   border-radius: 4px;
   transition: border-color 200ms ease, transform 200ms ease;
+  position: relative;
+  z-index: 1;
 }
 
-.step:hover {
-  border-color: rgba(217,119,66,0.45);
-  transform: translateY(-2px);
+/* Only run the transform-on-hover effect on true-hover devices.
+   On iOS Safari touch leaves :hover stuck after a tap, and a stuck
+   `transform: translateY(...)` on a card can interact badly with the
+   compositor — the symptom is the card looking "missing" after the
+   user has scrolled past it. (hover: hover) ensures touch devices
+   never enter this state. */
+@media (hover: hover) {
+  .step:hover {
+    border-color: rgba(217,119,66,0.45);
+    transform: translateY(-2px);
+  }
 }
 
 .stepNum {
