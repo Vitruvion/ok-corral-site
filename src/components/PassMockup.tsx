@@ -96,6 +96,7 @@ export default function PassMockup({
       <button
         type="button"
         className={`${styles.card} ${flipped ? styles.cardFlipped : ''}`}
+        data-tier={tier.key}
         onClick={handleClick}
         aria-label={`OK Corral Rewards pass mockup — ${title(tier.name)} tier. ${interactive ? 'Click to flip.' : ''}`}
         aria-pressed={flipped}

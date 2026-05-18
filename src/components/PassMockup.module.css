@@ -41,13 +41,22 @@
   transform: rotateY(178deg) rotateX(-1deg);
 }
 
-/* Front + back faces share base styling; back also rotated 180°. */
+/* Front + back faces share base styling; back also rotated 180°.
+   `--ambient-bottom` and `--ambient-center` default to transparent
+   (no-op for Newcomer); higher tiers override them to layer warm
+   "lit-from-within" glows on top of the base material. */
 .face {
   position: absolute;
   inset: 0;
   border-radius: 16px;
   padding: var(--pad);
+  --ambient-bottom: transparent;
+  --ambient-center: transparent;
   background:
+    /* warm light pooled at the bottom of the card (Regular+) */
+    radial-gradient(80% 55% at 50% 100%, var(--ambient-bottom), transparent 70%),
+    /* deep warm core (One of Ours only) */
+    radial-gradient(65% 50% at 50% 55%, var(--ambient-center), transparent 75%),
     /* subtle top inner highlight — gives the card dimension on every tier */
     radial-gradient(120% 70% at 50% 0%, rgba(235, 228, 212, 0.05) 0%, transparent 60%),
     /* paper-fine grain */
@@ -79,6 +88,8 @@
 .faceBack {
   transform: rotateY(180deg);
   background:
+    radial-gradient(80% 55% at 50% 100%, var(--ambient-bottom), transparent 70%),
+    radial-gradient(65% 50% at 50% 55%, var(--ambient-center), transparent 75%),
     radial-gradient(120% 70% at 50% 0%, rgba(235, 228, 212, 0.05) 0%, transparent 60%),
     repeating-linear-gradient(
       0deg,
@@ -419,6 +430,180 @@
 @keyframes passShine {
   0%   { background-position: 200% 50%; }
   100% { background-position: -100% 50%; }
+}
+
+/* ─── TIER ESCALATION ────────────────────────────────────
+   Each step up the ladder earns one new design move that
+   the tier below it doesn't have. Treatments are additive,
+   so Familiar Face inherits Local's metallic name treatment,
+   Local inherits Regular's diamond + bottom warmth, etc.
+   Gated by `data-tier` set on .card from the React side.
+   ──────────────────────────────────────────────────────── */
+
+/* ── Regular and above: faded-leather flourish ──────────
+   Tiny diamond glyph at the start of the brand row, plus
+   a candlelit pool of accent warmth at the card's bottom. */
+.card[data-tier="regular"] .brand::before,
+.card[data-tier="local"] .brand::before,
+.card[data-tier="familiar_face"] .brand::before,
+.card[data-tier="one_of_ours"] .brand::before {
+  content: "◆";
+  color: var(--card-accent);
+  font-size: 7px;
+  line-height: 1;
+  align-self: center;
+  letter-spacing: 0;
+  margin-right: -4px; /* tighten next to the gap */
+}
+
+.card[data-tier="regular"] .face,
+.card[data-tier="local"] .face,
+.card[data-tier="familiar_face"] .face,
+.card[data-tier="one_of_ours"] .face {
+  --ambient-bottom: var(--card-glow);
+}
+
+/* ── Local and above: antique-brass treatment ───────────
+   Vertical metallic gradient on the tier name (light at the
+   top of the glyph, accent midtone, deeper at the bottom)
+   plus a 1px gold-tinted inset stroke at the card edge. */
+.card[data-tier="local"] .tierValue,
+.card[data-tier="familiar_face"] .tierValue,
+.card[data-tier="one_of_ours"] .tierValue {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-accent) 70%, #fff8e0) 0%,
+    var(--card-accent) 50%,
+    color-mix(in srgb, var(--card-accent) 70%, #1a1108) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.card[data-tier="local"] .face,
+.card[data-tier="familiar_face"] .face {
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(235, 228, 212, 0.08),
+    inset 0 0 0 1px color-mix(in srgb, var(--card-accent) 25%, transparent),
+    inset 0 0 0 1px var(--card-glow);
+}
+
+/* ── Familiar Face and above: burnished-bronze treatment ─
+   Embossed text-shadow under the tier name plus a soft
+   backglow halo behind the tier chip. */
+.card[data-tier="familiar_face"] .tierValue,
+.card[data-tier="one_of_ours"] .tierValue {
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.30);
+}
+
+.card[data-tier="familiar_face"] .tierChip,
+.card[data-tier="one_of_ours"] .tierChip {
+  position: relative;
+  isolation: isolate; /* establish a stacking context for ::before */
+}
+
+.card[data-tier="familiar_face"] .tierChip::before,
+.card[data-tier="one_of_ours"] .tierChip::before {
+  content: "";
+  position: absolute;
+  inset: -22px -18px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    color-mix(in srgb, var(--card-accent) 18%, transparent),
+    transparent 70%
+  );
+}
+
+/* ── One of Ours: full molten-gold treatment ────────────
+   3-stop metallic gradient, inner-highlight + drop-shadow
+   on the tier name, deep center warmth, sunburst behind
+   the chip, pronounced gold edge frame, and a slow
+   "breathing" pulse of the outer glow. */
+.card[data-tier="one_of_ours"] .tierValue {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-accent) 55%, #fff4d0) 0%,
+    var(--card-accent) 45%,
+    color-mix(in srgb, var(--card-accent) 55%, #2a1808) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 1px 0 rgba(255, 240, 200, 0.50),
+    0 1px 2px rgba(0, 0, 0, 0.40);
+}
+
+.card[data-tier="one_of_ours"] .face {
+  --ambient-center: var(--card-glow);
+}
+
+/* Faint static sunburst behind the tier chip — 12 spokes,
+   radially faded so it reads as light emanating from the
+   chip rather than a hard-edged geometric pattern. */
+.card[data-tier="one_of_ours"] .tierChip::after {
+  content: "";
+  position: absolute;
+  inset: -38px -28px;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 220, 150, 0.10) 0deg 2deg,
+    transparent 2deg 30deg
+  );
+  -webkit-mask: radial-gradient(circle at center, #000 0%, transparent 65%);
+  mask: radial-gradient(circle at center, #000 0%, transparent 65%);
+  opacity: 0.7;
+}
+
+/* Pronounced gold edge frame + breathing pulse. The pulse
+   redeclares the full shadow stack at both ends of the
+   cycle (CSS can't interpolate stacks of different shapes). */
+.card[data-tier="one_of_ours"] .face {
+  animation: passBreathe 4.6s ease-in-out infinite;
+}
+
+@keyframes passBreathe {
+  0%, 100% {
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.6),
+      0 6px 18px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(235, 228, 212, 0.08),
+      inset 0 0 0 1.5px color-mix(in srgb, var(--card-accent) 40%, transparent),
+      inset 0 0 22px var(--card-glow),
+      0 0 30px var(--card-glow);
+  }
+  50% {
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.6),
+      0 6px 18px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(235, 228, 212, 0.10),
+      inset 0 0 0 1.5px color-mix(in srgb, var(--card-accent) 55%, transparent),
+      inset 0 0 34px var(--card-glow),
+      0 0 50px var(--card-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card[data-tier="one_of_ours"] .face {
+    animation: none;
+    /* Pin to a static mid-state so the gold frame still reads. */
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.6),
+      0 6px 18px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(235, 228, 212, 0.09),
+      inset 0 0 0 1.5px color-mix(in srgb, var(--card-accent) 48%, transparent),
+      inset 0 0 28px var(--card-glow),
+      0 0 40px var(--card-glow);
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────── */
