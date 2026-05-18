@@ -24,9 +24,9 @@
   cursor: pointer;
   transform-style: preserve-3d;
   transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
-  filter:
-    drop-shadow(0 6px 14px rgba(0,0,0,0.45))
-    drop-shadow(0 30px 60px rgba(0,0,0,0.35));
+  /* Light drop-shadow that follows the 3D tilt; the .face box-shadow
+     carries the main weight of the lift. */
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
 }
 
 .card:hover {
@@ -48,6 +48,8 @@
   border-radius: 16px;
   padding: var(--pad);
   background:
+    /* subtle top inner highlight — gives the card dimension on every tier */
+    radial-gradient(120% 70% at 50% 0%, rgba(235, 228, 212, 0.05) 0%, transparent 60%),
     /* paper-fine grain */
     repeating-linear-gradient(
       0deg,
@@ -58,14 +60,18 @@
     ),
     /* card gradient — diagonal, accent corner */
     linear-gradient(165deg, var(--card-bg2) 0%, var(--card-bg) 60%, #050403 100%);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(235, 228, 212, 0.10);
   color: var(--card-fg);
   display: flex;
   flex-direction: column;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* Outer shadows first (lift off dark hero), then inset highlight at
+     the top edge, then the tier glow as ambient warmth on top. */
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(235, 228, 212, 0.08),
     inset 0 0 0 1px var(--card-glow);
   overflow: hidden;
 }
@@ -73,6 +79,7 @@
 .faceBack {
   transform: rotateY(180deg);
   background:
+    radial-gradient(120% 70% at 50% 0%, rgba(235, 228, 212, 0.05) 0%, transparent 60%),
     repeating-linear-gradient(
       0deg,
       transparent 0,

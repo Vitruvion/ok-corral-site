@@ -60,9 +60,10 @@ export const TIERS: Tier[] = [
     web: {
       bg: '#0b0908',
       bgAccent: '#151311',
-      fg: '#9e9182',
+      fg: '#d4cab5',
       label: '#6b6058',
       accent: '#9e9182',
+      glow: 'rgba(158, 145, 130, 0.10)',
     },
   },
   {
@@ -82,6 +83,7 @@ export const TIERS: Tier[] = [
       fg: '#f0e8db',
       label: '#8a7347',
       accent: '#c8a96e',
+      glow: 'rgba(200, 169, 110, 0.12)',
     },
   },
   {
@@ -101,6 +103,7 @@ export const TIERS: Tier[] = [
       fg: '#f0e8db',
       label: '#c8a96e',
       accent: '#d4be8a',
+      glow: 'rgba(212, 190, 138, 0.14)',
     },
   },
   {
@@ -120,6 +123,7 @@ export const TIERS: Tier[] = [
       fg: '#f0e8db',
       label: '#c8a96e',
       accent: '#d4be8a',
+      glow: 'rgba(212, 190, 138, 0.16)',
     },
   },
   {
