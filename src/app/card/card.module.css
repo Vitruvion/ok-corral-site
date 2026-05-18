@@ -684,8 +684,10 @@
     min-height: 92vh;
     padding: 100px var(--rail) 56px;
   }
+  /* Symmetric, halved padding so adjacent sections don't double up
+     into a ~180px dead gap on mobile. */
   .section {
-    padding: 80px 0 100px;
+    padding: 48px 0;
   }
   .heroCtas .btn {
     flex: 1;

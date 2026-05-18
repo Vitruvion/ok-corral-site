@@ -88,7 +88,7 @@ function Newsletter() {
             Upcoming shows.<br /><em>No spam, ever.</em>
           </h3>
           <p className={styles.newsDesc}>
-            <em>One email a month. Shows, specials, and the occasional tip on when a new scorpion is in the jar.</em>
+            <em>One email a month. Shows, specials, and what&apos;s coming up at the bar.</em>
           </p>
         </div>
         <div className={styles.newsRight}>

@@ -152,7 +152,7 @@ export default function PassMockup({
               <FauxQR />
             </div>
             <div className={styles.qrMeta}>
-              <span className={styles.qrTitle}>Show at the bar to earn</span>
+              <span className={styles.qrTitle}>Scan to share with a friend</span>
               <span className={styles.qrSerial}>{serial}</span>
             </div>
           </footer>

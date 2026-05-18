@@ -88,9 +88,13 @@ export function buildPass(member: MemberInput): BuiltPass {
     barcodes: [
       {
         format: 'PKBarcodeFormatQR',
-        message: serialNumber,
+        // The QR is a share link, not a point-attribution code. Points
+        // are tied to the phone number / Apple Pay tap at the bar; this
+        // code opens the /card sign-up page so friends can join from
+        // wherever the pass is shown.
+        message: `https://okcorralsaloon.com/card?ref=${serialNumber}`,
         messageEncoding: 'iso-8859-1',
-        altText: serialNumber.toUpperCase(),
+        altText: 'Share The OK Corral Rewards',
       },
     ],
 
@@ -130,6 +134,11 @@ export function buildPass(member: MemberInput): BuiltPass {
         },
       ],
       backFields: [
+        {
+          key: 'share',
+          label: 'Share Your Card',
+          value: 'The QR on this pass opens a sign-up link for friends. Bring them in.',
+        },
         {
           key: 'perk',
           label: `${titleCase(tier.name)} Perk`,

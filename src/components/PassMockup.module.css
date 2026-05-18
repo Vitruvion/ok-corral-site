@@ -27,6 +27,10 @@
   /* Light drop-shadow that follows the 3D tilt; the .face box-shadow
      carries the main weight of the lift. */
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+  /* Let vertical page scrolls pass through the card on touch devices —
+     otherwise the floating animation gesture wins and the page locks.
+     Single taps still flip via the onClick handler. */
+  touch-action: pan-y;
 }
 
 .card:hover {
@@ -608,13 +612,30 @@
 
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 540px) {
+  /* A bit wider so the 1.586 aspect ratio leaves enough vertical
+     room for the full content stack including the QR strip. */
   .scene {
-    max-width: 320px;
+    max-width: 340px;
   }
   .face {
-    --pad: 18px;
+    --pad: 16px;
   }
-  .brandName { font-size: 12px; }
-  .primaryValue { font-size: 20px; }
-  .ladderRow { font-size: 8.5px; letter-spacing: 0.14em; }
+  /* Tighten every gap on the front face so SINCE has breathing
+     room above the QR foot rather than colliding with it. */
+  .head        { margin-bottom: 10px; }
+  .primary     { margin-bottom: 8px; }
+  .secondary   { margin-bottom: 4px; }
+  .progressTrack { margin-bottom: 8px; }
+  .foot {
+    margin-top: 8px;
+    padding-top: 8px;
+    gap: 10px;
+  }
+
+  .brandName    { font-size: 12px; }
+  .primaryValue { font-size: 18px; }
+  .fieldValue   { font-size: 13px; }
+  .qr           { width: 38px; height: 38px; }
+  .qrTitle      { font-size: 10px; }
+  .ladderRow    { font-size: 8.5px; letter-spacing: 0.14em; }
 }

@@ -208,8 +208,9 @@ function CardClientInner() {
               </h1>
               <p className={styles.heroIntro}>
                 <em>
-                  Every dollar at the bar moves you up. Your tier rides along in
-                  Apple Wallet — no app, no plastic. Show it. Earn. Climb.
+                  Five tiers, Newcomer to One of Ours. Pay with the card or just
+                  give your phone number — points roll in automatically. Bring a
+                  friend with the QR on your pass and you&apos;ll move up faster.
                 </em>
               </p>
               <div className={styles.heroCtas}>
@@ -344,11 +345,12 @@ function CardClientInner() {
               </div>
               <div className={styles.step}>
                 <span className={styles.stepNum}>03</span>
-                <h3 className={styles.stepTitle}>Show &amp; Earn</h3>
+                <h3 className={styles.stepTitle}>Earn Points</h3>
                 <p className={styles.stepBody}>
                   <em>
-                    Flash the QR at the bar when you settle up. Points hit
-                    automatically and your rank ticks up as the nights add up.
+                    Pay with the card on your Wallet, or give the bartender your
+                    phone number at checkout. Points hit your tier automatically
+                    — no scanning required.
                   </em>
                 </p>
               </div>
@@ -370,13 +372,10 @@ function CardClientInner() {
               <div className={styles.formHead}>
                 <span className={styles.formKicker}>◆ SIGN UP</span>
                 <h2 className={styles.formTitle}>
-                  Saddle up,<br /><em>partner.</em>
+                  Get your<br /><em>card.</em>
                 </h2>
                 <p className={styles.formIntro}>
-                  <em>
-                    Name and phone get you a signed pass straight to Wallet.
-                    Takes about ten seconds.
-                  </em>
+                  <em>Name and phone. Pass goes straight to Wallet.</em>
                 </p>
               </div>
 
