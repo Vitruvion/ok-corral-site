@@ -57,7 +57,9 @@ export const TIERS: Tier[] = [
       // earthy, lived-in feel against Apple Wallet's default sheen.
       backgroundColor: 'rgb(38, 30, 22)',
       foregroundColor: 'rgb(220, 205, 180)',
-      labelColor: 'rgb(140, 124, 102)',
+      // Soft warm grey-brass — warmer than the previous muted tan,
+      // still well below foreground luminance so labels stay labels.
+      labelColor: 'rgb(168, 148, 120)',
     },
     web: {
       bg: '#0b0908',
@@ -79,7 +81,8 @@ export const TIERS: Tier[] = [
       // different from Newcomer on the lock screen.
       backgroundColor: 'rgb(54, 38, 22)',
       foregroundColor: 'rgb(232, 200, 140)',
-      labelColor: 'rgb(168, 138, 90)',
+      // Antique brass — warmer than the prior duller bronze.
+      labelColor: 'rgb(188, 156, 110)',
     },
     web: {
       bg: '#0b0908',
@@ -100,7 +103,8 @@ export const TIERS: Tier[] = [
       // Antique brass — richer amber-brown. Type goes solidly gold.
       backgroundColor: 'rgb(64, 42, 22)',
       foregroundColor: 'rgb(244, 212, 140)',
-      labelColor: 'rgb(192, 156, 92)',
+      // Burnished gold — pushes warmer than Regular's brass.
+      labelColor: 'rgb(208, 168, 108)',
     },
     web: {
       bg: '#14100c',
@@ -122,7 +126,8 @@ export const TIERS: Tier[] = [
       // a clear step up from Local without losing the on-brand earthiness.
       backgroundColor: 'rgb(74, 44, 22)',
       foregroundColor: 'rgb(248, 220, 152)',
-      labelColor: 'rgb(208, 168, 102)',
+      // Rich brass — more saturated than Local's burnished gold.
+      labelColor: 'rgb(218, 174, 102)',
     },
     web: {
       bg: '#1c1610',
@@ -144,7 +149,9 @@ export const TIERS: Tier[] = [
       // reads instantly as "premium" on a lock-screen glance.
       backgroundColor: 'rgb(84, 38, 18)',
       foregroundColor: 'rgb(255, 232, 168)',
-      labelColor: 'rgb(232, 188, 122)',
+      // Ember gold — top-of-ladder warmth, just below the very-bright
+      // foreground so the value text still wins the visual hierarchy.
+      labelColor: 'rgb(232, 178, 96)',
     },
     web: {
       bg: '#1c1610',

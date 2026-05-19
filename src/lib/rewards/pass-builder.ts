@@ -166,7 +166,12 @@ export function buildPass(member: MemberInput): BuiltPass {
         {
           key: 'how_it_works',
           label: 'How It Works',
-          value: 'Pay with this card at the bar or hand the bartender your phone number at checkout. Points hit automatically — no scanning required.',
+          // Important: Apple Wallet storeCards are NOT Apple Pay payment
+          // passes — they can't process transactions. Earlier copy said
+          // "Pay with this card at the bar" which led customers to try
+          // tapping their phone at the register. The pass is purely a
+          // membership/rank display; points are tracked by phone number.
+          value: 'At checkout, just give the bartender the phone number you used to sign up. Your points are tracked to your account — no scanning, no app to open. This pass shows your current rank and perks.',
         },
         {
           key: 'phone',
