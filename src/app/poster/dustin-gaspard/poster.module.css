@@ -14,15 +14,20 @@
 .stage {
   position: relative;
   width: 100vw;
-  /* `height: 100vh` (not min-height) is intentional — the
-     .posterWrap below has a layout size of 1080×1680 even after
-     it's been transform-scaled down. If we used min-height the
-     wrap's 1680px layout box would inflate the stage to 1680px
-     tall, leaving the visual center of the poster offset far
-     below the viewport. With a fixed-height stage + overflow
-     hidden, the oversized wrap overflows the cell and the
-     transform-scaled visual sits cleanly centered. */
+  /* Fixed-height stage so the 1080×1800-layout-box .posterWrap
+     overflows the cell and the transform-scaled visual centers
+     cleanly (using min-height would inflate the stage to 1800px
+     and offset the visual far below the viewport).
+     `100vh` first as fallback for older browsers; `100svh`
+     (small viewport height) is the conservative value on iOS
+     Safari that EXCLUDES the address bar even when it's collapsed,
+     so the scale calculation in PosterScaler.tsx always fits the
+     visible area — the prior 100vh-only declaration caused iOS
+     Safari to size the stage to the full viewport (with bar
+     hidden) while window.innerHeight reported the visible area
+     (with bar shown), producing a poster scale that didn't fit. */
   height: 100vh;
+  height: 100svh;
   background: #1a1410;
   font-family: var(--font-fell), "Times New Roman", serif;
   color: #1a1410;
@@ -41,7 +46,7 @@
 
 .posterWrap {
   width: 1080px;
-  height: 1750px;
+  height: 1800px;
   transform-origin: center center;
 }
 
@@ -56,7 +61,7 @@
 .poster {
   position: relative;
   width: 1080px;
-  height: 1750px;
+  height: 1800px;
   background:
     radial-gradient(120% 80% at 50% 0%, #f0e3c8 0%, #e6d6b6 60%, #d9c79f 100%);
   color: #1a1410;
