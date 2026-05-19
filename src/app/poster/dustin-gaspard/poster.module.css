@@ -324,7 +324,10 @@
   color: #2a1f17;
   margin: 10px auto 0;
   max-width: 820px;
-  line-height: 1.45;
+  /* Tightened 1.45 → 1.38 to reclaim the +4px of vertical the
+     date-padding bump above just added. The italic credit lines
+     stay readable; only the line-leading shrinks marginally. */
+  line-height: 1.38;
 }
 
 /* small flourish row used between sections */
@@ -434,13 +437,13 @@
   text-align: center;
   /* Symmetric vertical padding so "2026" (the dateYear line) clears
      the bottom border with the same breathing room "Thursday" gets
-     above. Previous 8/10/10 left the small-caps year visibly touching
-     the bottom rule. Dialed from the earlier 14/12 to 10/12 because
-     the fixed-footprint poster can't carry the +6/+4 extra height
-     without overflowing italic taglines into the footer ribbon —
-     10/12 still gives the year ~8px clear of the bottom border
-     (vs ~3-4 in the original 8/10) and keeps top/bottom symmetric. */
-  padding: 10px 12px;
+     above. Previous 8/10/10 left the small-caps year touching the
+     bottom rule; 10/12 wasn't enough either. 14/12 gives the year
+     a comfortable clearance from the bottom border (~22px including
+     small-caps descender). The +4px height this adds to the bottom
+     row is reclaimed below via a small line-height tighten on
+     .supportCreds. */
+  padding: 14px 12px;
   background: #1a1410;
   color: #ecdfc4;
   border: 2px solid #1a1410;
