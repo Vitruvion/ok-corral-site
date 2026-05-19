@@ -12,6 +12,18 @@ export const metadata: Metadata = {
     siteName: 'The OK Corral',
     type: 'website',
   },
+  icons: {
+    // Browser tab — multi-resolution ICO (16/32/48) sourced from the
+    // hand-drawn OK monogram on page 9 of OK_Corral_Logos_for_dark.pdf.
+    icon: [
+      { url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/apple-icon.png',
+    shortcut: '/favicon.ico',
+  },
+  manifest: '/manifest.json',
   other: {
     'theme-color': '#0b0908',
   },
