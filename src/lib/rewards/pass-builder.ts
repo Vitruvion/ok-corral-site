@@ -74,7 +74,10 @@ export function buildPass(member: MemberInput): BuiltPass {
   const pass: Record<string, unknown> = {
     description: 'The OK Corral Rewards',
     organizationName: 'The OK Corral',
-    logoText: 'THE OK CORRAL',
+    // Wallet logoText sits next to the logo image and truncates aggressively
+    // on narrow lock-screen renders. "OK CORRAL" leaves headroom and lets
+    // the logo carry the brand identity.
+    logoText: 'OK CORRAL',
     foregroundColor: tier.pass.foregroundColor,
     backgroundColor: tier.pass.backgroundColor,
     labelColor: tier.pass.labelColor,
@@ -133,6 +136,10 @@ export function buildPass(member: MemberInput): BuiltPass {
           value: formatMemberSince(since),
         },
       ],
+      // Back fields ordered for scan-ability: call-to-action first
+      // (share + current perk), then progression (next perk + ladder),
+      // then context (how it works), then account/contact (phone, find
+      // us, questions), then terms/footer (more info).
       backFields: [
         {
           key: 'share',
@@ -157,9 +164,19 @@ export function buildPass(member: MemberInput): BuiltPass {
           value: TIERS.map(t => `${titleCase(t.name)} (${t.minPoints.toLocaleString()}+) — ${t.perk}`).join('\n'),
         },
         {
+          key: 'how_it_works',
+          label: 'How It Works',
+          value: 'Pay with this card at the bar or hand the bartender your phone number at checkout. Points hit automatically — no scanning required.',
+        },
+        {
           key: 'phone',
           label: 'Phone on File',
           value: member.phone,
+        },
+        {
+          key: 'address',
+          label: 'Find Us',
+          value: '3633 Main Street, Cottonwood, CA 96022',
         },
         {
           key: 'questions',
@@ -167,9 +184,9 @@ export function buildPass(member: MemberInput): BuiltPass {
           value: 'howdy@okcorralsaloon.com  ·  (530) 348-2062',
         },
         {
-          key: 'address',
-          label: 'Find Us',
-          value: '3633 Main Street, Cottonwood, CA 96022',
+          key: 'more_info',
+          label: 'More Info',
+          value: 'okcorralsaloon.com/card',
         },
       ],
     },

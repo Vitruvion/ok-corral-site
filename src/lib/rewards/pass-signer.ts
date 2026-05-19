@@ -35,8 +35,13 @@ const OPTIONAL_IMAGES = [
   'icon@3x.png',
   'logo.png',
   'logo@2x.png',
+  'logo@3x.png',
+  // Strip banner across the top of the storeCard. Not currently
+  // generated (would need designer attention) — included here so the
+  // signer picks it up automatically once it lands in the assets dir.
   'strip.png',
   'strip@2x.png',
+  'strip@3x.png',
 ] as const
 
 const WALLET_ASSETS_DIR = path.join(process.cwd(), 'public', 'assets', 'wallet')

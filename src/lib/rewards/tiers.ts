@@ -53,9 +53,11 @@ export const TIERS: Tier[] = [
     maxPoints: 500,
     perk: 'Welcome to the Corral',
     pass: {
-      backgroundColor: 'rgb(11, 9, 8)',
-      foregroundColor: 'rgb(158, 145, 130)',
-      labelColor: 'rgb(107, 96, 88)',
+      // Warm dark charcoal — distinctly not black, gives the pass an
+      // earthy, lived-in feel against Apple Wallet's default sheen.
+      backgroundColor: 'rgb(38, 30, 22)',
+      foregroundColor: 'rgb(220, 205, 180)',
+      labelColor: 'rgb(140, 124, 102)',
     },
     web: {
       bg: '#0b0908',
@@ -73,9 +75,11 @@ export const TIERS: Tier[] = [
     maxPoints: 1500,
     perk: 'Free shot on your birthday',
     pass: {
-      backgroundColor: 'rgb(11, 9, 8)',
-      foregroundColor: 'rgb(200, 169, 110)',
-      labelColor: 'rgb(138, 115, 71)',
+      // Deeper bronze brown — first warmth step. Reads visibly
+      // different from Newcomer on the lock screen.
+      backgroundColor: 'rgb(54, 38, 22)',
+      foregroundColor: 'rgb(232, 200, 140)',
+      labelColor: 'rgb(168, 138, 90)',
     },
     web: {
       bg: '#0b0908',
@@ -93,9 +97,10 @@ export const TIERS: Tier[] = [
     maxPoints: 3500,
     perk: 'OK Corral koozie + sticker pack',
     pass: {
-      backgroundColor: 'rgb(20, 16, 12)',
-      foregroundColor: 'rgb(212, 190, 138)',
-      labelColor: 'rgb(200, 169, 110)',
+      // Antique brass — richer amber-brown. Type goes solidly gold.
+      backgroundColor: 'rgb(64, 42, 22)',
+      foregroundColor: 'rgb(244, 212, 140)',
+      labelColor: 'rgb(192, 156, 92)',
     },
     web: {
       bg: '#14100c',
@@ -113,9 +118,11 @@ export const TIERS: Tier[] = [
     maxPoints: 7500,
     perk: 'Exclusive OK Corral hat',
     pass: {
-      backgroundColor: 'rgb(28, 22, 16)',
-      foregroundColor: 'rgb(212, 190, 138)',
-      labelColor: 'rgb(200, 169, 110)',
+      // Saddle bronze — a touch of red-shift into the brown. Reads as
+      // a clear step up from Local without losing the on-brand earthiness.
+      backgroundColor: 'rgb(74, 44, 22)',
+      foregroundColor: 'rgb(248, 220, 152)',
+      labelColor: 'rgb(208, 168, 102)',
     },
     web: {
       bg: '#1c1610',
@@ -133,9 +140,11 @@ export const TIERS: Tier[] = [
     maxPoints: null,
     perk: 'Exclusive OK Corral tee',
     pass: {
-      backgroundColor: 'rgb(28, 22, 16)',
-      foregroundColor: 'rgb(232, 204, 138)',
-      labelColor: 'rgb(212, 190, 138)',
+      // Deep mahogany — the richest tier. Pronounced red-brown that
+      // reads instantly as "premium" on a lock-screen glance.
+      backgroundColor: 'rgb(84, 38, 18)',
+      foregroundColor: 'rgb(255, 232, 168)',
+      labelColor: 'rgb(232, 188, 122)',
     },
     web: {
       bg: '#1c1610',
