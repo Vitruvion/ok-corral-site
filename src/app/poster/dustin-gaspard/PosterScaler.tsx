@@ -3,7 +3,7 @@
 /**
  * Two client-side responsibilities for the poster page:
  *
- * 1. Letterbox-fit the fixed 1080×1680 poster into whatever viewport
+ * 1. Letterbox-fit the fixed 1080×1750 poster into whatever viewport
  *    it lands in. Mirrors the inline <script> at the bottom of the
  *    design prototype's HTML. Runs once on mount and again on resize.
  *
@@ -37,7 +37,7 @@ export default function PosterScaler({ className, children }: Props) {
     const fit = () => {
       const pad = 24
       const sx = (window.innerWidth - pad * 2) / 1080
-      const sy = (window.innerHeight - pad * 2) / 1680
+      const sy = (window.innerHeight - pad * 2) / 1750
       const s = Math.min(sx, sy)
       wrap.style.transform = `scale(${s})`
     }
