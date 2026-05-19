@@ -189,7 +189,12 @@
 }
 .venue {
   font-family: var(--font-rye), serif;
-  font-size: 40px;
+  /* 40 → 36 (-10%) so "an evening of Cajun soul & Appalachian song"
+     fits on a single line inside the 952px content area instead of
+     orphaning "song" on a second line. Stays distinctly larger than
+     the 30px .presents above and the 30px "featuring" kicker below
+     in the title-block cascade. */
+  font-size: 36px;
   letter-spacing: 0.04em;
   margin: 0;
   line-height: 1;
