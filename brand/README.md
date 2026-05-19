@@ -19,6 +19,23 @@ If you regenerate the favicons, render page 9 at high DPI and
 preserve the hand-drawn stroke imperfections — they are
 intentional brand voice and must not be vectorized or smoothed.
 
+### `ok-monogram-red-transparent.png`
+
+1024×1024 PNG. The same page-9 OK monogram, but with strokes
+recolored to **`#A8332A`** (barn red) and the previously black
+background flipped to a true alpha channel (transparent). Edge
+anti-aliasing is preserved as a continuous alpha gradient so the
+strokes feather cleanly when composited onto any backdrop.
+
+**Use:** drop-in center logo for QR codes (e.g. qrcode-monkey)
+on printed flyers / table tents. Not loaded by the live site —
+purely a design asset for external tools.
+
+To regenerate: same pipeline as the favicon set (pdfjs-dist +
+node-canvas + sharp), but skip the black-canvas composite and
+instead convert white→red with luminance-as-alpha. See the
+commit that introduced this file for the script.
+
 ## Adding new master assets
 
 Drop additional PDFs/AI/Figma exports here and note their purpose
