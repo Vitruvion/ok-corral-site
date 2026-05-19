@@ -28,9 +28,13 @@
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d; /* iOS Safari needs the prefix */
   transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
-  /* Light drop-shadow that follows the 3D tilt; the .face box-shadow
-     carries the main weight of the lift. */
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+  /* INTENTIONALLY NO `filter` here. Per the CSS spec, applying any
+     `filter` to a preserve-3d container flattens its 3D rendering
+     context — descendants render in 2D and `backface-visibility:
+     hidden` becomes a no-op. The symptom is the front face showing
+     through as a mirrored 2D layer when the card flips, exactly the
+     bug Brady saw on his iPhone. The strong layered box-shadow on
+     `.face` already carries the visual lift. */
   /* Let vertical page scrolls pass through the card on touch devices —
      otherwise the floating animation gesture wins and the page locks.
      Single taps still flip via the onClick handler. */
@@ -86,16 +90,14 @@
   flex-direction: column;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* Force a real 3D layer so backface-visibility is honored. Both
-     rotateY(0) AND translateZ(0) get simplified by the browser to
-     `matrix(1, 0, 0, 1, 0, 0)` — a 2D identity — and iOS Safari
-     then treats the face as "not in 3D space", letting front-face
-     content show through when the card flips. A sub-pixel non-zero
-     Z translate survives the simplification (computed style is
-     `matrix3d(…, 0.01, 1)`), invisible but enough to keep the
-     compositor honest. */
-  transform: translateZ(0.01px);
-  -webkit-transform: translateZ(0.01px);
+  /* Force a real 3D layer so backface-visibility is honored. A 1px
+     Z translate puts the front face slightly forward of the back —
+     both `rotateY(0)` and `translateZ(0)` simplify to a 2D identity
+     matrix, which browsers treat as "not in 3D space" and silently
+     drop backface-visibility. The non-zero Z value survives that
+     simplification (computed style is `matrix3d(…, 1, 1)`). */
+  transform: translateZ(1px);
+  -webkit-transform: translateZ(1px);
   /* Outer shadows first (lift off dark hero), then inset highlight at
      the top edge, then the tier glow as ambient warmth on top. */
   box-shadow:
