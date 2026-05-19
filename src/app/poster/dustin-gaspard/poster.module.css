@@ -484,7 +484,12 @@
   position: absolute;
   left: 100px;
   right: 100px;
-  bottom: 46px;
+  /* Dropped 46 → 20 so the footer's border-top divider line slides
+     ~26px lower in the poster, clearing the bottom edge of the black
+     .date frame in the center column above. Date frame previously
+     crossed the divider line by ~16px — net ~10px of breathing room
+     now sits between the date frame's bottom edge and the divider. */
+  bottom: 20px;
   z-index: 3;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
