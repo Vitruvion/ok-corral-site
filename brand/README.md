@@ -22,10 +22,16 @@ intentional brand voice and must not be vectorized or smoothed.
 ### `ok-monogram-red-transparent.png`
 
 1024×1024 PNG. The same page-9 OK monogram, but with strokes
-recolored to **`#A8332A`** (barn red) and the previously black
-background flipped to a true alpha channel (transparent). Edge
-anti-aliasing is preserved as a continuous alpha gradient so the
-strokes feather cleanly when composited onto any backdrop.
+recolored to **`#902C1A`** (oxblood barn red, matches the flyer)
+and the previously black background flipped to a true alpha
+channel (transparent). Edge anti-aliasing is preserved as a
+continuous alpha gradient so the strokes feather cleanly when
+composited onto any backdrop.
+
+**Color note:** the first generation of this file used `#A8332A`
+which read slightly too bright/orange next to the printed flyer.
+Corrected to `#902C1A` (RGB 144, 44, 26) so the on-screen QR-embed
+logo matches the flyer's actual ink.
 
 **Use:** drop-in center logo for QR codes (e.g. qrcode-monkey)
 on printed flyers / table tents. Not loaded by the live site —
