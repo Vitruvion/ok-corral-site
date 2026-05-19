@@ -201,17 +201,19 @@ export default function DustinGaspardPosterPage() {
               </section>
             </div>
 
-            {/* Footer band */}
+            {/* Footer band. Three-column grid (1fr auto 1fr) kept intact;
+                the whole tagline now lives in the auto-sized center cell
+                so it reads as one continuous, centered line. Left/right
+                cells are left as empty placeholders to preserve the
+                existing grid balance — no CSS changes. */}
             <footer className={styles.footer}>
-              <div className={styles.footerLeft}>
+              <div className={styles.footerLeft}></div>
+              <div className={styles.footerCenter}>
                 <span className={styles.footerStar}>★</span>
-                <span>LIVE MUSIC</span>
-              </div>
-              <div className={styles.footerCenter}>ONE STAGE · ONE HELL OF A NIGHT</div>
-              <div className={styles.footerRight}>
-                <span>STRICTLY 21 &amp; UP</span>
+                {' '}LIVE MUSIC · 21 &amp; UP{' '}
                 <span className={styles.footerStar}>★</span>
               </div>
+              <div className={styles.footerRight}></div>
             </footer>
         </article>
       </PosterScaler>
