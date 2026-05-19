@@ -426,6 +426,19 @@
   color: #2a1f17;
   margin-top: 8px;
 }
+/* Two-line street/city address inserted between "The OK Corral" and
+   the italic tagline in the venue column. Smaller than the tagline
+   (the venue name stays the visual anchor), italic serif for
+   continuity with the tagline below. */
+.colAddress {
+  font-family: var(--font-fell), serif;
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1.22;
+  color: #2a1f17;
+  margin-top: 8px;
+  opacity: 0.88;
+}
 
 .date {
   position: relative;
@@ -520,6 +533,25 @@
   font-size: 16px;
   letter-spacing: 0;
   line-height: 1;
+}
+/* Inline Instagram glyph + handle group on the left side of the
+   footer ribbon. The two are wrapped in an inline-flex with a tight
+   internal gap so they read as one unit, separated from the leading
+   ★ by the .footerLeft container's own 14px gap. */
+.footerIgHandle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.footerIg {
+  width: 16px;
+  height: 16px;
+  /* Brand red — matches the rest of the poster's red ink. */
+  color: #902C1A;
+  flex-shrink: 0;
+  /* Optical alignment: drop the glyph 1px so its center sits on the
+     text x-height baseline rather than the cap height. */
+  transform: translateY(1px);
 }
 
 /* ===== Marginal "one night only" stamp ===== */

@@ -181,6 +181,9 @@ export default function DustinGaspardPosterPage() {
                   <div className={styles.colBig}>
                     The OK<br />Corral
                   </div>
+                  <div className={styles.colAddress}>
+                    3633 Main Street<br />Cottonwood, CA 96022
+                  </div>
                   <div className={styles.colSub}>music at 8:30 pm</div>
                 </div>
 
@@ -201,19 +204,34 @@ export default function DustinGaspardPosterPage() {
               </section>
             </div>
 
-            {/* Footer band. Three-column grid (1fr auto 1fr) kept intact;
-                the whole tagline now lives in the auto-sized center cell
-                so it reads as one continuous, centered line. Left/right
-                cells are left as empty placeholders to preserve the
-                existing grid balance — no CSS changes. */}
+            {/* Footer band. Three-cell ribbon: IG handle (left), LIVE
+                MUSIC (center), 21 & UP (right). Leading and trailing
+                ★ glyphs at the very ends of the ribbon. */}
             <footer className={styles.footer}>
-              <div className={styles.footerLeft}></div>
-              <div className={styles.footerCenter}>
+              <div className={styles.footerLeft}>
                 <span className={styles.footerStar}>★</span>
-                {' '}LIVE MUSIC · 21 &amp; UP{' '}
+                <span className={styles.footerIgHandle}>
+                  <svg
+                    className={styles.footerIg}
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="5" ry="5"
+                      fill="none" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="12" cy="12" r="4"
+                      fill="none" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="17.5" cy="6.5" r="1.1"
+                      fill="currentColor" stroke="none" />
+                  </svg>
+                  <span>@okcorralsaloon</span>
+                </span>
+              </div>
+              <div className={styles.footerCenter}>LIVE MUSIC</div>
+              <div className={styles.footerRight}>
+                <span>21 &amp; UP</span>
                 <span className={styles.footerStar}>★</span>
               </div>
-              <div className={styles.footerRight}></div>
             </footer>
         </article>
       </PosterScaler>
