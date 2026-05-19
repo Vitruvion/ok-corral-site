@@ -362,27 +362,17 @@
 
 /* ===== QR code (sits between support credits and bottom row) ===== */
 .qr {
-  /* QR kept at the prototype's 95px. The fixed 1080×1680 poster
-     was already at the edge of its vertical budget — keeping the
-     date-medallion padding fix (14/12 from b557f00, +4px on the
-     bottom-row height) takes any remaining slack, so even the
-     original 95px QR is borderline. Measured: at 95 + 36-margin,
-     "music at 8:30 pm" / "smoked low & slow" italic glyphs sit
-     ~10px below the footer's top border (was 0-ish in the truly-
-     original 8/10 date padding).
-     Growing the QR meaningfully (≥115) needs an architectural
-     change to the bottom region — increase poster height, shrink
-     the hero photo, or trim line-leading on the support credits.
-     Flagged for a separate commit per the user's "no redesign"
-     scope on this one. */
+  /* 95 → 115 (+21%). The structural budget from commit ba0c0a2
+     (poster 1750, hero photo 360) absorbs this with all surrounding
+     clearances preserved. Verified visually + by DOM measurement. */
   margin: 36px auto 0;
   text-align: center;
-  width: 95px;
+  width: 115px;
 }
 .qrImage {
   display: block;
-  width: 95px;
-  height: 95px;
+  width: 115px;
+  height: 115px;
   image-rendering: pixelated;
 }
 .qrCaption {
