@@ -199,6 +199,14 @@ export default function DustinGaspardPosterPage() {
                   <div className={styles.colBig}>
                     Britton&apos;s<br />Bar-B-Q
                   </div>
+                  {/* Two-line credit + IG handle, mirroring the venue
+                      column's address block opposite. Same .colAddress
+                      styling (italic serif, muted body color) — the
+                      class name predates this use but the typography is
+                      shared between the two columns by design. */}
+                  <div className={styles.colAddress}>
+                    Bobby Britton, Pitmaster<br />@brittonsbbqanddeli
+                  </div>
                   <div className={styles.colSub}>smoked low &amp; slow</div>
                 </div>
               </section>

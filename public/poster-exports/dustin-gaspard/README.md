@@ -60,9 +60,8 @@ typography). The differences are layout-only adjustments to fit 4:5:
 | | Print | Instagram |
 |---|---|---|
 | Canvas | 1080×1800 | 1080×1350 |
-| Hero photo height | 360 | 250 |
+| Hero photo height | 360 | 220 |
 | Tanner credits | 3 lines (includes "music begins at eight-thirty sharp") | 1 line ("songwriter · banjoist · poet · featured on NPR") |
-| Venue address | "3633 Main Street / Cottonwood, CA 96022" shown | omitted (lives in IG caption) |
 | Footer ribbon | "★ [IG]@okcorralsaloon · LIVE MUSIC · 21 & UP ★" | removed (info in caption) |
 
 Everything else — wordmark, three-column bottom row, QR code, wax

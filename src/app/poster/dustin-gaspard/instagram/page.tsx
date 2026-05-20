@@ -168,10 +168,9 @@ export default function DustinGaspardInstagramPosterPage() {
                   <div className={styles.colBig}>
                     The OK<br />Corral
                   </div>
-                  {/* Venue street address omitted on the IG variant —
-                      lives in the Instagram caption instead, where the
-                      audience can tap a map link directly. Keeps the
-                      venue column symmetric with the BBQ column. */}
+                  <div className={styles.colAddress}>
+                    3633 Main Street<br />Cottonwood, CA 96022
+                  </div>
                   <div className={styles.colSub}>music at 8:30 pm</div>
                 </div>
 
@@ -186,6 +185,11 @@ export default function DustinGaspardInstagramPosterPage() {
                   <div className={styles.colKicker}>★&nbsp; ON THE PIT &nbsp;★</div>
                   <div className={styles.colBig}>
                     Britton&apos;s<br />Bar-B-Q
+                  </div>
+                  {/* Mirrors the venue column's address block opposite
+                      for symmetric column depth in the bottom row. */}
+                  <div className={styles.colAddress}>
+                    Bobby Britton, Pitmaster<br />@brittonsbbqanddeli
                   </div>
                   <div className={styles.colSub}>smoked low &amp; slow</div>
                 </div>

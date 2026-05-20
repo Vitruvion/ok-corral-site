@@ -258,12 +258,12 @@
   position: relative;
   margin: 8px auto 0;
   width: 580px;
-  /* 360 (print) → 250 for the Instagram 4:5 variant — compresses
-     the biggest single vertical chunk by 110px so the bottom row
-     clears the inner frame border with breathing room. Photo crop
-     unchanged. (Was 290; clipping at that height showed bottom
-     border + corner diamonds obscured by the bottom row.) */
-  height: 250px;
+  /* 360 (print) → 220 for the Instagram 4:5 variant — compresses
+     the biggest single vertical chunk by 140px so the bottom row
+     (now 5 lines per side after adding the venue address back +
+     the BBQ pitmaster/handle credit) clears the inner frame border
+     with breathing room. Photo crop unchanged. */
+  height: 220px;
   overflow: hidden;
   border: 2px solid #1a1410;
   box-shadow: 0 0 0 8px #ecdfc4, 0 0 0 10px #1a1410;
