@@ -72,6 +72,20 @@ cream variant adds an SVG-rasterized rounded-rect plate that
 the red monogram composites onto. See the commit that
 introduced each file for the exact script.
 
+## Coaster print files
+
+Print-ready PDFs for 3.5" round pulpboard coasters live alongside
+their source PNG:
+
+- `ok-corral-coaster-source.png` — source artwork (both designs
+  side-by-side on white)
+- `coaster-side-a-bullseye.pdf` — front (bullseye + curved text)
+- `coaster-side-b-monogram.pdf` — back (OK monogram on solid black)
+- `coaster-print-README.md` — detailed print specs, what to tell
+  the shop, and recommended print services
+
+See `coaster-print-README.md` for the full pipeline + print specs.
+
 ## Adding new master assets
 
 Drop additional PDFs/AI/Figma exports here and note their purpose
