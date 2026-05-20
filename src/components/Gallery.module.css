@@ -15,25 +15,7 @@
   cursor: pointer;
 }
 
-.item:hover .caption { opacity: 1; transform: translateY(0); }
 .item:hover .zoom { opacity: 1; }
-
-.caption {
-  position: absolute;
-  left: 14px;
-  bottom: 12px;
-  font-family: var(--ff-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bone);
-  background: rgba(15,13,11,0.85);
-  border: 1px solid rgba(235,228,212,0.14);
-  padding: 4px 8px;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: all 300ms ease;
-}
 
 .zoom {
   position: absolute;
@@ -127,13 +109,6 @@
   height: auto !important;
 }
 
-.lbCaption {
-  font-family: var(--ff-display);
-  font-size: 20px;
-  color: var(--bone);
-  text-transform: uppercase;
-}
-
 .lbClose {
   position: fixed;
   top: 20px;
@@ -189,7 +164,6 @@
   .item:first-child, .item:nth-child(4), .item:last-child {
     grid-column: span 6 !important;
   }
-  .caption { opacity: 0.92; transform: translateY(0); }
   .follow {
     flex-direction: column;
     align-items: flex-start;

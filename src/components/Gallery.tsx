@@ -38,11 +38,9 @@ export default function GallerySection() {
             >
               <ImageOrPlaceholder
                 src={item.image}
-                alt={item.label}
-                label={item.label}
+                alt=""
                 loading={i < 4 ? 'eager' : 'lazy'}
               />
-              <span className={styles.caption}>{item.label}</span>
               <span className={styles.zoom}>⤢</span>
             </button>
           ))}
@@ -68,13 +66,11 @@ export default function GallerySection() {
             <div className={styles.lbImageWrap}>
               <ImageOrPlaceholder
                 src={GALLERY[lightbox].image}
-                alt={GALLERY[lightbox].label}
-                label={GALLERY[lightbox].label}
+                alt=""
                 cover={false}
                 loading="eager"
               />
             </div>
-            <span className={styles.lbCaption}>{GALLERY[lightbox].label}</span>
           </div>
           <button className={styles.lbClose} onClick={closeLb}>✕</button>
           <button className={`${styles.lbNav} ${styles.lbPrev}`} onClick={(e) => { e.stopPropagation(); prevLb(); }}>←</button>

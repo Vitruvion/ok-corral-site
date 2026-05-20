@@ -51,7 +51,7 @@
 - Established year: 1954 (Hero.tsx and `BRAND.since` in `src/lib/data.ts`)
 - Hero: parallax storefront photo + dust particles + animated wordmark + NEXT UP badge + tagline + What's On button
 - Marquee: rAF-driven scroll (50 px/s), drag-to-pan with smooth resume, mobile 16px font + 40px gap below 760px. **`@keyframes marqueeScroll` MUST live inside `Marquee.module.css`** (don't move back to globals — CSS Modules can't resolve external keyframe references; same trap re-hit on card.module.css, see Card section)
-- Gallery (16 items): g1=Cowboy Up, g2=Camo Cali, g3=Pool Night, g4=Ladies, g5=Camel Day, g6=Regulars, g7=Break Shot, g8=Saturday Night, g9=Patio Night, g10=Spencer, g11=The Crowd, g12=Locals, g13=Patio · Cigars & Cold Ones, g14=Dillon, g15=The Boys, g16=Car Show · Out Front
+- Gallery (16 items): photos render in a 12-col masonry grid with per-item `cols`/`rows` spans from `GALLERY` in `src/lib/data.ts`. No captions (removed); each tile keeps its hover zoom glyph and click-to-lightbox behavior.
 - Social links (Topbar, MobileMenu, Footer): IG + Facebook + TikTok wired via `SocialIcons` component
 - AgeGate: bare `position: fixed; inset: 0; display: grid; place-items: center` after 4 centering iterations — don't refactor this layout
 - Map: dark filter `filter: brightness(0.7) contrast(1.1) saturate(0.8)` on the iframe (Google embed doesn't accept style params)
