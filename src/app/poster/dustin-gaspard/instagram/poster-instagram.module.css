@@ -134,11 +134,14 @@
 
 .content {
   position: absolute;
-  /* Tighter bottom inset for the Instagram variant — no footer band
-     to clear, so the bottom row sits closer to the poster's bottom
-     border. 28px keeps a comfortable margin to the inner frame
-     while leaving the content room to fit without overflow. */
-  inset: 44px 64px 28px;
+  /* 28 → 50 — the prior 28px left the bottom row visually
+     touching the inner frame border at y=1324 and obscuring the
+     bottom corner diamonds. The .frame is inset 26px, so a 50px
+     content-bottom inset gives ~24px clearance between the bottom
+     row and the frame border, and ~50px from the bottom row to
+     the poster's bottom edge. Hero photo height and 1-line
+     Tanner credits absorb the lost vertical budget. */
+  inset: 44px 64px 50px;
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
   z-index: 3;
@@ -255,10 +258,12 @@
   position: relative;
   margin: 8px auto 0;
   width: 580px;
-  /* 360 → 290 for the Instagram 4:5 variant — compresses the
-     biggest single vertical chunk by 70px without losing the
-     photo as the focal point. Photo crop unchanged. */
-  height: 290px;
+  /* 360 (print) → 250 for the Instagram 4:5 variant — compresses
+     the biggest single vertical chunk by 110px so the bottom row
+     clears the inner frame border with breathing room. Photo crop
+     unchanged. (Was 290; clipping at that height showed bottom
+     border + corner diamonds obscured by the bottom row.) */
+  height: 250px;
   overflow: hidden;
   border: 2px solid #1a1410;
   box-shadow: 0 0 0 8px #ecdfc4, 0 0 0 10px #1a1410;

@@ -8,21 +8,29 @@ poster. Generated from the Next.js routes at:
 
 ## Files
 
-### `dustin-gaspard-print.pdf` — print PDF
-
-1080 × 1800 pt PDF, vector text + embedded raster (hero photo, QR).
-
-**Use for:** printing flyers / table tents / window posters at any
-physical size — the embedded vector text and the layered grain stays
-crisp at high DPI. Send directly to print shops.
-
-### `dustin-gaspard-print-2x.png` — high-DPI raster
+### `dustin-gaspard-print-2x.png` — print master
 
 2160 × 3600 px PNG (= 1080 × 1800 at 2× device pixel ratio).
+**This is the canonical print file** — send it directly to print
+shops.
 
-**Use for:** digital sharing where a single image file is easier than
-a PDF — web previews, email blasts, retina-display digital frames,
-fallback for clients that don't render PDF well.
+Print-shop notes:
+- At tabloid size (11 × 17 in) this works out to ~196 DPI on the
+  long edge, which is well within the 150–300 DPI range that most
+  print shops accept for posters and flyers. For half-letter table
+  tents (5.5 × 8.5 in) you're effectively at 400+ DPI.
+- High-resolution PNG is fine for poster / flyer / table-tent
+  printing — virtually every shop's web upload accepts PNG, and
+  the layered paper grain + foxing + vignette stays crisp at any
+  practical print size.
+- The cream paper, oxblood ink (`#902C1A` / `#8e2a18`), and dark
+  brown body color are baked in. No bleed margin is included — the
+  poster is designed as a finished 1080×1800 art board, so ask the
+  shop to print flush (or add bleed in their pipeline) if needed.
+
+**Also useful for:** digital sharing where a single image file is
+easier than a vector format — web previews, email blasts,
+retina-display digital frames.
 
 ### `dustin-gaspard-instagram.png` — Instagram 4:5
 
@@ -52,8 +60,8 @@ typography). The differences are layout-only adjustments to fit 4:5:
 | | Print | Instagram |
 |---|---|---|
 | Canvas | 1080×1800 | 1080×1350 |
-| Hero photo height | 360 | 290 |
-| Tanner credits | 3 lines (includes "music begins at eight-thirty sharp") | 2 lines (line dropped since "music at 8:30 pm" appears in the venue column) |
+| Hero photo height | 360 | 250 |
+| Tanner credits | 3 lines (includes "music begins at eight-thirty sharp") | 1 line ("songwriter · banjoist · poet · featured on NPR") |
 | Venue address | "3633 Main Street / Cottonwood, CA 96022" shown | omitted (lives in IG caption) |
 | Footer ribbon | "★ [IG]@okcorralsaloon · LIVE MUSIC · 21 & UP ★" | removed (info in caption) |
 
@@ -69,7 +77,7 @@ npm run export-poster
 
 The script (`scripts/export-poster.ts`) spawns its own Next.js dev
 server on port 4099, drives Playwright Chromium through both routes,
-and writes the three artifacts to this directory. Approximate runtime:
+and writes the two artifacts to this directory. Approximate runtime:
 30–60s including Next compile.
 
 Requirements:

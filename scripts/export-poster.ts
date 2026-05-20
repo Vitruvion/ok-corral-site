@@ -1,9 +1,8 @@
 /**
  * Headless-browser export pipeline for the Dustin Dale Gaspard poster.
  *
- * Produces three artifacts in /public/poster-exports/dustin-gaspard/:
- *   - dustin-gaspard-print.pdf     (1080×1800, print PDF)
- *   - dustin-gaspard-print-2x.png  (2160×3600, high-DPI PNG)
+ * Produces two artifacts in /public/poster-exports/dustin-gaspard/:
+ *   - dustin-gaspard-print-2x.png  (2160×3600, high-DPI PNG — the print master)
  *   - dustin-gaspard-instagram.png (1080×1350, IG 4:5 PNG)
  *
  * Usage:  npm run export-poster
@@ -11,6 +10,12 @@
  * The script spawns its own Next.js dev server on a free port, waits
  * for it to come up, then drives Playwright Chromium through both
  * routes. Cleans up the dev server on exit (including on error).
+ *
+ * Note: a PDF export used to live here too, but Playwright's printed
+ * PDF introduced a pink/magenta color cast on the cream paper that
+ * we couldn't fix without re-engineering the color pipeline. The
+ * 2x PNG is print-shop-friendly at 200+ DPI for tabloid (11×17)
+ * and is the canonical print artifact now.
  */
 
 import { spawn, type ChildProcess } from 'node:child_process'
@@ -73,7 +78,7 @@ function startDevServer(): ChildProcess {
  * Wait until fonts are loaded AND all images on the page have
  * finished decoding. The PosterScaler's transform-scale renders
  * before fonts swap in; if we screenshot before fonts settle we
- * get a flash of fallback serifs in the PDF.
+ * get a flash of fallback serifs in the rendered PNG.
  */
 async function waitForRender(page: Page) {
   await page.evaluate(() => document.fonts.ready)
@@ -167,34 +172,9 @@ async function main() {
     browser = await chromium.launch({ headless: true })
 
     // ── Print poster ─────────────────────────────────────────────
-    // 1x context for the PDF. Viewport set generously larger than
-    // the poster so the scaler computes s=1 (then we still pin to
-    // native size via injected JS as a belt-and-suspenders).
-    log('Rendering print poster (PDF + 2x PNG)')
+    log('Rendering print poster (2x PNG)')
 
-    const ctx1x = await browser.newContext({
-      viewport: { width: PRINT_W + 200, height: PRINT_H + 200 },
-      deviceScaleFactor: 1,
-    })
-    const printPage = await ctx1x.newPage()
-    await printPage.goto(`${BASE}${PRINT_ROUTE}`, { waitUntil: 'networkidle' })
-    await waitForRender(printPage)
-    await pinPosterToNativeSize(printPage, PRINT_W, PRINT_H)
-    await waitForRender(printPage)
-
-    // PDF — page-sized exactly to the poster
-    await printPage.pdf({
-      path: path.join(OUT_DIR, 'dustin-gaspard-print.pdf'),
-      width: `${PRINT_W}px`,
-      height: `${PRINT_H}px`,
-      printBackground: true,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' },
-      preferCSSPageSize: false,
-    })
-    log(`  wrote ${path.join(OUT_DIR, 'dustin-gaspard-print.pdf')}`)
-    await ctx1x.close()
-
-    // 2x context for the high-DPI PNG.
+    // 2x context for the high-DPI PNG (the print master).
     const ctx2x = await browser.newContext({
       viewport: { width: PRINT_W + 200, height: PRINT_H + 200 },
       deviceScaleFactor: 2,

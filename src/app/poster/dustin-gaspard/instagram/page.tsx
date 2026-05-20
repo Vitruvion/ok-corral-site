@@ -142,13 +142,13 @@ export default function DustinGaspardInstagramPosterPage() {
                   <div className={styles.flourishLine} />
                 </div>
                 <h2 className={styles.supportOpener}>Tanner Bingaman</h2>
-                {/* Credits trimmed to 2 lines for the 4:5 canvas. "Music
-                    begins at eight-thirty sharp" was the third line on the
-                    print poster; it's omitted here because the bottom row's
-                    "music at 8:30 pm" tagline already conveys that. */}
+                {/* Credits collapsed to a single line for the 4:5 canvas.
+                    The print variant carries the full "from the hills of
+                    Appalachia / NPR / Emerging Artist of the Year" credit
+                    block; the IG canvas can't afford the vertical budget
+                    without clipping the bottom frame + corner diamonds. */}
                 <p className={styles.supportCreds}>
-                  songwriter · banjoist · poet, from the hills of Appalachia.<br />
-                  featured on NPR &nbsp;·&nbsp; Emerging Artist of the Year, Susquehanna Folk Music Society.
+                  songwriter · banjoist · poet · featured on NPR
                 </p>
 
                 <div className={styles.qr}>
