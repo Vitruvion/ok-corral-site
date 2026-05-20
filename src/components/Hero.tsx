@@ -132,7 +132,7 @@ export default function Hero() {
         <div className={styles.bottom}>
           <div className={styles.tagline}>
             <em>
-              NorCal&apos;s favorite western dive bar.
+              NorCal&apos;s favorite western bar.
             </em>
           </div>
           <div className={styles.meta}>

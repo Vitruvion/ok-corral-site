@@ -47,7 +47,7 @@
 
 ### 1. Site polish (deployed)
 
-- Tagline: "NorCal's favorite western dive bar."
+- Tagline: "NorCal's favorite western bar."
 - Established year: 1954 (Hero.tsx and `BRAND.since` in `src/lib/data.ts`)
 - Hero: parallax storefront photo + dust particles + animated wordmark + NEXT UP badge + tagline + What's On button
 - Marquee: rAF-driven scroll (50 px/s), drag-to-pan with smooth resume, mobile 16px font + 40px gap below 760px. **`@keyframes marqueeScroll` MUST live inside `Marquee.module.css`** (don't move back to globals — CSS Modules can't resolve external keyframe references; same trap re-hit on card.module.css, see Card section)

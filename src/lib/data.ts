@@ -24,7 +24,7 @@ export const BRAND = {
   name: 'The OK Corral',
   location: 'Cottonwood, California',
   since: 'Est. 1954',
-  tagline: "NorCal's favorite western dive bar.",
+  tagline: "NorCal's favorite western bar.",
   address: {
     line1: '3633 Main Street',
     line2: 'Cottonwood, CA 96022',
