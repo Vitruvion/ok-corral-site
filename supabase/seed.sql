@@ -91,6 +91,10 @@ insert into drinks (category, name, tagline, price, description, sort_order) val
   (E'Saloon Cocktails', E'Outlaw Vesper Martini',   E'Amass Gin \u00B7 vodka \u00B7 Lillet Blanc',         E'$14', E'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.', 3),
   (E'Saloon Cocktails', E'Giddy Up',                E'Vodka \u00B7 Kahl\u00FAa \u00B7 cold brew',               E'$7',  E'Happy Cow Vodka, Kahl\u00FAa, cold brew, served over ice. Easy drinkin'' pick-me-up.', 4),
   (E'Saloon Cocktails', E'Dive Bar Spritz',         E'High Life \u00B7 Aperol \u00B7 lemon',               E'$6',  E'Miller High Life bottle, Aperol, fresh lemon.', 5),
+  (E'Saloon Cocktails', E'Bloody Bull',             E'Happy Cow Vodka \u00B7 beef-broth bloody \u00B7 olives', E'$10', E'Happy Cow Vodka with our house bloody mix, built on beef broth the proper way. Mild by default, fired up on request. Stacked with green olives, peperoncini, and citrus.', 6),
+  (E'Saloon Cocktails', E'Spicy Cowgirl Margarita', E'Herradura Reposado \u00B7 jalape\u00F1o \u00B7 Taj\u00EDn rim', E'$13', E'Herradura Reposado shaken with fresh jalape\u00F1o, agave, and lime. Taj\u00EDn rim. Earns the name.', 7),
+  (E'Saloon Cocktails', E'"You Name It"',           E'Empress Gin \u00B7 elderflower \u00B7 grapefruit',   E'$13', E'Empress Gin with elderflower, grapefruit bitters, and a touch of sugar. Lemon and rosemary on top. Tell us what to call it.', 8),
+  (E'Saloon Cocktails', E'Ranch Water',             E'Mijenta Blanco \u00B7 chile ancho \u00B7 hop water', E'$10', E'Mijenta Blanco with chile ancho liqueur and fresh lime, topped with hop water. Taj\u00EDn rim. Easy drinking with a little smoke.', 9),
   -- Shots & Bombs
   (E'Shots & Bombs', E'Smoked Steak Shot', E'Jameson \u00B7 Worcestershire \u00B7 black pepper', E'$8', E'Jameson, chased with smoked Worcestershire and cracked black pepper.', 1),
   (E'Shots & Bombs', E'Scorpion Shooter',  E'+$3 add-on to any shot',                  E'$3', E'Add an edible scorpion to any shot.', 2),
