@@ -37,6 +37,68 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/*
+          FOUC suppression — keeps the body invisible until the page's
+          CSS has loaded, so users never see the bare-HTML render. The
+          painful case is iOS Safari restoring a backgrounded tab: it
+          repaints cached HTML but doesn't always re-apply CSS or
+          rehydrate JS until the user manually refreshes.
+
+          Strategy:
+            - Inline <style> hides <body> by default (opacity: 0) and
+              paints <html> with the brand ink so the user doesn't see
+              a white flash while body is hidden.
+            - Inline <script> reveals the body once styles are confirmed
+              loaded (DOMContentLoaded / window.load / requestAnimationFrame),
+              with a 500ms safety timeout so slow connections still reveal
+              eventually.
+            - On visibilitychange (tab restored from hidden state), if
+              body's computed background-color doesn't match the brand
+              ink, styles are gone — force window.location.reload().
+            - <noscript> override keeps body visible without JS so crawlers
+              and JS-disabled users see the content.
+
+          Note: this lives in the server-rendered HTML head, so it
+          executes before React hydration and before the body is fully
+          parsed — that's intentional, it's the only place that can win
+          the race against first paint.
+        */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html:
+              'html{background:#0b0908}body{opacity:0;transition:opacity 120ms ease-out}body.fouc-ready{opacity:1}',
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+var revealed=false;
+function reveal(){if(revealed)return;revealed=true;if(document.body)document.body.classList.add('fouc-ready');}
+function tryReveal(){if(document.body)requestAnimationFrame(reveal);}
+if(document.readyState!=='loading')tryReveal();
+document.addEventListener('DOMContentLoaded',tryReveal);
+window.addEventListener('load',reveal);
+setTimeout(reveal,500);
+var BRAND_BG='rgb(11,';
+function stylesOk(){if(!document.body)return true;var bg=getComputedStyle(document.body).backgroundColor||'';return bg.replace(/\\s/g,'').indexOf(BRAND_BG)===0;}
+var wasHidden=false;
+document.addEventListener('visibilitychange',function(){
+if(document.visibilityState==='hidden'){wasHidden=true;return;}
+if(document.visibilityState!=='visible'||!wasHidden)return;
+wasHidden=false;
+setTimeout(function(){if(!stylesOk())window.location.reload();},150);
+});
+})();`,
+          }}
+        />
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html:
+                'body{opacity:1!important;transition:none!important}',
+            }}
+          />
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -61,7 +123,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      {/* suppressHydrationWarning: the FOUC head script adds the
+          `fouc-ready` class to <body> before React hydrates, which
+          would otherwise log a "Extra attributes from the server: class"
+          hydration mismatch in dev. The mismatch is intentional and
+          harmless — React doesn't manage that class. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
