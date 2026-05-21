@@ -13,7 +13,7 @@ export default function Footer() {
         <div className={styles.brand}>
           <Wordmark variant="stacked" />
           <p className={styles.brandDesc}>
-            <em>Home of the Scorpion Shot. Cottonwood, California. Since 2025.</em>
+            <em>Home of the Scorpion Shot. Cottonwood, California. Since 1954.</em>
           </p>
         </div>
         <div className={styles.col}>

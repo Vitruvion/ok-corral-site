@@ -17,7 +17,7 @@ export default function GiftCards() {
               <div className={styles.artBottom}>
                 <div>
                   <span className={styles.artSmall}>COTTONWOOD · CA</span>
-                  <span className={styles.artSmall}>EST. 2025</span>
+                  <span className={styles.artSmall}>EST. 1954</span>
                 </div>
                 <span className={styles.artAmount}>$100</span>
               </div>

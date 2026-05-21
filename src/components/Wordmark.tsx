@@ -42,7 +42,7 @@ export default function Wordmark({ variant, size, className = '' }: Props) {
       <div className={styles.fullMain}>O.K.&nbsp;CORRAL</div>
       <div className={styles.fullRule}>
         <span className={styles.ruleLine} style={{ opacity: 0.35 }} />
-        <span className={styles.fullSub}>COTTONWOOD · CA · EST. 2025</span>
+        <span className={styles.fullSub}>COTTONWOOD · CA · EST. 1954</span>
         <span className={styles.ruleLine} style={{ opacity: 0.35 }} />
       </div>
     </div>

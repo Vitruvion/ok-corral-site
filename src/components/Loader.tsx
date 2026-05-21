@@ -26,7 +26,7 @@ export default function Loader() {
       <div className={styles.curtainTop} />
       <div className={styles.curtainBottom} />
       <div className={styles.inner}>
-        <span className={styles.label}>◆ EST. 2025 ◆</span>
+        <span className={styles.label}>◆ EST. 1954 ◆</span>
         <h1 className={styles.wordmark}>
           {LETTERS.map((l, i) => (
             <span
