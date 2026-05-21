@@ -85,19 +85,20 @@ values
 -- -- Drinks ------------------------------------------------------
 delete from drinks;
 insert into drinks (category, name, tagline, price, description, sort_order) values
-  -- Saloon Cocktails
-  (E'Saloon Cocktails', E'Damn Good Old Fashioned', E'Buffalo Trace \u00B7 bitters \u00B7 large rock',     E'$13', E'Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you''ve had. Ask for it smoked.', 1),
-  (E'Saloon Cocktails', E'In Cold Blood',           E'Rye \u00B7 Cynar 70 \u00B7 sweet vermouth',          E'$13', E'Rittenhouse 100 Rye, Cynar 70, sweet vermouth, large rock, expressed orange. Bitter, bold, with just a touch of sweetness.', 2),
-  (E'Saloon Cocktails', E'Outlaw Vesper Martini',   E'Amass Gin \u00B7 vodka \u00B7 Lillet Blanc',         E'$14', E'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.', 3),
-  (E'Saloon Cocktails', E'Giddy Up',                E'Vodka \u00B7 Kahl\u00FAa \u00B7 cold brew',               E'$7',  E'Happy Cow Vodka, Kahl\u00FAa, cold brew, served over ice. Easy drinkin'' pick-me-up.', 4),
-  (E'Saloon Cocktails', E'Dive Bar Spritz',         E'High Life \u00B7 Aperol \u00B7 lemon',               E'$6',  E'Miller High Life bottle, Aperol, fresh lemon.', 5),
-  (E'Saloon Cocktails', E'Bloody Bull',             E'Happy Cow Vodka \u00B7 beef-broth bloody \u00B7 olives', E'$10', E'Happy Cow Vodka with our house bloody mix, built on beef broth the proper way. Mild by default, fired up on request. Stacked with green olives, peperoncini, and citrus.', 6),
-  (E'Saloon Cocktails', E'Spicy Cowgirl Margarita', E'Herradura Reposado \u00B7 jalape\u00F1o \u00B7 Taj\u00EDn rim', E'$13', E'Herradura Reposado shaken with fresh jalape\u00F1o, agave, and lime. Taj\u00EDn rim. Earns the name.', 7),
-  (E'Saloon Cocktails', E'"You Name It"',           E'Empress Gin \u00B7 elderflower \u00B7 grapefruit',   E'$13', E'Empress Gin with elderflower, grapefruit bitters, and a touch of sugar. Lemon and rosemary on top. Tell us what to call it.', 8),
-  (E'Saloon Cocktails', E'Ranch Water',             E'Mijenta Blanco \u00B7 chile ancho \u00B7 hop water', E'$10', E'Mijenta Blanco with chile ancho liqueur and fresh lime, topped with hop water. Taj\u00EDn rim. Easy drinking with a little smoke.', 9),
-  -- Shots & Bombs
-  (E'Shots & Bombs', E'Smoked Steak Shot', E'Jameson \u00B7 Worcestershire \u00B7 black pepper', E'$8', E'Jameson, chased with smoked Worcestershire and cracked black pepper.', 1),
-  (E'Shots & Bombs', E'Scorpion Shooter',  E'+$3 add-on to any shot',                  E'$3', E'Add an edible scorpion to any shot.', 2),
+  -- Saloon Cocktails -- grouped by spirit (whiskey, tequila, other), price desc within each group; Damn Good Old Fashioned pinned to top
+  (E'Saloon Cocktails', E'Damn Good Old Fashioned', E'Buffalo Trace \u00B7 bitters \u00B7 large rock',                 E'$13', E'Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you''ve had. Ask for it smoked.', 1),
+  (E'Saloon Cocktails', E'In Cold Blood',           E'Rye \u00B7 Cynar 70 \u00B7 sweet vermouth',                       E'$13', E'Rittenhouse 100 Rye, Cynar 70, sweet vermouth, large rock, expressed orange. Bitter, bold, with just a touch of sweetness.', 2),
+  (E'Saloon Cocktails', E'Spicy Cowgirl Margarita', E'Herradura Reposado \u00B7 jalape\u00F1o \u00B7 Taj\u00EDn rim',     E'$13', E'Herradura Reposado shaken with fresh jalape\u00F1o, agave, and lime. Taj\u00EDn rim. Earns the name.', 3),
+  (E'Saloon Cocktails', E'Vaquero Caf\u00E9',         E'Don Julio Reposado \u00B7 Licor 43 \u00B7 espresso \u00B7 orange', E'$13', E'Don Julio Reposado, Licor 43, and a shot of fresh espresso. Cinnamon on top, orange oils expressed over the glass. Big rock.', 4),
+  (E'Saloon Cocktails', E'Ranch Water',             E'Mijenta Blanco \u00B7 chile ancho \u00B7 hop water',              E'$10', E'Mijenta Blanco with chile ancho liqueur and fresh lime, topped with hop water. Taj\u00EDn rim. Easy drinking with a little smoke.', 5),
+  (E'Saloon Cocktails', E'Outlaw Vesper Martini',   E'Amass Gin \u00B7 vodka \u00B7 Lillet Blanc',                      E'$14', E'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.', 6),
+  (E'Saloon Cocktails', E'"You Name It"',           E'Empress Gin \u00B7 elderflower \u00B7 grapefruit',                E'$13', E'Empress Gin with elderflower, grapefruit bitters, and a touch of sugar. Lemon and rosemary on top. Tell us what to call it.', 7),
+  (E'Saloon Cocktails', E'Bloody Bull',             E'Happy Cow Vodka \u00B7 beef-broth bloody \u00B7 olives',          E'$10', E'Happy Cow Vodka with our house bloody mix, built on beef broth the proper way. Mild by default, fired up on request. Stacked with green olives, peperoncini, and citrus.', 8),
+  (E'Saloon Cocktails', E'Giddy Up',                E'Vodka \u00B7 Kahl\u00FAa \u00B7 cold brew',                         E'$8',  E'Happy Cow Vodka, Kahl\u00FAa, cold brew, served over ice. Easy drinkin'' pick-me-up.', 9),
+  (E'Saloon Cocktails', E'Dive Bar Spritz',         E'High Life \u00B7 Aperol \u00B7 lemon',                            E'$6',  E'Miller High Life bottle, Aperol, fresh lemon.', 10),
+  -- Shots & Bombs -- Scorpion Shooter pinned to top as house tradition
+  (E'Shots & Bombs', E'Scorpion Shooter',  E'+$3 add-on to any shot',                  E'$3', E'Add an edible scorpion to any shot.', 1),
+  (E'Shots & Bombs', E'Smoked Steak Shot', E'Jameson \u00B7 Worcestershire \u00B7 black pepper', E'$8', E'Jameson, chased with smoked Worcestershire and cracked black pepper.', 2),
   (E'Shots & Bombs', E'Bull Dozer',        E'J\u00E4ger \u00B7 Red Bull',                        E'$8', E'J\u00E4germeister & Red Bull in a double shot glass.', 3),
   (E'Shots & Bombs', E'Iceberg',           E'Vodka \u00B7 triple sec \u00B7 Red Bull',           E'$9', E'Vodka, triple sec, lime, topped with Coconut Berry Red Bull.', 4),
   -- Featured Beer

@@ -180,19 +180,23 @@ export type DrinkData = {
 
 export const DRINKS: Record<string, DrinkData[]> = {
   'Saloon Cocktails': [
+    // Whiskey (Damn Good Old Fashioned pinned to top)
     { name: 'Damn Good Old Fashioned',  tagline: 'Buffalo Trace · bitters · large rock',     price: '$13', description: "Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you've had. Ask for it smoked." },
     { name: 'In Cold Blood',            tagline: 'Rye · Cynar 70 · sweet vermouth',          price: '$13', description: 'Rittenhouse 100 Rye, Cynar 70, sweet vermouth, large rock, expressed orange. Bitter, bold, with just a touch of sweetness.' },
-    { name: 'Outlaw Vesper Martini',    tagline: 'Amass Gin · vodka · Lillet Blanc',         price: '$14', description: 'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.' },
-    { name: 'Giddy Up',                 tagline: 'Vodka · Kahlúa · cold brew',               price: '$7',  description: "Happy Cow Vodka, Kahlúa, cold brew, served over ice. Easy drinkin' pick-me-up." },
-    { name: 'Dive Bar Spritz',          tagline: 'High Life · Aperol · lemon',               price: '$6',  description: 'Miller High Life bottle, Aperol, fresh lemon.' },
-    { name: 'Bloody Bull',              tagline: 'Happy Cow Vodka · beef-broth bloody · olives', price: '$10', description: 'Happy Cow Vodka with our house bloody mix, built on beef broth the proper way. Mild by default, fired up on request. Stacked with green olives, peperoncini, and citrus.' },
+    // Tequila
     { name: 'Spicy Cowgirl Margarita',  tagline: 'Herradura Reposado · jalapeño · Tajín rim', price: '$13', description: 'Herradura Reposado shaken with fresh jalapeño, agave, and lime. Tajín rim. Earns the name.' },
-    { name: '"You Name It"',            tagline: 'Empress Gin · elderflower · grapefruit',   price: '$13', description: 'Empress Gin with elderflower, grapefruit bitters, and a touch of sugar. Lemon and rosemary on top. Tell us what to call it.' },
+    { name: 'Vaquero Café',             tagline: 'Don Julio Reposado · Licor 43 · espresso · orange', price: '$13', description: 'Don Julio Reposado, Licor 43, and a shot of fresh espresso. Cinnamon on top, orange oils expressed over the glass. Big rock.' },
     { name: 'Ranch Water',              tagline: 'Mijenta Blanco · chile ancho · hop water', price: '$10', description: 'Mijenta Blanco with chile ancho liqueur and fresh lime, topped with hop water. Tajín rim. Easy drinking with a little smoke.' },
+    // Other (gin / vodka / beer-based / liqueur)
+    { name: 'Outlaw Vesper Martini',    tagline: 'Amass Gin · vodka · Lillet Blanc',         price: '$14', description: 'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.' },
+    { name: '"You Name It"',            tagline: 'Empress Gin · elderflower · grapefruit',   price: '$13', description: 'Empress Gin with elderflower, grapefruit bitters, and a touch of sugar. Lemon and rosemary on top. Tell us what to call it.' },
+    { name: 'Bloody Bull',              tagline: 'Happy Cow Vodka · beef-broth bloody · olives', price: '$10', description: 'Happy Cow Vodka with our house bloody mix, built on beef broth the proper way. Mild by default, fired up on request. Stacked with green olives, peperoncini, and citrus.' },
+    { name: 'Giddy Up',                 tagline: 'Vodka · Kahlúa · cold brew',               price: '$8',  description: "Happy Cow Vodka, Kahlúa, cold brew, served over ice. Easy drinkin' pick-me-up." },
+    { name: 'Dive Bar Spritz',          tagline: 'High Life · Aperol · lemon',               price: '$6',  description: 'Miller High Life bottle, Aperol, fresh lemon.' },
   ],
   'Shots & Bombs': [
-    { name: 'Smoked Steak Shot',  tagline: 'Jameson · Worcestershire · black pepper', price: '$8', description: 'Jameson, chased with smoked Worcestershire and cracked black pepper.' },
     { name: 'Scorpion Shooter',   tagline: '+$3 add-on to any shot',                  price: '$3', description: 'Add an edible scorpion to any shot.' },
+    { name: 'Smoked Steak Shot',  tagline: 'Jameson · Worcestershire · black pepper', price: '$8', description: 'Jameson, chased with smoked Worcestershire and cracked black pepper.' },
     { name: 'Bull Dozer',         tagline: 'Jäger · Red Bull',                        price: '$8', description: 'Jägermeister & Red Bull in a double shot glass.' },
     { name: 'Iceberg',            tagline: 'Vodka · triple sec · Red Bull',           price: '$9', description: 'Vodka, triple sec, lime, topped with Coconut Berry Red Bull.' },
   ],
