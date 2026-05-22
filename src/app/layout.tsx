@@ -40,21 +40,31 @@ export default function RootLayout({
         {/*
           FOUC suppression — keeps the body invisible until the page's
           CSS has loaded, so users never see the bare-HTML render. The
-          painful case is iOS Safari restoring a backgrounded tab: it
-          repaints cached HTML but doesn't always re-apply CSS or
-          rehydrate JS until the user manually refreshes.
+          painful case is iOS Safari/Chrome restoring a backgrounded tab
+          from the back-forward cache (bfcache): the engine repaints the
+          DOM but doesn't always re-apply CSS or rehydrate JS — visitors
+          see system fonts, no grid, nav links collapsed inline.
 
           Strategy:
             - Inline <style> hides <body> by default (opacity: 0) and
-              paints <html> with the brand ink so the user doesn't see
-              a white flash while body is hidden.
+              paints <html> with the brand ink so users never see a
+              white flash while body is hidden.
             - Inline <script> reveals the body once styles are confirmed
               loaded (DOMContentLoaded / window.load / requestAnimationFrame),
               with a 500ms safety timeout so slow connections still reveal
               eventually.
-            - On visibilitychange (tab restored from hidden state), if
-              body's computed background-color doesn't match the brand
-              ink, styles are gone — force window.location.reload().
+            - pageshow + event.persisted === true is the canonical
+              indicator that the page was restored from bfcache. iOS
+              WebKit's restoration is the source of this bug, so we
+              unconditionally reload in that case. (Note: this defeats
+              bfcache's perf benefit on iOS, but it's the only way to
+              guarantee correct styling. Other browsers without the bug
+              also reload — slight cost, but consistent behavior.)
+            - visibilitychange handler (defense in depth) catches cases
+              where the page wasn't fully unloaded but styles look wrong
+              anyway. Note that getComputedStyle can return cached values
+              even when the browser visually renders bare HTML, so this
+              is best-effort and pageshow is the primary signal.
             - <noscript> override keeps body visible without JS so crawlers
               and JS-disabled users see the content.
 
@@ -79,6 +89,9 @@ if(document.readyState!=='loading')tryReveal();
 document.addEventListener('DOMContentLoaded',tryReveal);
 window.addEventListener('load',reveal);
 setTimeout(reveal,500);
+window.addEventListener('pageshow',function(e){
+if(e.persisted){window.location.reload();}
+});
 var BRAND_BG='rgb(11,';
 function stylesOk(){if(!document.body)return true;var bg=getComputedStyle(document.body).backgroundColor||'';return bg.replace(/\\s/g,'').indexOf(BRAND_BG)===0;}
 var wasHidden=false;
