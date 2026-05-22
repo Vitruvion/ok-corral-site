@@ -104,6 +104,127 @@ setTimeout(function(){if(!stylesOk())window.location.reload();},150);
 })();`,
           }}
         />
+        {/*
+          FOUC debug instrumentation — activated only when the URL has
+          ?fouc-debug=1. Renders a fixed-position bottom-right log panel
+          showing every relevant browser event (DOMContentLoaded, load,
+          pageshow/pagehide with .persisted, visibilitychange, freeze,
+          resume) plus the computed body bg/font and a marker-element
+          "styled?" check at the moment each event fired. Log persists
+          to localStorage so it survives reloads (incl. bfcache cycles).
+          A "Copy" button copies the whole log to the clipboard so Brady
+          can paste it into chat.
+
+          Production-safe: no panel renders, no listeners attach, and no
+          DOM is touched unless ?fouc-debug=1 is present.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+if((location.search+location.hash).indexOf('fouc-debug=1')===-1)return;
+var KEY='fouc-debug-log';
+var MARKER_BG='rgb(42, 36, 32)';
+var log;
+try{log=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){log=[];}
+log.push({t:Date.now(),event:'--- session start ---',details:'url='+location.href+' ua='+navigator.userAgent.slice(0,80)});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(log.slice(-200)));}catch(e){}}
+function fmt(t){var d=new Date(t);return d.toISOString().substr(11,12);}
+function styled(){
+var m=document.getElementById('__fouc_marker');
+if(!m)return 'no-marker';
+var bg=getComputedStyle(m).backgroundColor;
+return bg===MARKER_BG?'yes':'no('+bg+')';
+}
+function record(ev,det){
+var bg=document.body?getComputedStyle(document.body).backgroundColor:'no-body';
+var ff=document.body?(getComputedStyle(document.body).fontFamily||'').slice(0,40):'no-body';
+log.push({t:Date.now(),event:ev,details:det||'',bg:bg,font:ff,styled:styled()});
+save();
+render();
+}
+record('script-exec','readyState='+document.readyState);
+document.addEventListener('DOMContentLoaded',function(){record('DOMContentLoaded');install();});
+window.addEventListener('load',function(){record('load');});
+window.addEventListener('pageshow',function(e){record('pageshow','persisted='+e.persisted);});
+window.addEventListener('pagehide',function(e){record('pagehide','persisted='+e.persisted);});
+document.addEventListener('visibilitychange',function(){record('visibilitychange','state='+document.visibilityState);});
+document.addEventListener('freeze',function(){record('freeze');});
+document.addEventListener('resume',function(){record('resume');});
+function install(){
+if(!document.body)return;
+if(!document.getElementById('__fouc_marker_style')){
+var s=document.createElement('style');
+s.id='__fouc_marker_style';
+s.textContent='#__fouc_marker{background:'+MARKER_BG+';position:fixed;left:-99px;top:-99px;width:1px;height:1px;pointer-events:none}';
+document.head.appendChild(s);
+}
+if(!document.getElementById('__fouc_marker')){
+var m=document.createElement('div');
+m.id='__fouc_marker';
+document.body.appendChild(m);
+}
+render();
+}
+function render(){
+if(!document.body)return;
+var p=document.getElementById('__fouc_panel');
+if(!p){
+p=document.createElement('div');
+p.id='__fouc_panel';
+p.style.cssText='position:fixed;bottom:8px;right:8px;width:min(380px,calc(100vw - 16px));max-height:55vh;overflow:auto;background:#000;color:#fff;font:10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;padding:8px;border:1px solid #fff;z-index:2147483647;border-radius:4px;box-shadow:0 0 12px rgba(0,0,0,0.6);opacity:1!important;box-sizing:border-box';
+var hdr=document.createElement('div');
+hdr.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center;justify-content:space-between';
+var ttl=document.createElement('strong');ttl.textContent='FOUC debug';hdr.appendChild(ttl);
+var btns=document.createElement('span');btns.style.cssText='display:flex;gap:4px';
+function mkBtn(label,onclick){
+var b=document.createElement('button');
+b.textContent=label;
+b.style.cssText='background:#fff;color:#000;border:0;padding:2px 6px;font:inherit;cursor:pointer;border-radius:2px';
+b.onclick=onclick;
+return b;
+}
+var copyBtn=mkBtn('Copy',function(){
+var text=log.map(function(e){
+var s='['+fmt(e.t)+'] '+e.event;
+if(e.details)s+=' '+e.details;
+if(e.bg||e.font||e.styled){
+s+=' | bg:'+(e.bg||'')+' | font:'+(e.font||'')+' | styled:'+(e.styled||'');
+}
+return s;
+}).join('\\n');
+function done(){copyBtn.textContent='Copied!';setTimeout(function(){copyBtn.textContent='Copy';},1500);}
+if(navigator.clipboard&&navigator.clipboard.writeText){
+navigator.clipboard.writeText(text).then(done,function(){
+var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();
+});
+}else{
+var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();
+}
+});
+var clearBtn=mkBtn('Clear',function(){log=[];save();render();});
+btns.appendChild(copyBtn);btns.appendChild(clearBtn);
+hdr.appendChild(btns);
+p.appendChild(hdr);
+var bd=document.createElement('div');bd.id='__fouc_panel_body';p.appendChild(bd);
+document.body.appendChild(p);
+}
+var bd=document.getElementById('__fouc_panel_body');
+if(bd){
+bd.innerHTML=log.slice(-60).map(function(e){
+var head='['+fmt(e.t)+'] '+e.event+(e.details?' '+e.details:'');
+var meta=[];
+if(e.bg)meta.push('bg:'+e.bg);
+if(e.font)meta.push('font:'+e.font);
+if(e.styled)meta.push('styled:'+e.styled);
+return '<div style="margin-bottom:4px;border-bottom:1px solid #333;padding-bottom:3px">'+head.replace(/</g,'&lt;')+(meta.length?'<div style="opacity:0.7">&nbsp;&nbsp;'+meta.join(' | ').replace(/</g,'&lt;')+'</div>':'')+'</div>';
+}).join('');
+bd.scrollTop=bd.scrollHeight;
+}
+}
+if(document.body)install();
+})();`,
+          }}
+        />
         <noscript>
           <style
             dangerouslySetInnerHTML={{
