@@ -124,10 +124,13 @@ setTimeout(function(){if(!stylesOk())window.location.reload();},150);
 if((location.search+location.hash).indexOf('fouc-debug=1')===-1)return;
 var KEY='fouc-debug-log';
 var MARKER_BG='rgb(42, 36, 32)';
+var MAX_ENTRIES=200;
 var log;
 try{log=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){log=[];}
+if(log.length>MAX_ENTRIES)log=log.slice(-MAX_ENTRIES);
 log.push({t:Date.now(),event:'--- session start ---',details:'url='+location.href+' ua='+navigator.userAgent.slice(0,80)});
-function save(){try{localStorage.setItem(KEY,JSON.stringify(log.slice(-200)));}catch(e){}}
+function trim(){if(log.length>MAX_ENTRIES)log.splice(0,log.length-MAX_ENTRIES);}
+function save(){trim();try{localStorage.setItem(KEY,JSON.stringify(log));}catch(e){}}
 function fmt(t){var d=new Date(t);return d.toISOString().substr(11,12);}
 function styled(){
 var m=document.getElementById('__fouc_marker');
