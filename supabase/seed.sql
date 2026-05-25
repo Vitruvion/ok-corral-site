@@ -31,6 +31,43 @@ update events set active = false where slug in (
   E'midnight-rodeo-2026-05-16'
 );
 
+-- Bad Dog x The OK Corral collab (free walk-in event).
+-- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
+insert into events (
+  slug, date, weekday, name, support, time, doors, genre, tickets, tags,
+  description, eventbrite_url, poster_url, featured, related_links,
+  youtube_url, sort_order
+)
+values
+  (
+    E'bad-dog-2026-06-13',
+    E'2026-06-13',
+    E'Saturday',
+    E'Bad Dog x The OK Corral',
+    E'Hot dog eating contest \u00B7 $4 dogs all afternoon',
+    E'4\u20138 PM',
+    E'',
+    E'Collab Event',
+    E'Free',
+    array[E'collab', E'food'],
+    E'Sometimes it''s just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. Walk in.',
+    null,
+    E'/assets/events/bad-dog-collab.jpg',
+    false,
+    null,
+    null,
+    0
+  )
+on conflict (slug) do update set
+  date = excluded.date, weekday = excluded.weekday, name = excluded.name,
+  support = excluded.support, time = excluded.time, doors = excluded.doors,
+  genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
+  description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  poster_url = excluded.poster_url, featured = excluded.featured,
+  related_links = excluded.related_links, youtube_url = excluded.youtube_url,
+  active = true,
+  sort_order = excluded.sort_order;
+
 -- Headline show: Dustin Dale Gaspard with Tanner Bingaman.
 -- featured = true triggers auto-expand on page load.
 -- related_links is a jsonb array; the UI linkifies any matching name in

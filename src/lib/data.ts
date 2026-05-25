@@ -108,6 +108,21 @@ export type EventData = {
 
 export const EVENTS: EventData[] = [
   {
+    id: 'ev-bad-dog-2026-06-13',
+    date: 'June 13 2026',
+    weekday: 'Saturday',
+    name: 'Bad Dog x The OK Corral',
+    support: 'Hot dog eating contest · $4 dogs all afternoon',
+    time: '4–8 PM',
+    doors: '',
+    genre: 'Collab Event',
+    tickets: 'Free',
+    tags: ['collab', 'food'],
+    description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. Walk in.",
+    eventbrite_url: null,
+    poster_url: '/assets/events/bad-dog-collab.jpg',
+  },
+  {
     id: 'ev1',
     date: 'June 25 2026',
     weekday: 'Thursday',
