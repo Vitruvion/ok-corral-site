@@ -9,6 +9,20 @@
 
 ---
 
+## WORKFLOW: AUTO-PUSH AFTER EVERY COMMIT
+
+After making any commit, immediately run `git push origin main` without asking for confirmation. Brady prefers continuous deployment over per-commit review.
+
+**Exceptions:**
+
+1. **Not on `main`.** If the commit is to a branch other than `main` (e.g., a feature branch for review), do NOT auto-push — wait for instruction.
+2. **Controversial or destructive.** If the commit deletes large amounts of code, rewrites git history, or would require a force push, STOP and ask before pushing.
+3. **Failed verification.** If the commit fails verification (visual check, test, build), roll it back locally rather than pushing broken code.
+
+For normal feature work, bug fixes, content updates, brand assets, and data changes: commit + push in one motion. After pushing, remind Brady of any manual deploy steps (e.g., running `supabase/seed.sql` in the Supabase SQL Editor, refreshing an Instagram token, re-running `npm run export-poster`).
+
+---
+
 ## Stack
 
 - **Frontend:** Next.js 14.2.x App Router, TypeScript, CSS Modules
