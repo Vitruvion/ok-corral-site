@@ -147,14 +147,14 @@ export const EVENTS: EventData[] = [
     weekday: 'Saturday',
     name: 'Bad Dog x The OK Corral',
     support: 'Bad Dog · hot dog eating contest · $4 dogs all afternoon',
-    time: '4–8 PM',
+    time: '6–11 PM',
     doors: '',
     genre: 'Collab Event',
     tickets: 'Free',
     tags: ['collab', 'food'],
     description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. Walk in.",
     eventbrite_url: null,
-    poster_url: '/assets/events/bad-dog-collab.jpg',
+    poster_url: '/assets/events/bad-dog-collab-v2.png',
     related_links: [
       {
         name: 'Bad Dog',
