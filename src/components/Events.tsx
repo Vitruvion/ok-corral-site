@@ -62,7 +62,7 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
             </h2>
           </div>
           <p className="section-intro">
-            No cover on the door, ever — unless it&apos;s a ticketed special. Always 21+.
+            No cover at the door, ever — unless it&apos;s a ticketed special. Always 21+.
           </p>
         </div>
 
