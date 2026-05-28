@@ -119,7 +119,7 @@ export const EVENTS: EventData[] = [
     date: 'June 1 2026',
     weekday: 'Monday',
     name: 'Cigar Night',
-    support: 'Badlands Cigars · Mack’s Racks · craft cocktails',
+    support: "Badlands Cigars · Mack's Racks · craft cocktails",
     time: '6 PM – late',
     doors: '',
     genre: 'Collab Event',

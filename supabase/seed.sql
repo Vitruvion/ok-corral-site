@@ -45,7 +45,7 @@ values
     E'2026-06-01',
     E'Monday',
     E'Cigar Night',
-    E'Badlands Cigars \u00B7 Mack\u2019s Racks \u00B7 craft cocktails',
+    E'Badlands Cigars \u00B7 Mack''s Racks \u00B7 craft cocktails',
     E'6 PM \u2013 late',
     E'',
     E'Collab Event',
@@ -55,7 +55,7 @@ values
     null,
     E'/assets/events/cigar-night.png',
     false,
-    E'[{"name":"Badlands Cigars","url":"https://www.instagram.com/badlands_cigars/","role":"@badlands_cigars"},{"name":"Mack\u2019s Racks","url":"https://www.instagram.com/kenziecakeskitchen/","role":"@kenziecakeskitchen"}]'::jsonb,
+    E'[{"name":"Badlands Cigars","url":"https://www.instagram.com/badlands_cigars/","role":"@badlands_cigars"},{"name":"Mack''s Racks","url":"https://www.instagram.com/kenziecakeskitchen/","role":"@kenziecakeskitchen"}]'::jsonb,
     null,
     0
   )
