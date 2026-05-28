@@ -106,6 +106,43 @@ on conflict (slug) do update set
   active = true,
   sort_order = excluded.sort_order;
 
+-- Bar Jay Bar live (free 21+ walk-in show).
+-- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
+insert into events (
+  slug, date, weekday, name, support, time, doors, genre, tickets, tags,
+  description, eventbrite_url, poster_url, featured, related_links,
+  youtube_url, sort_order
+)
+values
+  (
+    E'bar-jay-bar-2026-06-17',
+    E'2026-06-17',
+    E'Wednesday',
+    E'Bar Jay Bar',
+    E'Honky tonk \u00B7 theatrical chaos \u00B7 21+',
+    E'9:30 PM \u2013 late',
+    E'',
+    E'Live Music',
+    E'Free \u00B7 21+',
+    array[E'live music', E'21+'],
+    E'Bar Jay Bar live \u2014 high-energy honky tonk, theatrical chaos, and yes, the band climbs on each other mid-song. Free, 21+. Walk in.',
+    null,
+    E'/assets/events/barjaybar.png',
+    false,
+    E'[{"name":"Bar Jay Bar","url":"https://www.instagram.com/barjaybar/","role":"@barjaybar"}]'::jsonb,
+    null,
+    2
+  )
+on conflict (slug) do update set
+  date = excluded.date, weekday = excluded.weekday, name = excluded.name,
+  support = excluded.support, time = excluded.time, doors = excluded.doors,
+  genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
+  description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  poster_url = excluded.poster_url, featured = excluded.featured,
+  related_links = excluded.related_links, youtube_url = excluded.youtube_url,
+  active = true,
+  sort_order = excluded.sort_order;
+
 -- Headline show: Dustin Dale Gaspard with Tanner Bingaman.
 -- featured = true triggers auto-expand on page load.
 -- related_links is a jsonb array; the UI linkifies any matching name in
@@ -133,7 +170,7 @@ values
     true,
     E'[{"name":"Tanner Bingaman","url":"https://tannerbingaman.com/","image":"/assets/gallery/tanner-bingaman.jpg","role":"Support \u00B7 8:30 PM"},{"name":"Dustin Dale Gaspard","url":"https://www.instagram.com/dustindalegaspard/","role":"@dustindalegaspard"}]'::jsonb,
     E'https://www.youtube.com/watch?v=_6SMeYNM8gM',
-    2
+    3
   )
 on conflict (slug) do update set
   date = excluded.date, weekday = excluded.weekday, name = excluded.name,

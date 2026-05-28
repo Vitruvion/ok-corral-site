@@ -150,6 +150,28 @@ export const EVENTS: EventData[] = [
     poster_url: '/assets/events/bad-dog-collab.jpg',
   },
   {
+    id: 'ev-bar-jay-bar-2026-06-17',
+    date: 'June 17 2026',
+    weekday: 'Wednesday',
+    name: 'Bar Jay Bar',
+    support: 'Honky tonk · theatrical chaos · 21+',
+    time: '9:30 PM – late',
+    doors: '',
+    genre: 'Live Music',
+    tickets: 'Free · 21+',
+    tags: ['live music', '21+'],
+    description: "Bar Jay Bar live — high-energy honky tonk, theatrical chaos, and yes, the band climbs on each other mid-song. Free, 21+. Walk in.",
+    eventbrite_url: null,
+    poster_url: '/assets/events/barjaybar.png',
+    related_links: [
+      {
+        name: 'Bar Jay Bar',
+        url: 'https://www.instagram.com/barjaybar/',
+        role: '@barjaybar',
+      },
+    ],
+  },
+  {
     id: 'ev1',
     date: 'June 25 2026',
     weekday: 'Thursday',
