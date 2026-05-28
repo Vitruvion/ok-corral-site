@@ -91,6 +91,7 @@ export async function fetchEvents(): Promise<EventData[]> {
             url: String(l?.url ?? ''),
             image: l?.image ? String(l.image) : undefined,
             role: l?.role ? unmojibake(String(l.role)) : undefined,
+            skipFirstInDescription: l?.skipFirstInDescription === true,
           }))
         : undefined,
       youtube_url: row.youtube_url ?? null,

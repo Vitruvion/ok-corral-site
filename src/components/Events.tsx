@@ -81,7 +81,7 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                   <div className={styles.info}>
                     <span className={styles.name}>{ev.name}</span>
                     <span className={styles.support}>
-                      {linkify(ev.support, ev.related_links)}
+                      {linkify(ev.support, ev.related_links, 'support')}
                     </span>
                   </div>
                   <div className={styles.meta}>
@@ -159,7 +159,7 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                     <div className={styles.expandRight}>
                       <h4 className={styles.expandHeading}>◆ About the night</h4>
                       <p className={styles.expandDesc}>
-                        {linkify(ev.description, ev.related_links)}
+                        {linkify(ev.description, ev.related_links, 'description')}
                       </p>
 
                       {/* Optional YouTube embed — lazy-loaded so it doesn't
@@ -341,8 +341,16 @@ function SocialGlyph({ url }: { url: string }) {
  * Splits a string on any of the names in `links` and wraps the matching
  * portions in anchor tags. Plain text passes through untouched when no
  * links are supplied or no names match.
+ *
+ * `context` lets a link opt out of its first occurrence in the description
+ * body via `skipFirstInDescription` — used for wordplay/pun mentions of a
+ * brand that should not be linked. Has no effect on the support tagline.
  */
-function linkify(text: string, links?: RelatedLink[]): ReactNode {
+function linkify(
+  text: string,
+  links?: RelatedLink[],
+  context: 'support' | 'description' = 'description',
+): ReactNode {
   if (!text) return text
   if (!links || links.length === 0) return text
   const names = links.filter(l => l.name && text.includes(l.name))
@@ -350,9 +358,18 @@ function linkify(text: string, links?: RelatedLink[]): ReactNode {
   const escaped = names.map(l => l.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
   const re = new RegExp(`(${escaped.join('|')})`, 'g')
   const parts = text.split(re)
+  const seen: Record<string, number> = {}
   return parts.map((part, i) => {
     const link = links.find(l => l.name === part)
     if (!link) return part
+    seen[part] = (seen[part] ?? 0) + 1
+    if (
+      link.skipFirstInDescription &&
+      context === 'description' &&
+      seen[part] === 1
+    ) {
+      return part
+    }
     return (
       <a
         key={i}

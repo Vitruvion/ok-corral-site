@@ -82,7 +82,7 @@ values
     E'2026-06-13',
     E'Saturday',
     E'Bad Dog x The OK Corral',
-    E'Hot dog eating contest \u00B7 $4 dogs all afternoon',
+    E'Bad Dog \u00B7 hot dog eating contest \u00B7 $4 dogs all afternoon',
     E'4\u20138 PM',
     E'',
     E'Collab Event',
@@ -92,7 +92,7 @@ values
     null,
     E'/assets/events/bad-dog-collab.jpg',
     false,
-    null,
+    E'[{"name":"Bad Dog","url":"https://www.instagram.com/bad_dog_redding/","role":"@bad_dog_redding","skipFirstInDescription":true}]'::jsonb,
     null,
     1
   )

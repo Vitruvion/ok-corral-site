@@ -73,6 +73,13 @@ export type RelatedLink = {
   image?: string
   /** Optional one-line role shown under the thumbnail. */
   role?: string
+  /**
+   * If true, the FIRST occurrence of `name` in the description body is left
+   * as plain text instead of being linkified. Use when the first mention is
+   * wordplay or a pun on the brand name rather than a literal reference to
+   * the business. Has no effect on the support tagline. Defaults to false.
+   */
+  skipFirstInDescription?: boolean
 }
 
 export type EventData = {
@@ -139,7 +146,7 @@ export const EVENTS: EventData[] = [
     date: 'June 13 2026',
     weekday: 'Saturday',
     name: 'Bad Dog x The OK Corral',
-    support: 'Hot dog eating contest · $4 dogs all afternoon',
+    support: 'Bad Dog · hot dog eating contest · $4 dogs all afternoon',
     time: '4–8 PM',
     doors: '',
     genre: 'Collab Event',
@@ -148,6 +155,16 @@ export const EVENTS: EventData[] = [
     description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. Walk in.",
     eventbrite_url: null,
     poster_url: '/assets/events/bad-dog-collab.jpg',
+    related_links: [
+      {
+        name: 'Bad Dog',
+        url: 'https://www.instagram.com/bad_dog_redding/',
+        role: '@bad_dog_redding',
+        // First mention in description ("OK day to have a Bad Dog") is wordplay,
+        // not a literal brand reference — keep it plain. Second mention links.
+        skipFirstInDescription: true,
+      },
+    ],
   },
   {
     id: 'ev-bar-jay-bar-2026-06-17',
