@@ -108,6 +108,33 @@ export type EventData = {
 
 export const EVENTS: EventData[] = [
   {
+    id: 'ev-cigar-night-2026-06-01',
+    date: 'June 1 2026',
+    weekday: 'Monday',
+    name: 'Cigar Night',
+    support: 'Badlands Cigars · Mack’s Racks · craft cocktails',
+    time: '6 PM – late',
+    doors: '',
+    genre: 'Collab Event',
+    tickets: 'Free',
+    tags: ['collab', 'cigars', 'food'],
+    description: "Badlands Cigars on the patio, gourmet plates from Mack's Racks, craft cocktails at the bar. Monday night done right. Walk in.",
+    eventbrite_url: null,
+    poster_url: '/assets/events/cigar-night.png',
+    related_links: [
+      {
+        name: 'Badlands Cigars',
+        url: 'https://www.instagram.com/badlands_cigars/',
+        role: '@badlands_cigars',
+      },
+      {
+        name: "Mack's Racks",
+        url: 'https://www.instagram.com/kenziecakeskitchen/',
+        role: '@kenziecakeskitchen',
+      },
+    ],
+  },
+  {
     id: 'ev-bad-dog-2026-06-13',
     date: 'June 13 2026',
     weekday: 'Saturday',
