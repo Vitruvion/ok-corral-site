@@ -90,7 +90,7 @@ values
     E'Collab Event',
     E'Free',
     array[E'collab', E'food'],
-    E'Sometimes it''s just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers \u2014 fastest wins a cash prize and more. Contest kicks off at 7:30 PM, so sign up early. Walk in for the rest.',
+    E'Sometimes it''s just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers \u2014 fastest wins a cash prize and more. Contest kicks off at 7:30 PM, so sign up early.',
     null,
     E'https://partiful.com/e/IgNB4661lOfxsTgIF9Sh',
     E'/assets/events/bad-dog-collab-v2.png',

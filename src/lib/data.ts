@@ -159,7 +159,7 @@ export const EVENTS: EventData[] = [
     genre: 'Collab Event',
     tickets: 'Free',
     tags: ['collab', 'food'],
-    description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers — fastest wins a cash prize and more. Contest kicks off at 7:30 PM, so sign up early. Walk in for the rest.",
+    description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers — fastest wins a cash prize and more. Contest kicks off at 7:30 PM, so sign up early.",
     eventbrite_url: null,
     signup_url: 'https://partiful.com/e/IgNB4661lOfxsTgIF9Sh',
     poster_url: '/assets/events/bad-dog-collab-v2.png',
