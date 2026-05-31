@@ -99,6 +99,13 @@ export type EventData = {
    * If null/empty, the event renders a "Free Admission · No Cover" badge.
    */
   eventbrite_url: string | null
+  /**
+   * Optional, SEPARATE from eventbrite_url. When set, the Events UI shows a
+   * prominent "Sign Up for the Contest" button alongside (not instead of) the
+   * Free Admission badge. Used for optional opt-in actions like a contest
+   * signup where general entry is still free. Opens in a new tab.
+   */
+  signup_url?: string | null
   /** Path to the event poster image (3:4-ish aspect). */
   poster_url?: string | null
   /** Auto-expand on page load. Used for the upcoming/headline show. */
@@ -152,8 +159,9 @@ export const EVENTS: EventData[] = [
     genre: 'Collab Event',
     tickets: 'Free',
     tags: ['collab', 'food'],
-    description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. Walk in.",
+    description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers — fastest wins a cash prize and more. Contest kicks off at 7:30 PM and is limited to 15 spots, so sign up early. Walk in for the rest.",
     eventbrite_url: null,
+    signup_url: 'https://partiful.com/e/IgNB4661lOfxsTgIF9Sh',
     poster_url: '/assets/events/bad-dog-collab-v2.png',
     related_links: [
       {

@@ -36,7 +36,7 @@ update events set active = false where slug in (
 -- related_links jsonb gives the partner brands clickable IG cards in the sidebar.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
-  description, eventbrite_url, poster_url, featured, related_links,
+  description, eventbrite_url, signup_url, poster_url, featured, related_links,
   youtube_url, sort_order
 )
 values
@@ -53,6 +53,7 @@ values
     array[E'collab', E'cigars', E'food'],
     E'Badlands Cigars on the patio, gourmet plates from Mack''s Racks, craft cocktails at the bar. Monday night done right. Walk in.',
     null,
+    null,
     E'/assets/events/cigar-night.png',
     false,
     E'[{"name":"Badlands Cigars","url":"https://www.instagram.com/badlands_cigars/","role":"@badlands_cigars"},{"name":"Mack''s Racks","url":"https://www.instagram.com/kenziecakeskitchen/","role":"@kenziecakeskitchen"}]'::jsonb,
@@ -64,6 +65,7 @@ on conflict (slug) do update set
   support = excluded.support, time = excluded.time, doors = excluded.doors,
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
   description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  signup_url = excluded.signup_url,
   poster_url = excluded.poster_url, featured = excluded.featured,
   related_links = excluded.related_links, youtube_url = excluded.youtube_url,
   active = true,
@@ -73,7 +75,7 @@ on conflict (slug) do update set
 -- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
-  description, eventbrite_url, poster_url, featured, related_links,
+  description, eventbrite_url, signup_url, poster_url, featured, related_links,
   youtube_url, sort_order
 )
 values
@@ -88,8 +90,9 @@ values
     E'Collab Event',
     E'Free',
     array[E'collab', E'food'],
-    E'Sometimes it''s just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. Walk in.',
+    E'Sometimes it''s just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers \u2014 fastest wins a cash prize and more. Contest kicks off at 7:30 PM and is limited to 15 spots, so sign up early. Walk in for the rest.',
     null,
+    E'https://partiful.com/e/IgNB4661lOfxsTgIF9Sh',
     E'/assets/events/bad-dog-collab-v2.png',
     false,
     E'[{"name":"Bad Dog","url":"https://www.instagram.com/bad_dog_redding/","role":"@bad_dog_redding","skipFirstInDescription":true}]'::jsonb,
@@ -101,6 +104,7 @@ on conflict (slug) do update set
   support = excluded.support, time = excluded.time, doors = excluded.doors,
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
   description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  signup_url = excluded.signup_url,
   poster_url = excluded.poster_url, featured = excluded.featured,
   related_links = excluded.related_links, youtube_url = excluded.youtube_url,
   active = true,
@@ -110,7 +114,7 @@ on conflict (slug) do update set
 -- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
-  description, eventbrite_url, poster_url, featured, related_links,
+  description, eventbrite_url, signup_url, poster_url, featured, related_links,
   youtube_url, sort_order
 )
 values
@@ -127,6 +131,7 @@ values
     array[E'live music', E'21+'],
     E'Bar Jay Bar live \u2014 high-energy honky tonk, theatrical chaos, and yes, the band climbs on each other mid-song. Free, 21+. Walk in.',
     null,
+    null,
     E'/assets/events/barjaybar.png',
     false,
     E'[{"name":"Bar Jay Bar","url":"https://www.instagram.com/barjaybar/","role":"@barjaybar"}]'::jsonb,
@@ -138,6 +143,7 @@ on conflict (slug) do update set
   support = excluded.support, time = excluded.time, doors = excluded.doors,
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
   description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  signup_url = excluded.signup_url,
   poster_url = excluded.poster_url, featured = excluded.featured,
   related_links = excluded.related_links, youtube_url = excluded.youtube_url,
   active = true,
@@ -149,7 +155,7 @@ on conflict (slug) do update set
 -- the support/description text and renders an optional sidebar thumbnail.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
-  description, eventbrite_url, poster_url, featured, related_links,
+  description, eventbrite_url, signup_url, poster_url, featured, related_links,
   youtube_url, sort_order
 )
 values
@@ -166,6 +172,7 @@ values
     array[E'live music', E'special event'],
     E'Singer-songwriter Dustin Dale Gaspard of Cow Island, Louisiana brings his alternative folk sound to The OK Corral for one unforgettable night. A Season 28 contestant on NBC''s The Voice, Dustin is born and raised in deep Southern Louisiana \u2014 his music is steeped in Cajun soul, raw storytelling, and a voice that fills every corner of the room. Opening the night at 8:30 is Tanner Bingaman \u2014 a songwriter, banjoist, and poet from the hills of Appalachia. Featured on NPR, awarded Emerging Artist of the Year by the Susquehanna Folk Music Society, and currently touring with Dustin on a 10,000-mile run down the West Coast. Two artists, one stage, one hell of a Thursday night.',
     E'https://www.eventbrite.com/e/dustin-dale-gaspard-tickets-1989628449251?aff=oddtdtcreator',
+    null,
     E'/assets/gallery/dustin-gaspard.jpg',
     true,
     E'[{"name":"Tanner Bingaman","url":"https://tannerbingaman.com/","image":"/assets/gallery/tanner-bingaman.jpg","role":"Support \u00B7 8:30 PM"},{"name":"Dustin Dale Gaspard","url":"https://www.instagram.com/dustindalegaspard/","role":"@dustindalegaspard"}]'::jsonb,
@@ -177,6 +184,7 @@ on conflict (slug) do update set
   support = excluded.support, time = excluded.time, doors = excluded.doors,
   genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
   description = excluded.description, eventbrite_url = excluded.eventbrite_url,
+  signup_url = excluded.signup_url,
   poster_url = excluded.poster_url, featured = excluded.featured,
   related_links = excluded.related_links, youtube_url = excluded.youtube_url,
   active = true,

@@ -184,6 +184,17 @@ export default function Events({ events = EVENTS, recurring = RECURRING }: Props
                       })()}
 
                       <div className={styles.expandActions}>
+                        {ev.signup_url && (
+                          <a
+                            href={ev.signup_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Sign Up for the Contest →
+                          </a>
+                        )}
                         {ev.eventbrite_url ? (
                           <a
                             href={ev.eventbrite_url}
