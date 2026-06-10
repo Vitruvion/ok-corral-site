@@ -23,53 +23,15 @@ set client_encoding to E'UTF8';
 -- Leave it null for free shows - the UI auto-renders a "Free
 -- Admission . No Cover" badge when there's no URL.
 --
--- Old placeholder events (dust-devils, line-dance, midnight-rodeo)
--- are deactivated below so they stop showing without losing history.
+-- Old placeholder events (dust-devils, line-dance, midnight-rodeo) and
+-- past one-off events are deactivated below so they stop showing
+-- without losing history.
 update events set active = false where slug in (
   E'dust-devils-2026-05-02',
   E'line-dance-2026-05-09',
-  E'midnight-rodeo-2026-05-16'
+  E'midnight-rodeo-2026-05-16',
+  E'cigar-night-2026-06-01'
 );
-
--- Cigar Night collab (free walk-in event).
--- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
--- related_links jsonb gives the partner brands clickable IG cards in the sidebar.
-insert into events (
-  slug, date, weekday, name, support, time, doors, genre, tickets, tags,
-  description, eventbrite_url, signup_url, poster_url, featured, related_links,
-  youtube_url, sort_order
-)
-values
-  (
-    E'cigar-night-2026-06-01',
-    E'2026-06-01',
-    E'Monday',
-    E'Cigar Night',
-    E'Badlands Cigars \u00B7 Mack''s Racks \u00B7 craft cocktails',
-    E'6 PM \u2013 late',
-    E'',
-    E'Collab Event',
-    E'Free',
-    array[E'collab', E'cigars', E'food'],
-    E'Badlands Cigars on the patio, gourmet plates from Mack''s Racks, craft cocktails at the bar. Monday night done right. Walk in.',
-    null,
-    null,
-    E'/assets/events/cigar-night.png',
-    false,
-    E'[{"name":"Badlands Cigars","url":"https://www.instagram.com/badlands_cigars/","role":"@badlands_cigars"},{"name":"Mack''s Racks","url":"https://www.instagram.com/kenziecakeskitchen/","role":"@kenziecakeskitchen"}]'::jsonb,
-    null,
-    0
-  )
-on conflict (slug) do update set
-  date = excluded.date, weekday = excluded.weekday, name = excluded.name,
-  support = excluded.support, time = excluded.time, doors = excluded.doors,
-  genre = excluded.genre, tickets = excluded.tickets, tags = excluded.tags,
-  description = excluded.description, eventbrite_url = excluded.eventbrite_url,
-  signup_url = excluded.signup_url,
-  poster_url = excluded.poster_url, featured = excluded.featured,
-  related_links = excluded.related_links, youtube_url = excluded.youtube_url,
-  active = true,
-  sort_order = excluded.sort_order;
 
 -- Bad Dog x The OK Corral collab (free walk-in event).
 -- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
