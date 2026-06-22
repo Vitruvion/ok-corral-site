@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, type ReactNode } from 'react'
 import { EVENTS, RECURRING, type EventData, type RelatedLink } from '@/lib/data'
+import { filterUpcomingEvents } from '@/lib/events'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
 import { downloadIcs } from '@/lib/ics'
 import { shareOrCopy } from '@/lib/share'
@@ -14,15 +15,15 @@ type Props = {
   recurring?: RecurringData[]
 }
 
-export default function Events({ events = EVENTS, recurring = RECURRING }: Props = {}) {
+export default function Events({ events = filterUpcomingEvents(EVENTS), recurring = RECURRING }: Props = {}) {
   // Pick which row should be open on first render: an event explicitly
-  // flagged featured, or the only event when the schedule has just one show.
+  // flagged featured, otherwise the soonest upcoming event so the list never
+  // loads fully collapsed once a featured show ages out of the filtered set.
   // Lazy useState so this runs only on mount.
   const [openId, setOpenId] = useState<string>(() => {
     const featured = events.find(e => e.featured)
     if (featured) return featured.id
-    if (events.length === 1) return events[0].id
-    return ''
+    return events[0]?.id ?? ''
   })
 
   // Single-slot toast for action feedback ("Link copied!", ".ics downloaded", etc.)

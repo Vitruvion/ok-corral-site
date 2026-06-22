@@ -1,5 +1,6 @@
 import { getSupabase } from './supabase'
 import { fetchInstagramPosts } from './instagram'
+import { filterUpcomingEvents } from './events'
 import {
   EVENTS as FALLBACK_EVENTS,
   RECURRING as FALLBACK_RECURRING,
@@ -57,8 +58,18 @@ const m = (v: string | null | undefined): string => v ? unmojibake(v) : ''
 const mn = (v: string | null | undefined): string | null => v ? unmojibake(v) : null
 
 export async function fetchEvents(): Promise<EventData[]> {
+  // Past events are hidden everywhere by filtering on the venue's calendar day
+  // (America/Los_Angeles) at render time — see src/lib/events.ts. Rows are left
+  // active in the DB so history is preserved and no manual cleanup is needed.
+  // Filtering runs server-side on each (re)render; page.tsx uses ISR
+  // (revalidate=60), so an event's midnight-PT rollover takes effect on the next
+  // regeneration — typically within ~60s under steady traffic. Because ISR is
+  // stale-while-revalidate, the first request after the window still gets the
+  // cached page, so on a low-traffic night a just-passed event can briefly
+  // linger until a couple of requests come in. Acceptable: it self-heals on the
+  // following request and the DB is never touched.
   const sb = getSupabase()
-  if (!sb) return FALLBACK_EVENTS
+  if (!sb) return filterUpcomingEvents(FALLBACK_EVENTS)
   try {
     const { data, error } = await sb
       .from('events')
@@ -67,8 +78,8 @@ export async function fetchEvents(): Promise<EventData[]> {
       .order('sort_order', { ascending: true })
       .order('date', { ascending: true })
     if (error) throw error
-    if (!data || data.length === 0) return FALLBACK_EVENTS
-    return data.map(row => ({
+    if (!data || data.length === 0) return filterUpcomingEvents(FALLBACK_EVENTS)
+    return filterUpcomingEvents(data.map(row => ({
       id: row.slug ?? row.id,
       date: typeof row.date === 'string' ? row.date : new Date(row.date).toISOString().slice(0, 10),
       weekday: m(row.weekday),
@@ -96,10 +107,10 @@ export async function fetchEvents(): Promise<EventData[]> {
           }))
         : undefined,
       youtube_url: row.youtube_url ?? null,
-    }))
+    })))
   } catch (e) {
     log('events', e)
-    return FALLBACK_EVENTS
+    return filterUpcomingEvents(FALLBACK_EVENTS)
   }
 }
 

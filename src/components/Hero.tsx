@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { BRAND, EVENTS, SHOW_MERCH } from '@/lib/data'
+import { BRAND, SHOW_MERCH, type EventData } from '@/lib/data'
 import styles from './Hero.module.css'
 
-export default function Hero() {
+export default function Hero({ events = [] }: { events?: EventData[] } = {}) {
   const bgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [bgFailed, setBgFailed] = useState(false)
@@ -102,7 +102,7 @@ export default function Hero() {
 
       <div className={styles.content}>
         <div className={styles.top}>
-          <LiveBadge />
+          <LiveBadge next={events[0]} />
         </div>
 
         <div className={styles.wordmark}>
@@ -157,15 +157,16 @@ export default function Hero() {
   )
 }
 
-function LiveBadge() {
-  const [next, setNext] = useState(EVENTS[0])
-
+function LiveBadge({ next }: { next?: EventData }) {
+  // `next` is the soonest upcoming event — the events list is already filtered
+  // to today-or-later (venue timezone) and ordered by date, so a past show can
+  // never surface here. Fall back to a neutral label when nothing's on the books.
   return (
     <a href="#events" className={styles.liveBadge}>
       <span className={styles.liveDot} />
       <strong>NEXT UP</strong>
       <span className={styles.liveSep}>·</span>
-      <em className={styles.liveName}>{next?.name}</em>
+      <em className={styles.liveName}>{next?.name ?? 'Live music & more'}</em>
     </a>
   )
 }
