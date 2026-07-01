@@ -3,11 +3,11 @@ import '@/styles/globals.css'
 
 export const metadata: Metadata = {
   title: 'The OK Corral — Western Saloon in Cottonwood, California',
-  description: 'The OK Corral is a western saloon in Cottonwood, California. Home of the Scorpion Shot. Live music, taco Tuesdays, free pool Wednesdays, karaoke Sundays. Open daily 8 AM – 2 AM.',
+  description: 'The OK Corral is a western saloon in Cottonwood, California. Home of the Scorpion Shot. Live music, free pool Wednesdays, karaoke Sundays. Open daily 8 AM – 2 AM.',
   metadataBase: new URL('https://okcorralsaloon.com'),
   openGraph: {
     title: 'The OK Corral — Western Saloon in Cottonwood, California',
-    description: 'Home of the Scorpion Shot. Live music, taco Tuesdays, free pool Wednesdays, karaoke Sundays.',
+    description: 'Home of the Scorpion Shot. Live music, free pool Wednesdays, karaoke Sundays.',
     url: 'https://okcorralsaloon.com',
     siteName: 'The OK Corral',
     type: 'website',

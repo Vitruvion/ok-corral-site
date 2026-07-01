@@ -160,7 +160,8 @@ update events set featured = false where slug <> E'dustin-gaspard-2026-06-25';
 delete from recurring_events;
 insert into recurring_events (day_abbr, name, support, time, tickets, sort_order)
 values
-  (E'TUE', E'Taco Tuesday',         E'$4 tacos every Tuesday night', E'All Day', E'No Cover', 1),
+  -- Taco Tuesday removed 2026-06-30 - restore this row (sort_order 1) to bring it back:
+  -- (E'TUE', E'Taco Tuesday',         E'$4 tacos every Tuesday night', E'All Day', E'No Cover', 1),
   (E'WED', E'Free Pool Wednesday',  E'Tables on the house, all night long',     E'All Day', E'No Cover', 2),
   (E'SUN', E'Karaoke Night',        E'Grab the mic \u00B7 6 PM til late',            E'6 PM',    E'No Cover', 3);
 

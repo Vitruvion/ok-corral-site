@@ -203,13 +203,10 @@ export const EVENTS: EventData[] = [
 ]
 
 export const RECURRING = [
-  {
-    day: 'TUE',
-    name: 'Taco Tuesday',
-    support: '$4 tacos every Tuesday night',
-    time: 'All Day',
-    tickets: 'No Cover',
-  },
+  // Taco Tuesday removed 2026-06-30 — restore this entry (and the matching
+  // recurring_events row in supabase/seed.sql + the MARQUEE_ITEMS entry below)
+  // to bring it back:
+  // { day: 'TUE', name: 'Taco Tuesday', support: '$4 tacos every Tuesday night', time: 'All Day', tickets: 'No Cover' },
   {
     day: 'WED',
     name: 'Free Pool Wednesday',
@@ -227,7 +224,8 @@ export const RECURRING = [
 ]
 
 export const MARQUEE_ITEMS = [
-  { text: 'Tuesday', accent: '$4 Tacos' },
+  // Taco Tuesday removed 2026-06-30 — restore to bring it back:
+  // { text: 'Tuesday', accent: '$4 Tacos' },
   { text: 'Wednesday', accent: 'Free Pool All Night' },
   { text: 'Sunday', accent: 'Karaoke Til Close' },
   { text: 'Daily', accent: '8 AM · Til 2 AM' },
