@@ -14,7 +14,7 @@ export default function Location() {
             <h2 className="section-title">Visit<br /><em>the corral</em></h2>
           </div>
           <p className="section-intro">
-            Just off I-5, exit 630. Free parking out back. We&apos;ll leave a light on.
+            Just off I-5, exit 665. Free parking out back. We&apos;ll leave a light on.
           </p>
         </div>
 
