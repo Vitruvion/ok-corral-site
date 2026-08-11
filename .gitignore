@@ -47,3 +47,6 @@ wallet-certs/
 
 # Claude Code debug screenshots
 card-page*.png
+
+# product mockup pipeline: generated images
+scripts/mockup/out/

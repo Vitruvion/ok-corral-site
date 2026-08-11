@@ -1,0 +1,48 @@
+{
+  "name": "house-tee-black-front",
+  "colorway": "Vintage Black",
+
+  "blank": "blanks/tee-front-black.png",
+  "artwork": "artwork/ok-monogram.png",
+
+  "_comment_printArea": "Corners of the printable panel on the BLANK, in blank pixels, clockwise from top-left. See README for how to read these off a photo. Artwork is stretched to fill the quad, so keep its aspect ratio close to the quad's or it will distort.",
+  "printArea": {
+    "topLeft":     [610, 690],
+    "topRight":    [1000, 690],
+    "bottomRight": [1010, 1090],
+    "bottomLeft":  [600, 1090]
+  },
+
+  "_comment_displacement": "Grayscale map derived from this blank's own shading. strength is pixels of push at full black/white — 4-10 reads as cloth.",
+  "displacement": {
+    "map": "blanks/tee-front-black.displacement.png",
+    "strength": 7
+  },
+
+  "_comment_blend": "The pipeline default is multiply at 0.85, which is right for dark ink on a LIGHT garment. This is a black tee with red ink — ink lighter than the cloth — so multiply would crush it to mud. 'over' keeps the ink's own colour and the fold realism comes from shading below.",
+  "blend": {
+    "mode": "over",
+    "opacity": 0.92
+  },
+
+  "_comment_shading": "Folds brighten/darken the ink, pivoting on the garment's mean luminance under the print. This is what sells it as printed rather than pasted, on any garment colour.",
+  "shading": {
+    "enabled": true,
+    "strength": 0.75
+  },
+
+  "_comment_fabricTexture": "Weave lifted from the blank's own high-frequency detail (no tiling, no seams) and laid back over the print, clipped to the garment.",
+  "fabricTexture": {
+    "enabled": true,
+    "opacity": 0.35,
+    "detail": 3,
+    "gain": 2,
+    "blend": "overlay"
+  },
+
+  "output": {
+    "basename": "house-tee-black-front",
+    "width": 1000,
+    "crop": { "left": 120, "top": 210, "width": 1360, "height": 1700 }
+  }
+}
