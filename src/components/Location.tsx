@@ -56,11 +56,18 @@ export default function Location() {
           </div>
 
           <div className={styles.mapWrap}>
+            {/* referrerPolicy: was "no-referrer-when-downgrade" (copied from
+                Google's sample embed snippet), which sends the FULL url —
+                path and query — to Google on any https→https request,
+                overriding the document's Referrer-Policy for this frame. On
+                the Stripe return URL that would have handed Google the
+                ?session_id= capability token. The embed needs nothing beyond
+                the origin. */}
             <iframe
               className={styles.map}
               src={BRAND.mapsEmbed}
               loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+              referrerPolicy="strict-origin-when-cross-origin"
               title="The OK Corral location"
             />
             <div className={styles.mapOverlay}>
