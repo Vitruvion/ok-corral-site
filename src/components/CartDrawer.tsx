@@ -17,14 +17,18 @@ export default function CartDrawer() {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // Only what the customer chose. Price, name and colour are looked up
+        // server-side from the catalog — sending them would be meaningless
+        // (the API ignores them) and was previously how prices got spoofed.
+        // `name` rides along purely as a fallback lookup key for carts saved
+        // before item ids were stable.
         body: JSON.stringify({
           kind: 'merch',
           items: lines.map(l => ({
+            id: l.id,
             name: l.name,
-            price: l.price,
             qty: l.qty,
             size: l.size,
-            color: l.color,
           })),
         }),
       })

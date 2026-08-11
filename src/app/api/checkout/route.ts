@@ -6,6 +6,7 @@ import {
   shipLabelForSubtotal,
   PICKUP_LABEL,
 } from '@/lib/fulfillment'
+import { resolveCartLines } from '@/lib/catalog'
 
 export const runtime = 'nodejs'
 
@@ -19,17 +20,14 @@ type GiftCardBody = {
   note?: string
 }
 
-type MerchItem = {
-  name: string
-  price: number          // dollars, can be float
-  qty: number
-  size?: string
-  color?: string
-}
-
+/**
+ * What the browser may send per line. NOTE the absence of `price` — prices
+ * are looked up server-side from the catalog (see @/lib/catalog). Any price,
+ * name or colour in the request body is ignored.
+ */
 type MerchBody = {
   kind: 'merch'
-  items: MerchItem[]
+  items: unknown
 }
 
 type Body = GiftCardBody | MerchBody
@@ -92,16 +90,34 @@ async function handleGiftCard(
 ) {
   if (!stripe) throw new Error('Stripe not configured.')
 
-  const amount = Number(body.amount)
+  // Unlike merch, the gift card's amount IS the product: the customer is
+  // charged exactly the face value that gets recorded, so there's no
+  // pay-a-penny-get-$500 gap to close. What's tightened here is precision and
+  // input length — an amount like 5.005 would otherwise be charged as $5.01
+  // while $5.005 was stored, and unbounded free text would flow into the
+  // Stripe product description and metadata.
+  const amount = Math.round(Number(body.amount) * 100) / 100
   if (!Number.isFinite(amount) || amount < 5 || amount > 500) {
     return NextResponse.json(
       { error: 'Amount must be between $5 and $500.' },
       { status: 400 }
     )
   }
-  if (!body.to_name?.trim() || !body.to_email?.trim()) {
+
+  const toName   = String(body.to_name ?? '').trim().slice(0, 100)
+  const toEmail  = String(body.to_email ?? '').trim().slice(0, 200)
+  const fromName = String(body.from_name ?? '').trim().slice(0, 100)
+  const note     = String(body.note ?? '').trim().slice(0, 400)
+
+  if (!toName || !toEmail) {
     return NextResponse.json(
       { error: 'Recipient name and email are required.' },
+      { status: 400 }
+    )
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) {
+    return NextResponse.json(
+      { error: 'Recipient email looks invalid.' },
       { status: 400 }
     )
   }
@@ -109,17 +125,17 @@ async function handleGiftCard(
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
-    customer_email: body.to_email,
+    customer_email: toEmail,
     line_items: [
       {
         price_data: {
           currency: 'usd',
           unit_amount: dollarsToCents(amount),
           product_data: {
-            name: `OK Corral Gift Card — $${amount}`,
-            description: body.from_name
-              ? `From ${body.from_name} to ${body.to_name}`
-              : `For ${body.to_name}`,
+            name: `OK Corral Gift Card — $${amount.toFixed(2)}`,
+            description: fromName
+              ? `From ${fromName} to ${toName}`
+              : `For ${toName}`,
           },
         },
         quantity: 1,
@@ -127,11 +143,11 @@ async function handleGiftCard(
     ],
     metadata: {
       kind: 'gift_card',
-      to_name: body.to_name,
-      to_email: body.to_email,
-      from_name: body.from_name ?? '',
-      note: (body.note ?? '').slice(0, 400),
-      amount_dollars: String(amount),
+      to_name: toName,
+      to_email: toEmail,
+      from_name: fromName,
+      note,
+      amount_dollars: amount.toFixed(2),
     },
     success_url: successBase,
     cancel_url: cancelUrl,
@@ -143,10 +159,10 @@ async function handleGiftCard(
     const { error } = await sb.from('gift_card_orders').insert({
       stripe_session_id: session.id,
       amount,
-      to_name: body.to_name,
-      to_email: body.to_email,
-      from_name: body.from_name || null,
-      note: body.note || null,
+      to_name: toName,
+      to_email: toEmail,
+      from_name: fromName || null,
+      note: note || null,
       status: 'pending',
     })
     if (error) console.warn('[gift_card_orders insert]', error)
@@ -164,35 +180,29 @@ async function handleMerch(
 ) {
   if (!stripe) throw new Error('Stripe not configured.')
 
-  if (!Array.isArray(body.items) || body.items.length === 0) {
-    return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 })
+  // Resolve the cart against the catalog. Everything that determines the
+  // charge — unit price, subtotal, and therefore the shipping tier — is
+  // derived from server data here; the request only chose which items.
+  const resolved = await resolveCartLines(body.items)
+  if (!resolved.ok) {
+    return NextResponse.json({ error: resolved.error }, { status: 400 })
   }
 
-  // Validate items
-  for (const it of body.items) {
-    if (!it.name || !Number.isFinite(it.price) || it.price <= 0) {
-      return NextResponse.json({ error: 'Invalid cart item.' }, { status: 400 })
-    }
-    if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 50) {
-      return NextResponse.json({ error: 'Invalid quantity.' }, { status: 400 })
-    }
-  }
-
-  const subtotal = body.items.reduce((s, it) => s + it.price * it.qty, 0)
+  const { lines, subtotal } = resolved
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
-    line_items: body.items.map(it => ({
+    line_items: lines.map(l => ({
       price_data: {
         currency: 'usd',
-        unit_amount: dollarsToCents(it.price),
+        unit_amount: dollarsToCents(l.item.price),
         product_data: {
-          name: it.name,
-          description: [it.color, it.size].filter(Boolean).join(' · ') || undefined,
+          name: l.item.name,
+          description: [l.item.color, l.size].filter(Boolean).join(' · ') || undefined,
         },
       },
-      quantity: it.qty,
+      quantity: l.qty,
     })),
     // Address is collected for BOTH fulfillment paths. Stripe can't make it
     // conditional on the selected shipping option, and a stray address on a
@@ -228,18 +238,26 @@ async function handleMerch(
     automatic_tax: { enabled: false },
     metadata: {
       kind: 'merch',
-      item_count: String(body.items.reduce((n, it) => n + it.qty, 0)),
+      item_count: String(lines.reduce((n, l) => n + l.qty, 0)),
     },
     success_url: successBase,
     cancel_url: cancelUrl,
   })
 
-  // Best-effort row insert.
+  // Best-effort row insert. Stores the RESOLVED lines, not the request body,
+  // so the order record reflects catalog prices rather than client claims.
   const sb = getSupabase()
   if (sb && session.id) {
     const { error } = await sb.from('merch_orders').insert({
       stripe_session_id: session.id,
-      items: body.items,
+      items: lines.map(l => ({
+        id: l.item.id,
+        name: l.item.name,
+        price: l.item.price,
+        qty: l.qty,
+        size: l.size ?? null,
+        color: l.item.color ?? null,
+      })),
       subtotal,
       total: subtotal, // shipping/tax computed by Stripe at checkout; refine via webhook later
       customer_email: null,
