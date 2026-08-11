@@ -47,7 +47,10 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts 
       <Location />
       <Footer />
       <ProgressRail />
-      <CartDrawer />
+      {SHOW_MERCH && <CartDrawer />}
+      {/* Not gated: only renders when Stripe returns the customer with
+          ?stripe=... params, so an order placed before the flag flipped
+          still gets its confirmation. Exposes no merch surface otherwise. */}
       <StripeReturnHandler />
     </CartProvider>
   )

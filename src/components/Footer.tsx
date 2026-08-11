@@ -5,11 +5,14 @@ import { BRAND, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Footer.module.css'
 
+/** The Shop column only has anything to say while a store is running. */
+const SHOW_SHOP_COL = SHOW_MERCH || SHOW_GIFT_CARDS
+
 export default function Footer() {
   return (
     <footer className={styles.footer}>
       <Newsletter />
-      <div className={styles.top}>
+      <div className={`${styles.top} ${SHOW_SHOP_COL ? '' : styles.topNoShop}`}>
         <div className={styles.brand}>
           <Wordmark variant="stacked" />
           <p className={styles.brandDesc}>
@@ -26,15 +29,20 @@ export default function Footer() {
             <li><a href="#visit">Visit</a></li>
           </ul>
         </div>
-        <div className={styles.col}>
-          <h5 className={styles.colTitle}>Shop</h5>
-          <ul>
-            <li><a href="#">Shipping &amp; Returns</a></li>
-            <li><a href="#">Size Guide</a></li>
-            <li><a href="#">Wholesale</a></li>
-            {SHOW_GIFT_CARDS && <li><a href="#">Gift Cards</a></li>}
-          </ul>
-        </div>
+        {/* Shipping/Size/Wholesale only mean something when the store is
+            live, so they follow SHOW_MERCH. The whole column drops out when
+            neither the store nor gift cards are running. */}
+        {SHOW_SHOP_COL && (
+          <div className={styles.col}>
+            <h5 className={styles.colTitle}>Shop</h5>
+            <ul>
+              {SHOW_MERCH && <li><a href="#">Shipping &amp; Returns</a></li>}
+              {SHOW_MERCH && <li><a href="#">Size Guide</a></li>}
+              {SHOW_MERCH && <li><a href="#">Wholesale</a></li>}
+              {SHOW_GIFT_CARDS && <li><a href="#">Gift Cards</a></li>}
+            </ul>
+          </div>
+        )}
         <div className={styles.col}>
           <h5 className={styles.colTitle}>Say Howdy</h5>
           <ul>

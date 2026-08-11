@@ -129,6 +129,14 @@
   margin: 0 auto;
 }
 
+/* One fewer link column when the Shop column is hidden (SHOW_MERCH and
+   SHOW_GIFT_CARDS both off), so the remaining columns fill the row instead
+   of leaving an empty track. The narrow-viewport rules below still win —
+   they come later in the file at equal specificity. */
+.topNoShop {
+  grid-template-columns: 1.5fr 1fr 1fr;
+}
+
 .brand {}
 
 .brandDesc {
@@ -184,6 +192,9 @@
 
 @media (max-width: 1100px) {
   .top { grid-template-columns: 1fr 1fr; }
+  /* Three columns still fit here, and keeping them avoids a lone column
+     stranded on its own row with dead space beside it. */
+  .topNoShop { grid-template-columns: 1.2fr 1fr 1fr; gap: 32px; }
 }
 
 @media (max-width: 900px) {

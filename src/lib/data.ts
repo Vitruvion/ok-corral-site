@@ -8,10 +8,17 @@
 /**
  * Feature flag: when false, the Merch section, the "Merch" nav links,
  * the Topbar cart button, the Hero "Shop Merch" CTA, the Footer Explore
- * merch link, and the ProgressRail merch dot all disappear. Flip to true
- * when the store is ready to launch.
+ * merch link, the Footer Shop column (shipping/size/wholesale links), the
+ * ProgressRail merch dot, and the CartDrawer itself all disappear. Flip to
+ * true when the store is ready to launch.
+ *
+ * Deliberately NOT gated, so orders placed before the flag flipped still
+ * complete: /api/stripe/webhook, the /api/checkout merch branch, and
+ * StripeReturnHandler (which only renders when Stripe sends the customer
+ * back with ?stripe=... params — it exposes no merch surface on its own).
+ * CartProvider also stays mounted because Topbar calls useCart().
  */
-export const SHOW_MERCH = true
+export const SHOW_MERCH = false
 
 /**
  * Feature flag: when false, the GiftCards section and the Footer Shop

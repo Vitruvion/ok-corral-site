@@ -7,6 +7,7 @@ import {
   DRINKS as FALLBACK_DRINKS,
   MERCH as FALLBACK_MERCH,
   DRINK_TABS,
+  SHOW_MERCH,
   type EventData,
   type DrinkData,
   type MerchItem,
@@ -207,11 +208,19 @@ export async function fetchMerch(): Promise<MerchItem[]> {
 }
 
 export async function fetchAll() {
+  // With SHOW_MERCH off nothing renders the catalog, but anything returned
+  // here still gets serialized into the page's RSC payload — product names,
+  // prices and descriptions would sit in view-source for a store that isn't
+  // open. Skip the query entirely instead.
+  //
+  // NOTE: this gates only the page payload. fetchMerch() stays callable and
+  // is used directly by src/lib/catalog.ts to price checkouts server-side,
+  // so /api/checkout keeps working while the storefront is hidden.
   const [events, recurring, drinks, merch, igPosts] = await Promise.all([
     fetchEvents(),
     fetchRecurring(),
     fetchDrinks(),
-    fetchMerch(),
+    SHOW_MERCH ? fetchMerch() : Promise.resolve<MerchItem[]>([]),
     fetchInstagramPosts(6),
   ])
   return { events, recurring, drinks, merch, igPosts }
