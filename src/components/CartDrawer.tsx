@@ -1,10 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useCart, lineKeyOf } from '@/lib/cart'
+import { shippingForSubtotal, amountUntilFreeShipping } from '@/lib/fulfillment'
 import styles from './CartDrawer.module.css'
-
-const SHIPPING_THRESHOLD = 75
-const TAX_RATE = 0.0775
 
 export default function CartDrawer() {
   const { lines, open, setOpen, subtotal, removeLine, setQty } = useCart()
@@ -52,9 +50,15 @@ export default function CartDrawer() {
     }
   }, [open, setOpen])
 
-  const shipping = subtotal === 0 ? 0 : subtotal >= SHIPPING_THRESHOLD ? 0 : 8
-  const tax = subtotal * TAX_RATE
-  const total = subtotal + shipping + tax
+  // Same helper /api/checkout uses to build Stripe's shipping options, so
+  // this line can't quote a price Stripe won't charge.
+  const shipping = shippingForSubtotal(subtotal)
+  const untilFree = amountUntilFreeShipping(subtotal)
+  // No tax line: automatic_tax is off in the Checkout Session, so Stripe
+  // charges none. Showing an estimate here made the cart total disagree with
+  // the amount actually charged. If sales tax gets collected later (Stripe
+  // Tax), surface it from the session rather than guessing a rate.
+  const total = subtotal + shipping
 
   return (
     <>
@@ -123,18 +127,14 @@ export default function CartDrawer() {
                   <span>Shipping</span>
                   <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
                 </div>
-                <div className={styles.totalRow}>
-                  <span>Tax (est.)</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
                 <div className={`${styles.totalRow} ${styles.grand}`}>
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
-              {subtotal < SHIPPING_THRESHOLD && (
+              {untilFree > 0 && (
                 <p className={styles.shipNote}>
-                  <em>${(SHIPPING_THRESHOLD - subtotal).toFixed(2)} from free shipping.</em>
+                  <em>${untilFree.toFixed(2)} from free shipping.</em>
                 </p>
               )}
               {checkoutError && (

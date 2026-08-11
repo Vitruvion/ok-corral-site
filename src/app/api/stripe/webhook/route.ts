@@ -115,10 +115,17 @@ async function handleMerchCompletion(
     expand: ['line_items', 'shipping_cost.shipping_rate'],
   })
 
-  const shippingRate = full.shipping_cost?.shipping_rate
+  // Free shipping and pickup both cost $0, so the amount alone can't tell
+  // them apart — the rate's display name is what decides. Resolve it even if
+  // the expansion didn't come back inflated.
+  const rateName = await resolveShippingRateName(stripe, full.shipping_cost?.shipping_rate)
+  if (!rateName) {
+    console.warn(
+      `[stripe-webhook] ${session.id}: no shipping rate name; falling back to 'ship'`
+    )
+  }
   const fulfillment: FulfillmentType = classifyFulfillment({
-    shippingRateDisplayName:
-      shippingRate && typeof shippingRate !== 'string' ? shippingRate.display_name : null,
+    shippingRateDisplayName: rateName,
     shippingAmountTotal: full.shipping_cost?.amount_total ?? null,
   })
 
@@ -281,6 +288,26 @@ async function sendOrderEmails(data: OrderEmailData): Promise<void> {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
+/**
+ * Display name of the shipping rate the customer picked. Normally the
+ * session expansion returns the inflated object; if it comes back as a bare
+ * ID, fetch it rather than guessing from the amount.
+ */
+async function resolveShippingRateName(
+  stripe: NonNullable<ReturnType<typeof getStripe>>,
+  rate: string | Stripe.ShippingRate | null | undefined
+): Promise<string | null> {
+  if (!rate) return null
+  if (typeof rate !== 'string') return rate.display_name ?? null
+  try {
+    const fetched = await stripe.shippingRates.retrieve(rate)
+    return fetched.display_name ?? null
+  } catch (err) {
+    console.warn('[stripe-webhook] could not retrieve shipping rate', err)
+    return null
+  }
+}
+
 function resolveCustomerName(s: Stripe.Checkout.Session): string | null {
   const collected = s.collected_information?.shipping_details?.name
   if (collected) return collected

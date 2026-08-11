@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { getSupabase } from '@/lib/supabase'
 import {
-  SHIPPING_FLAT_RATE_CENTS,
-  SHIP_LABEL,
+  shippingCentsForSubtotal,
+  shipLabelForSubtotal,
   PICKUP_LABEL,
 } from '@/lib/fulfillment'
 
@@ -202,12 +202,15 @@ async function handleMerch(
     },
     // The customer's ship-or-pickup choice. The webhook reads the selected
     // rate back off the session to set fulfillment_type on the order row.
+    //
+    // The ship rate is tiered on subtotal via the same helper the cart
+    // renders from, so Stripe quotes exactly what the cart quoted.
     shipping_options: [
       {
         shipping_rate_data: {
           type: 'fixed_amount',
-          fixed_amount: { amount: SHIPPING_FLAT_RATE_CENTS, currency: 'usd' },
-          display_name: SHIP_LABEL,
+          fixed_amount: { amount: shippingCentsForSubtotal(subtotal), currency: 'usd' },
+          display_name: shipLabelForSubtotal(subtotal),
           delivery_estimate: {
             minimum: { unit: 'business_day', value: 3 },
             maximum: { unit: 'business_day', value: 7 },
