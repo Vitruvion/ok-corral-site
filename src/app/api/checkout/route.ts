@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { getSupabase } from '@/lib/supabase'
+import {
+  SHIPPING_FLAT_RATE_CENTS,
+  SHIP_LABEL,
+  PICKUP_LABEL,
+} from '@/lib/fulfillment'
 
 export const runtime = 'nodejs'
 
@@ -189,9 +194,34 @@ async function handleMerch(
       },
       quantity: it.qty,
     })),
+    // Address is collected for BOTH fulfillment paths. Stripe can't make it
+    // conditional on the selected shipping option, and a stray address on a
+    // pickup order is harmless — whereas missing one on a shipment is not.
     shipping_address_collection: {
       allowed_countries: ['US'],
     },
+    // The customer's ship-or-pickup choice. The webhook reads the selected
+    // rate back off the session to set fulfillment_type on the order row.
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          type: 'fixed_amount',
+          fixed_amount: { amount: SHIPPING_FLAT_RATE_CENTS, currency: 'usd' },
+          display_name: SHIP_LABEL,
+          delivery_estimate: {
+            minimum: { unit: 'business_day', value: 3 },
+            maximum: { unit: 'business_day', value: 7 },
+          },
+        },
+      },
+      {
+        shipping_rate_data: {
+          type: 'fixed_amount',
+          fixed_amount: { amount: 0, currency: 'usd' },
+          display_name: PICKUP_LABEL,
+        },
+      },
+    ],
     automatic_tax: { enabled: false },
     metadata: {
       kind: 'merch',
