@@ -11,7 +11,7 @@
  * merch link, and the ProgressRail merch dot all disappear. Flip to true
  * when the store is ready to launch.
  */
-export const SHOW_MERCH = false
+export const SHOW_MERCH = true
 
 /**
  * Feature flag: when false, the GiftCards section and the Footer Shop
