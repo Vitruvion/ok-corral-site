@@ -158,13 +158,14 @@ update events set featured = false where slug <> E'dustin-gaspard-2026-06-25';
 
 -- -- Recurring Events --------------------------------------------
 delete from recurring_events;
-insert into recurring_events (day_abbr, name, support, time, tickets, sort_order)
+-- poster_url requires migration 0008_recurring_events_poster.sql. Run it first.
+insert into recurring_events (day_abbr, name, support, time, tickets, poster_url, sort_order)
 values
-  (E'MON', E'Madi''s Madness Pool Tournament', E'Rack ''em up \u00B7 anyone can play', E'7:30 PM', E'$5 Buy-In', 1),
+  (E'MON', E'Madi''s Madness Pool Tournament', E'Rack ''em up \u00B7 anyone can play', E'7:30 PM', E'$5 Buy-In', E'/assets/events/madis-madness-pool.jpg', 1),
   -- Taco Tuesday removed 2026-06-30 - restore this row (sort_order 2) to bring it back:
-  -- (E'TUE', E'Taco Tuesday',         E'$4 tacos every Tuesday night', E'All Day', E'No Cover', 2),
-  (E'WED', E'Free Pool Wednesday',  E'Tables on the house, all night long',     E'All Day', E'No Cover', 3),
-  (E'SUN', E'Karaoke Night',        E'Grab the mic \u00B7 6 PM til late',            E'6 PM',    E'No Cover', 4);
+  -- (E'TUE', E'Taco Tuesday',         E'$4 tacos every Tuesday night', E'All Day', E'No Cover', null, 2),
+  (E'WED', E'Free Pool Wednesday',  E'Tables on the house, all night long',     E'All Day', E'No Cover', null, 3),
+  (E'SUN', E'Karaoke Night',        E'Grab the mic \u00B7 6 PM til late',            E'6 PM',    E'No Cover', null, 4);
 
 -- -- Drinks ------------------------------------------------------
 delete from drinks;

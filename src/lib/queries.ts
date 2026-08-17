@@ -9,12 +9,13 @@ import {
   DRINK_TABS,
   SHOW_MERCH,
   type EventData,
+  type RecurringEvent,
   type DrinkData,
   type MerchItem,
   type InstagramPost,
 } from './data'
 
-type RecurringData = (typeof FALLBACK_RECURRING)[number]
+type RecurringData = RecurringEvent
 
 type DrinksByCategory = Record<string, DrinkData[]>
 
@@ -121,7 +122,7 @@ export async function fetchRecurring(): Promise<RecurringData[]> {
   try {
     const { data, error } = await sb
       .from('recurring_events')
-      .select('day_abbr, name, support, time, tickets')
+      .select('day_abbr, name, support, time, tickets, poster_url')
       .eq('active', true)
       .order('sort_order', { ascending: true })
     if (error) throw error
@@ -132,6 +133,7 @@ export async function fetchRecurring(): Promise<RecurringData[]> {
       support: m(r.support),
       time: m(r.time),
       tickets: m(r.tickets),
+      poster_url: r.poster_url ?? null,
     }))
   } catch (e) {
     log('recurring', e)

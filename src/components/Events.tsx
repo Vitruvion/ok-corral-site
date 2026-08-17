@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, type ReactNode } from 'react'
-import { EVENTS, RECURRING, type EventData, type RelatedLink } from '@/lib/data'
+import { EVENTS, RECURRING, type EventData, type RelatedLink, type RecurringEvent } from '@/lib/data'
 import { filterUpcomingEvents } from '@/lib/events'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
 import { downloadIcs } from '@/lib/ics'
@@ -8,11 +8,10 @@ import { shareOrCopy } from '@/lib/share'
 import { InstagramIcon, FacebookIcon, TikTokIcon } from './SocialIcons'
 import styles from './Events.module.css'
 
-type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
 
 type Props = {
   events?: EventData[]
-  recurring?: RecurringData[]
+  recurring?: RecurringEvent[]
 }
 
 export default function Events({ events = filterUpcomingEvents(EVENTS), recurring = RECURRING }: Props = {}) {
@@ -25,6 +24,19 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
     if (featured) return featured.id
     return events[0]?.id ?? ''
   })
+
+  // Full-size flyer for a weekly event, opened from its card thumbnail.
+  const [poster, setPoster] = useState<{ src: string; name: string } | null>(null)
+  useEffect(() => {
+    if (!poster) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPoster(null) }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [poster])
 
   // Single-slot toast for action feedback ("Link copied!", ".ics downloaded", etc.)
   const [toast, setToast] = useState<string | null>(null)
@@ -258,8 +270,13 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
             <span className={styles.weeklyLine} />
           </div>
           <div className={styles.weeklyGrid}>
-            {recurring.map((r, i) => (
-              <div key={r.day} className={styles.weeklyCard}>
+            {recurring.map(r => (
+              <div
+                key={r.day}
+                /* A card with a flyer spans the whole row — the 3-up grid is
+                   far too narrow to sit a poster next to the text. */
+                className={`${styles.weeklyCard} ${r.poster_url ? styles.weeklyCardFeatured : ''}`}
+              >
                 <div className={styles.weeklyCardLeft}>
                   <span className={styles.weeklyEvery}>Every</span>
                   <span className={styles.weeklyDay}>{r.day}</span>
@@ -269,6 +286,23 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
                   <span className={styles.weeklySupport}>{r.support}</span>
                   <span className={styles.weeklyMeta}>{r.time} · {r.tickets}</span>
                 </div>
+                {r.poster_url && (
+                  <button
+                    type="button"
+                    className={styles.weeklyPoster}
+                    onClick={() => setPoster({ src: r.poster_url as string, name: r.name })}
+                    aria-label={`View the ${r.name} poster`}
+                  >
+                    <ImageOrPlaceholder
+                      src={r.poster_url}
+                      alt={`${r.name} poster`}
+                      label={r.name}
+                      cover
+                      loading="lazy"
+                    />
+                    <span className={styles.weeklyPosterZoom} aria-hidden="true">⤢</span>
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -278,6 +312,20 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
           <button className="btn btn-ghost">View Full Calendar →</button>
         </div>
       </div>
+
+      {poster && (
+        <div
+          className={styles.posterLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${poster.name} poster`}
+          onClick={() => setPoster(null)}
+        >
+          <button className={styles.posterClose} onClick={() => setPoster(null)} aria-label="Close poster">✕</button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={poster.src} alt={`${poster.name} poster`} onClick={e => e.stopPropagation()} />
+        </div>
+      )}
 
       {toast && (
         <div className={styles.toast} role="status" aria-live="polite">

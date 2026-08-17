@@ -1,6 +1,6 @@
 'use client'
 import { CartProvider } from '@/lib/cart'
-import { SHOW_MERCH, SHOW_GIFT_CARDS, type EventData, type DrinkData, type MerchItem, type InstagramPost } from '@/lib/data'
+import { SHOW_MERCH, SHOW_GIFT_CARDS, type EventData, type DrinkData, type MerchItem, type InstagramPost, type RecurringEvent } from '@/lib/data'
 import Loader from '@/components/Loader'
 import AgeGate from '@/components/AgeGate'
 import Topbar from '@/components/Topbar'
@@ -19,11 +19,10 @@ import ProgressRail from '@/components/ProgressRail'
 import CartDrawer from '@/components/CartDrawer'
 import StripeReturnHandler from '@/components/StripeReturnHandler'
 
-type RecurringData = { day: string; name: string; support: string; time: string; tickets: string }
 
 type Props = {
   events: EventData[]
-  recurring: RecurringData[]
+  recurring: RecurringEvent[]
   drinks: Record<string, DrinkData[]>
   merch: MerchItem[]
   igPosts: InstagramPost[] | null

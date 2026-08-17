@@ -416,13 +416,18 @@
   background: rgba(235,228,212,0.1);
 }
 
+/* Flex rather than fixed columns so the row stays balanced whatever the
+   count: three cards sit three-across, two split the row instead of leaving
+   a dead third column, and a card with a flyer takes a row to itself. */
 .weeklyGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
 .weeklyCard {
+  flex: 1 1 300px;
+  min-width: 0;
   padding: 32px;
   border: 1px solid rgba(235,228,212,0.15);
   background: rgba(20,17,16,0.5);
@@ -435,6 +440,94 @@
 .weeklyCard:hover {
   border-color: var(--ember);
 }
+
+/* Weekly event with a flyer: takes the full grid row so the poster has
+   somewhere to live, and adds a third column to hold it. */
+.weeklyCardFeatured {
+  flex-basis: 100%;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+
+.weeklyPoster {
+  position: relative;
+  width: 104px;
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  border: 1px solid rgba(235, 228, 212, 0.18);
+  border-radius: 3px;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+  justify-self: end;
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.weeklyPoster:hover,
+.weeklyPoster:focus-visible {
+  border-color: var(--ember);
+  transform: translateY(-2px);
+}
+
+.weeklyPoster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.weeklyPosterZoom {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: var(--bone);
+  background: rgba(11, 9, 8, 0.55);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.weeklyPoster:hover .weeklyPosterZoom,
+.weeklyPoster:focus-visible .weeklyPosterZoom {
+  opacity: 1;
+}
+
+/* Full-size flyer */
+.posterLightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: rgba(11, 9, 8, 0.92);
+  cursor: zoom-out;
+}
+
+.posterLightbox img {
+  max-width: min(92vw, 620px);
+  max-height: 90vh;
+  object-fit: contain;
+  border: 1px solid rgba(235, 228, 212, 0.2);
+  cursor: default;
+}
+
+.posterClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(235, 228, 212, 0.25);
+  border-radius: 50%;
+  background: rgba(20, 17, 16, 0.9);
+  color: var(--bone);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.posterClose:hover { border-color: var(--ember); }
 
 .weeklyCardLeft {
   display: flex;
@@ -495,7 +588,7 @@
 
 @media (max-width: 1100px) {
   .meta { display: none; }
-  .weeklyGrid { grid-template-columns: 1fr; }
+  .weeklyCard { flex-basis: 100%; }
   .rowInner {
     grid-template-columns: 100px 1fr auto;
     gap: 24px;
@@ -532,4 +625,19 @@
 @media (max-width: 420px) {
   .day { font-size: 38px; }
   .name { font-size: 20px; }
+}
+
+/* Narrow viewports: the featured weekly card can't fit a poster column
+   beside the text, and the ≤480px rule above collapses the card back to two
+   columns anyway — which would drop the poster into a cell it overflows.
+   Put it on its own row underneath instead. Appended last so it wins at
+   every narrow breakpoint regardless of the earlier overrides. */
+@media (max-width: 760px) {
+  .weeklyCardFeatured { grid-template-columns: auto 1fr; }
+  .weeklyCardFeatured .weeklyPoster {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: 128px;
+    margin-top: 4px;
+  }
 }
