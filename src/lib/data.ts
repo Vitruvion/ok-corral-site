@@ -210,6 +210,13 @@ export const EVENTS: EventData[] = [
 ]
 
 export const RECURRING = [
+  {
+    day: 'MON',
+    name: "Madi's Madness Pool Tournament",
+    support: "Rack 'em up · anyone can play",
+    time: '7:30 PM',
+    tickets: '$5 Buy-In',
+  },
   // Taco Tuesday removed 2026-06-30 — restore this entry (and the matching
   // recurring_events row in supabase/seed.sql + the MARQUEE_ITEMS entry below)
   // to bring it back:
