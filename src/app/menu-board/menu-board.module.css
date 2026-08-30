@@ -52,12 +52,11 @@
 }
 
 /* ── Body: categories flow into three columns ──────────────────── */
-/* Grid, not CSS multi-column.
-   Multi-column BALANCES: it makes all three columns the same height, which
-   forces a tall category to be torn in half even with break-inside: avoid,
-   because avoiding the break would unbalance the columns. Measured: Saloon
-   Cocktails spanned two columns every time. Grid items are atomic and simply
-   cannot be split, so one category = one column, always. */
+/* Three explicit column containers, not auto-flow.
+   Auto-flow only looked right at exactly three categories; a fourth wrapped
+   onto a second row under Saloon Cocktails. Placement now comes from
+   COLUMN_MAP in page.tsx, and each column stacks its own categories. Grid
+   items are still atomic, so a category can never be torn across a break. */
 .columns {
   flex: 1 1 auto;
   min-height: 0;
@@ -67,6 +66,17 @@
   align-content: start;
 }
 
+.column {
+  min-width: 0;
+  /* The dividers live on the column now that a column holds several
+     categories — on .category they would have drawn between stacked
+     sections as well. */
+  padding-right: 1.5vw;
+  border-right: 1px solid var(--ink-4);
+}
+
+.column:last-child { border-right: none; padding-right: 0; }
+
 .category {
   /* Belt and braces: meaningless in grid, correct if this ever becomes a
      fragmented context again. */
@@ -74,13 +84,17 @@
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
   min-width: 0;
-  margin-bottom: 2.4vh;
-  /* Column rule, drawn by hand since grid has no column-rule. */
-  padding-right: 1.5vw;
-  border-right: 1px solid var(--ink-4);
 }
 
-.category:last-child { border-right: none; padding-right: 0; }
+/* A second category stacked in the same column has to read as its own
+   section, not as more of the list above it: a rule, real air above it, and
+   the header treatment doing the rest. Featured Beer sitting under Shots &
+   Bombs is the case this exists for. */
+.category + .category {
+  margin-top: 4.5vh;
+  padding-top: 2.2vh;
+  border-top: 1px solid var(--ink-4);
+}
 
 .categoryName {
   font-family: var(--ff-display);
@@ -100,6 +114,13 @@
 .item {
   break-inside: avoid;
   margin-bottom: 1.1vh;
+}
+
+/* A row with no tagline loses that line's height, so an all-bare list (the
+   cigars) reads noticeably tighter than the cocktails beside it. Give those
+   rows the height back as spacing so both columns share a rhythm. */
+.itemBare {
+  margin-bottom: 2.1vh;
 }
 
 /* Name … price, with the leader eating the slack between them. */

@@ -289,7 +289,7 @@ export type DrinkData = {
  * them into a completely empty table (first-run bootstrap).
  */
 
-export const DRINK_TABS = ['Saloon Cocktails', 'Shots & Bombs', 'Featured Beer']
+export const DRINK_TABS = ['Saloon Cocktails', 'Shots & Bombs', 'Featured Beer', 'Cigars']
 
 export type MerchItem = {
   id: string
