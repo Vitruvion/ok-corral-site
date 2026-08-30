@@ -1,0 +1,183 @@
+/* /menu-board — TV display.
+   Everything sizes in vw so one stylesheet serves a 1080p back-bar screen and
+   a 4K panel identically. No animation, transition or hover state anywhere:
+   this never gets pointed at, and motion on a wall display is just noise. */
+
+/* No scrolling on this route, without touching global html/body rules that
+   the rest of the site depends on: the board is position-fixed to the
+   viewport and clips its own overflow, so there is nothing left to scroll.
+   (Deliberately avoids :has() — TV browsers are often years behind.) */
+.board :global(*) {
+  cursor: none;
+}
+
+.board {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  /* 3% each side for TV overscan — older panels crop the edges. */
+  padding: 3vh 3vw;
+  background: var(--ink);
+  color: var(--bone);
+  display: flex;
+  flex-direction: column;
+  gap: 1.6vh;
+  cursor: none;
+}
+
+/* ── Header: wordmark left, nothing else ───────────────────────── */
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6vw;
+  flex: 0 0 auto;
+  border-bottom: 0.15vh solid var(--ink-4);
+  padding-bottom: 1.4vh;
+}
+
+.markThe {
+  font-family: var(--ff-mono);
+  font-size: 1vw;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.markName {
+  font-family: var(--ff-display);
+  font-size: 3vw;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+/* ── Body: categories flow into three columns ──────────────────── */
+/* Grid, not CSS multi-column.
+   Multi-column BALANCES: it makes all three columns the same height, which
+   forces a tall category to be torn in half even with break-inside: avoid,
+   because avoiding the break would unbalance the columns. Measured: Saloon
+   Cocktails spanned two columns every time. Grid items are atomic and simply
+   cannot be split, so one category = one column, always. */
+.columns {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0 3vw;
+  align-content: start;
+}
+
+.category {
+  /* Belt and braces: meaningless in grid, correct if this ever becomes a
+     fragmented context again. */
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  min-width: 0;
+  margin-bottom: 2.4vh;
+  /* Column rule, drawn by hand since grid has no column-rule. */
+  padding-right: 1.5vw;
+  border-right: 1px solid var(--ink-4);
+}
+
+.category:last-child { border-right: none; padding-right: 0; }
+
+.categoryName {
+  font-family: var(--ff-display);
+  font-size: 2.2vw;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 1.2vh;
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  break-inside: avoid;
+  margin-bottom: 1.1vh;
+}
+
+/* Name … price, with the leader eating the slack between them. */
+.itemHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5vw;
+}
+
+.itemName {
+  font-family: var(--ff-sans);
+  font-weight: 500;
+  font-size: 1.4vw;
+  line-height: 1.2;
+  color: var(--bone);
+  flex: 0 1 auto;
+}
+
+.leader {
+  flex: 1 1 auto;
+  align-self: flex-end;
+  margin-bottom: 0.35vw;
+  border-bottom: 0.18vw dotted var(--ink-4);
+  min-width: 1vw;
+}
+
+.itemPrice {
+  font-family: var(--ff-sans);
+  font-weight: 600;
+  font-size: 1.4vw;
+  line-height: 1.2;
+  color: var(--bone);
+  flex: 0 0 auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.itemDesc {
+  font-family: var(--ff-sans);
+  font-weight: 300;
+  font-size: 0.9vw;
+  line-height: 1.35;
+  color: var(--bone-mute);
+  margin: 0.15vh 0 0;
+  /* One line. Anything taller is wall text nobody reads from across the
+     room, and it's what pushes a category past a single column. */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Error backstop (see error.tsx) ────────────────────────────── */
+.fallback {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--bone);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3vh;
+  cursor: none;
+}
+
+.fallbackMark {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6vw;
+}
+
+.fallbackNote {
+  margin: 0;
+  font-family: var(--ff-display);
+  font-size: 4vw;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}

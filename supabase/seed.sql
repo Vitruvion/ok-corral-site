@@ -168,7 +168,25 @@ values
   (E'SUN', E'Karaoke Night',        E'Grab the mic \u00B7 6 PM til late',            E'6 PM',    E'No Cover', null, 4);
 
 -- -- Drinks ------------------------------------------------------
-delete from drinks;
+-- ****************************************************************
+-- *  DRINKS ARE NO LONGER SEEDED.                                *
+-- *                                                              *
+-- *  The bar edits drinks at /admin/menu, so Supabase is the      *
+-- *  authoritative copy. Re-running this file used to DELETE and  *
+-- *  re-INSERT every drink, which would silently throw away       *
+-- *  every price change the owners had made.                      *
+-- *                                                              *
+-- *  The block below therefore only runs when the drinks table is *
+-- *  completely empty - i.e. first-run bootstrapping of a fresh   *
+-- *  database. On any seeded database it is a no-op.              *
+-- *                                                              *
+-- *  To deliberately reset drinks to these defaults, empty the    *
+-- *  table first:  delete from drinks;                            *
+-- ****************************************************************
+do $drinks_bootstrap$
+begin
+if not exists (select 1 from drinks) then
+
 insert into drinks (category, name, tagline, price, description, sort_order) values
   -- Saloon Cocktails -- grouped by spirit (whiskey, tequila, other), price desc within each group; Damn Good Old Fashioned pinned to top
   (E'Saloon Cocktails', E'Damn Good Old Fashioned', E'Buffalo Trace \u00B7 bitters \u00B7 large rock',                 E'$13', E'Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you''ve had. Ask for it smoked.', 1),
@@ -188,6 +206,10 @@ insert into drinks (category, name, tagline, price, description, sort_order) val
   (E'Shots & Bombs', E'Iceberg',           E'Vodka \u00B7 triple sec \u00B7 Red Bull',           E'$9', E'Vodka, triple sec, lime, topped with Coconut Berry Red Bull.', 4),
   -- Featured Beer
   (E'Featured Beer', E'I''m Your Hucklebeer', E'Woody''s Brewing collab \u00B7 huckleberry wheat', E'$7', E'Exclusive collab with Woody''s Brewing Company. Huckleberry Wheat Ale \u2022 5.2% ABV \u2022 20 IBU. Only available at The OK Corral.', 1);
+
+end if;
+end
+$drinks_bootstrap$;
 
 -- -- Merch -------------------------------------------------------
 insert into merch (slug, name, category, price, badge, color, sizes, image_url, image_bg, description, sort_order)

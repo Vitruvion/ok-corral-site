@@ -4,7 +4,6 @@ import { filterUpcomingEvents } from './events'
 import {
   EVENTS as FALLBACK_EVENTS,
   RECURRING as FALLBACK_RECURRING,
-  DRINKS as FALLBACK_DRINKS,
   MERCH as FALLBACK_MERCH,
   DRINK_TABS,
   SHOW_MERCH,
@@ -141,43 +140,72 @@ export async function fetchRecurring(): Promise<RecurringData[]> {
   }
 }
 
-export async function fetchDrinks(): Promise<DrinksByCategory> {
+/**
+ * THE drinks query. Single source of truth for every consumer: the homepage
+ * via fetchAll(), and the /menu-board TV display.
+ *
+ * Returns only active drinks, grouped by category, each group already in
+ * sort_order. Drinks are authoritative in Supabase now that they're edited
+ * through /admin/menu, so there is deliberately no data.ts fallback — a
+ * fallback would quietly serve stale hardcoded prices over the bar's real
+ * ones.
+ *
+ * THROWS on failure rather than returning {}. That distinction matters for
+ * the TV: an empty render is a SUCCESSFUL render, so ISR would cache the
+ * blank page and the bar would stare at an empty menu board until the next
+ * good revalidation. Throwing makes Next keep serving the last good cached
+ * page instead, and /menu-board/error.tsx covers the cold case.
+ *
+ * A query that succeeds with zero rows is NOT a failure — that's a genuinely
+ * empty menu, and it returns {} normally. Only the error channel throws.
+ * Callers that would rather degrade than fail (fetchAll) catch it themselves.
+ */
+export async function getDrinks(): Promise<DrinksByCategory> {
   const sb = getSupabase()
-  if (!sb) return FALLBACK_DRINKS
-  try {
-    const { data, error } = await sb
-      .from('drinks')
-      .select('category, name, tagline, price, description')
-      .eq('active', true)
-      .order('category', { ascending: true })
-      .order('sort_order', { ascending: true })
-    if (error) throw error
-    if (!data || data.length === 0) return FALLBACK_DRINKS
-    const grouped: DrinksByCategory = {}
-    for (const d of data) {
-      const cat = unmojibake(d.category as string)
-      if (!grouped[cat]) grouped[cat] = []
-      grouped[cat].push({
-        name: m(d.name),
-        tagline: m(d.tagline),
-        price: m(d.price),
-        description: m(d.description),
-      })
-    }
-    // Schema-mismatch guard: if the DB has rows but none of its categories
-    // match the current DRINK_TABS (e.g. an old seed wasn't re-run after a
-    // menu overhaul), fall back to data.ts so the UI doesn't render empty
-    // tabs. Re-run supabase/seed.sql to fix.
-    const overlap = Object.keys(grouped).filter(c => DRINK_TABS.includes(c))
-    if (overlap.length === 0) {
-      log('drinks', `Supabase categories [${Object.keys(grouped).join(', ')}] do not overlap with DRINK_TABS — re-run supabase/seed.sql`)
-      return FALLBACK_DRINKS
-    }
-    return grouped
-  } catch (e) {
-    log('drinks', e)
-    return FALLBACK_DRINKS
+  // Missing config is a failure, not an empty menu.
+  if (!sb) throw new Error('drinks unavailable: Supabase is not configured')
+
+  const { data, error } = await sb
+    .from('drinks')
+    .select('category, name, tagline, price, description')
+    .eq('active', true)
+    .order('category', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  if (error) throw new Error(`drinks query failed: ${error.message}`)
+
+  // supabase-js gives [] for a successful empty result; error is the only
+  // failure signal, so a null here is treated as empty rather than fatal.
+  const rows = data ?? []
+
+  const grouped: DrinksByCategory = {}
+  for (const d of rows) {
+    const cat = unmojibake(d.category as string)
+    if (!grouped[cat]) grouped[cat] = []
+    grouped[cat].push({
+      name: m(d.name),
+      tagline: m(d.tagline),
+      price: m(d.price),
+      description: m(d.description),
+    })
   }
+  return grouped
+}
+
+/**
+ * Category display order, shared by the homepage tabs and the menu board so
+ * the two never disagree.
+ *
+ * DRINK_TABS first, in its curated order, then any category the editor has
+ * since invented — appended alphabetically rather than dropped, so a new
+ * category created at /admin/menu shows up instead of silently vanishing.
+ */
+export function orderDrinkCategories(drinks: DrinksByCategory): string[] {
+  const known = DRINK_TABS.filter(t => drinks[t]?.length)
+  const extra = Object.keys(drinks)
+    .filter(c => !DRINK_TABS.includes(c) && drinks[c]?.length)
+    .sort()
+  return [...known, ...extra]
 }
 
 export async function fetchMerch(): Promise<MerchItem[]> {
@@ -221,7 +249,13 @@ export async function fetchAll() {
   const [events, recurring, drinks, merch, igPosts] = await Promise.all([
     fetchEvents(),
     fetchRecurring(),
-    fetchDrinks(),
+    // The homepage would rather lose its drinks section than 500 outright:
+    // events, gallery, hours and everything else still render. The TV gets
+    // the opposite treatment — see getDrinks().
+    getDrinks().catch(err => {
+      log('drinks', err)
+      return {} as DrinksByCategory
+    }),
     SHOW_MERCH ? fetchMerch() : Promise.resolve<MerchItem[]>([]),
     fetchInstagramPosts(6),
   ])

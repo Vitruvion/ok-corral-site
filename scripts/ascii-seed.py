@@ -17,7 +17,20 @@ import re
 import sys
 from pathlib import Path
 
-PATH = Path(__file__).resolve().parent.parent / 'supabase' / 'seed.sql'
+DEFAULT_PATH = Path(__file__).resolve().parent.parent / 'supabase' / 'seed.sql'
+
+
+def target_path() -> Path:
+    """File to rewrite: argv[1] if given, else supabase/seed.sql.
+
+    Migrations get pasted into the same SQL editor as the seed and hit the
+    same mojibake risk, so they need the same treatment. Defaulting to the
+    seed keeps every existing `python scripts/ascii-seed.py` invocation
+    working unchanged.
+    """
+    if len(sys.argv) > 1:
+        return Path(sys.argv[1]).resolve()
+    return DEFAULT_PATH
 
 # Comments don't run through Postgres's E-string decoder, so non-ASCII
 # chars there are useful only for humans reading the file. We swap them
@@ -163,9 +176,14 @@ def rewrite(text: str) -> str:
 
 
 def main():
-    text = PATH.read_text(encoding='utf-8')
+    path = target_path()
+    if not path.exists():
+        print(f'not found: {path}')
+        raise SystemExit(1)
+    print(f'file: {path}')
+    text = path.read_text(encoding='utf-8')
     new_text = rewrite(text)
-    PATH.write_text(new_text, encoding='utf-8', newline='\n')
+    path.write_text(new_text, encoding='utf-8', newline='\n')
     nonascii = [c for c in new_text if ord(c) > 127]
     print(f'rewrote {len(text)} -> {len(new_text)} chars')
     print(f'non-ASCII chars remaining: {len(nonascii)}')

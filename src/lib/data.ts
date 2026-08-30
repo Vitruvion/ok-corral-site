@@ -267,32 +267,27 @@ export type DrinkData = {
   description: string
 }
 
-export const DRINKS: Record<string, DrinkData[]> = {
-  'Saloon Cocktails': [
-    // Whiskey (Damn Good Old Fashioned pinned to top)
-    { name: 'Damn Good Old Fashioned',  tagline: 'Buffalo Trace · bitters · large rock',     price: '$13', description: "Buffalo Trace Bourbon, bitters, demerara sugar, large rock. Simple, done right, and probably the best damn Old Fashioned you've had. Ask for it smoked." },
-    { name: 'In Cold Blood',            tagline: 'Rye · Cynar 70 · sweet vermouth',          price: '$13', description: 'Rittenhouse 100 Rye, Cynar 70, sweet vermouth, large rock, expressed orange. Bitter, bold, with just a touch of sweetness.' },
-    // Tequila
-    { name: 'Spicy Cowgirl Margarita',  tagline: 'Herradura Reposado · jalapeño · Tajín rim', price: '$13', description: 'Herradura Reposado shaken with fresh jalapeño, agave, and lime. Tajín rim. Earns the name.' },
-    { name: 'Vaquero Café',             tagline: 'Don Julio Reposado · Licor 43 · espresso · orange', price: '$13', description: 'Don Julio Reposado, Licor 43, and a shot of fresh espresso. Cinnamon on top, orange oils expressed over the glass. Big rock.' },
-    { name: 'Ranch Water',              tagline: 'Mijenta Blanco · chile ancho · hop water', price: '$10', description: 'Mijenta Blanco with chile ancho liqueur and fresh lime, topped with hop water. Tajín rim. Easy drinking with a little smoke.' },
-    // Other (gin / vodka / beer-based / liqueur)
-    { name: 'Outlaw Vesper Martini',    tagline: 'Amass Gin · vodka · Lillet Blanc',         price: '$14', description: 'Our take on the Bond classic. Amass Gin, vodka, Lillet Blanc, expressed lemon, served up.' },
-    { name: '"You Name It"',            tagline: 'Empress Gin · elderflower · grapefruit',   price: '$13', description: 'Empress Gin with elderflower, grapefruit bitters, and a touch of sugar. Lemon and rosemary on top. Tell us what to call it.' },
-    { name: 'Bloody Bull',              tagline: 'Happy Cow Vodka · beef-broth bloody · olives', price: '$10', description: 'Happy Cow Vodka with our house bloody mix, built on beef broth the proper way. Mild by default, fired up on request. Stacked with green olives, peperoncini, and citrus.' },
-    { name: 'Giddy Up',                 tagline: 'Vodka · Kahlúa · cold brew',               price: '$8',  description: "Happy Cow Vodka, Kahlúa, cold brew, served over ice. Easy drinkin' pick-me-up." },
-    { name: 'Dive Bar Spritz',          tagline: 'High Life · Aperol · lemon',               price: '$6',  description: 'Miller High Life bottle, Aperol, fresh lemon.' },
-  ],
-  'Shots & Bombs': [
-    { name: 'Scorpion Shooter',   tagline: '+$3 add-on to any shot',                  price: '$3', description: 'Add an edible scorpion to any shot.' },
-    { name: 'Smoked Steak Shot',  tagline: 'Jameson · Worcestershire · black pepper', price: '$8', description: 'Jameson, chased with smoked Worcestershire and cracked black pepper.' },
-    { name: 'Bull Dozer',         tagline: 'Jäger · Red Bull',                        price: '$8', description: 'Jägermeister & Red Bull in a double shot glass.' },
-    { name: 'Iceberg',            tagline: 'Vodka · triple sec · Red Bull',           price: '$9', description: 'Vodka, triple sec, lime, topped with Coconut Berry Red Bull.' },
-  ],
-  'Featured Beer': [
-    { name: "I'm Your Hucklebeer", tagline: "Woody's Brewing collab · huckleberry wheat", price: '$7', description: "Exclusive collab with Woody's Brewing Company. Huckleberry Wheat Ale • 5.2% ABV • 20 IBU. Only available at The OK Corral." },
-  ],
-}
+/*
+ * DRINKS moved to Supabase (2026-08).
+ *
+ * Drinks are edited at /admin/menu, so the database is the only source of
+ * truth for them. The hardcoded array that used to live here was a live
+ * fallback — which meant a Supabase blip could quietly serve months-old
+ * prices to customers as if they were current. For a menu, stale-and-
+ * confident is worse than absent, so getDrinks() now THROWS on a query
+ * failure. fetchAll() catches that and lets the homepage render without a
+ * drinks section; /menu-board lets it propagate so ISR keeps serving the
+ * last good board instead of caching a blank one.
+ *
+ * Kept deliberately:
+ *   - DrinkData  : the display shape, imported by queries.ts, ClientShell
+ *                  and Drinks.tsx
+ *   - DRINK_TABS : category display ORDER, not drink data. Drives the
+ *                  homepage tabs and the menu board's column order.
+ *
+ * The original rows live on in supabase/seed.sql, which now only inserts
+ * them into a completely empty table (first-run bootstrap).
+ */
 
 export const DRINK_TABS = ['Saloon Cocktails', 'Shots & Bombs', 'Featured Beer']
 

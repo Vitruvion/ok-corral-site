@@ -1,13 +1,15 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { DRINKS, DRINK_TABS, type DrinkData } from '@/lib/data'
+import { DRINK_TABS, type DrinkData } from '@/lib/data'
 import styles from './Drinks.module.css'
 
 type Props = {
   drinks?: Record<string, DrinkData[]>
 }
 
-export default function DrinkMenu({ drinks = DRINKS }: Props = {}) {
+// Default is empty, not a hardcoded menu: drinks live in Supabase now, and a
+// fallback here would render stale prices as if they were current.
+export default function DrinkMenu({ drinks = {} }: Props = {}) {
   const tabs = useMemo(() => {
     const present = DRINK_TABS.filter(t => drinks[t]?.length)
     return present.length > 0 ? present : DRINK_TABS
