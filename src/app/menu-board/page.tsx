@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getDrinks } from '@/lib/queries'
+import { getBoardQrSvg } from './qr'
 import MenuBoardView from './MenuBoardView'
 import RefreshLoop from './RefreshLoop'
 import styles from './menu-board.module.css'
@@ -23,7 +24,9 @@ export const metadata: Metadata = {
 }
 
 export default async function MenuBoardPage() {
-  const drinks = await getDrinks()
+  // Both resolved server-side; the QR is inlined into the HTML so the panel
+  // needs no network of its own.
+  const [drinks, qrSvg] = await Promise.all([getDrinks(), getBoardQrSvg()])
 
   return (
     <main className={styles.board}>
@@ -34,7 +37,7 @@ export default async function MenuBoardPage() {
         <span className={styles.markName}>O.K. Corral</span>
       </header>
 
-      <MenuBoardView drinks={drinks} />
+      <MenuBoardView drinks={drinks} qrSvg={qrSvg} />
     </main>
   )
 }

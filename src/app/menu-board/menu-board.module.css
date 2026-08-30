@@ -62,12 +62,17 @@
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  /* One full-height row, so a column is as tall as the board rather than as
+     tall as its own content. Without this the QR panel's margin-top:auto has
+     nothing to push against and it would sit directly under Featured Beer. */
+  grid-template-rows: 1fr;
   gap: 0 3vw;
-  align-content: start;
 }
 
 .column {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   /* The dividers live on the column now that a column holds several
      categories — on .category they would have drawn between stacked
      sections as well. */
@@ -201,4 +206,67 @@
   line-height: 1;
   text-transform: uppercase;
   color: var(--bone-mute);
+}
+
+/* ── QR panel: pinned to the bottom of its column ──────────────── */
+.qrPanel {
+  /* Pushes the panel to the bottom of the column, filling the dead space
+     under the shortest categories and balancing the board against the two
+     full-height columns. */
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Tight on purpose. This padding is chrome, not code — every vh spent here
+     is a vh the QR can't have, and the column floor is the hard limit. The
+     panel's own margin-top:auto plus this padding still separate it from
+     Featured Beer. */
+  gap: 1vh;
+  padding-top: 1.2vh;
+}
+
+.qrLead {
+  font-family: var(--ff-sans);
+  font-weight: 300;
+  font-size: 0.9vw;
+  line-height: 1.2;
+  color: var(--bone-mute);
+  text-align: center;
+}
+
+/* Light panel, dark modules — standard polarity, which every decoder
+   handles. The padding is visual breathing room on top of the 4-module
+   quiet zone baked into the SVG itself, so neither the column divider nor
+   Featured Beer crowds the symbol. */
+.qrCode {
+  /* Sized so the DATA MODULES land around a fifth of screen height, which is
+     what actually governs scan distance — the box is larger than that because
+     ~22% of its width is the 4-module quiet zone plus panel padding. Exposed
+     as a custom property so the size can be probed against the column without
+     recompiling. */
+  /* 28vh is the largest that fits above the column floor at both 1920x1080
+     and 3840x2160 — 29vh clips. That puts the DATA MODULES (what actually
+     governs scan distance; ~22% of the box is quiet zone plus padding) at
+     ~20% of viewport height, which is the number that matters. */
+  --qr-size: 28vh;
+  width: var(--qr-size);
+  height: var(--qr-size);
+  padding: 1vh;
+  background: var(--bone);
+  border-radius: 0.6vh;
+  line-height: 0;
+}
+
+.qrCode svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.qrUrl {
+  font-family: var(--ff-mono);
+  font-size: 0.85vw;
+  letter-spacing: 0.14em;
+  color: var(--bone-dim);
+  text-align: center;
 }

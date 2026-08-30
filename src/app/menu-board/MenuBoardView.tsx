@@ -1,5 +1,6 @@
 import type { DrinkData } from '@/lib/data'
 import { orderDrinkCategories } from '@/lib/queries'
+import { BOARD_QR_LABEL } from './qr'
 import styles from './menu-board.module.css'
 
 /**
@@ -62,10 +63,20 @@ export function buildColumns(
   return columns
 }
 
+/**
+ * Column the QR panel is pinned to the bottom of (0-based). Column 2 holds
+ * the two shortest categories, so it's the one with dead space to fill —
+ * keep this in step if COLUMN_MAP is rearranged.
+ */
+const QR_COLUMN = 1
+
 export default function MenuBoardView({
   drinks,
+  qrSvg = null,
 }: {
   drinks: Record<string, DrinkData[]>
+  /** Inline SVG from getBoardQrSvg(), or null — null renders no panel. */
+  qrSvg?: string | null
 }) {
   const columns = buildColumns(drinks, orderDrinkCategories(drinks))
 
@@ -100,6 +111,19 @@ export default function MenuBoardView({
               </ul>
             </section>
           ))}
+
+          {i === QR_COLUMN && qrSvg && (
+            <div className={styles.qrPanel}>
+              <span className={styles.qrLead}>Visit our website</span>
+              <div
+                className={styles.qrCode}
+                // Server-generated markup from the qrcode library, not user
+                // input — nothing here comes from the database or a request.
+                dangerouslySetInnerHTML={{ __html: qrSvg }}
+              />
+              <span className={styles.qrUrl}>{BOARD_QR_LABEL}</span>
+            </div>
+          )}
         </div>
       ))}
     </div>
