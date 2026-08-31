@@ -74,7 +74,7 @@
 /* Three explicit column containers, not auto-flow.
    Auto-flow only looked right at exactly three categories; a fourth wrapped
    onto a second row under Saloon Cocktails. Placement now comes from
-   COLUMN_MAP in page.tsx, and each column stacks its own categories. Grid
+   COLUMN_MAP in board-columns.ts, and each column stacks its own categories. Grid
    items are still atomic, so a category can never be torn across a break. */
 .columns {
   flex: 1 1 auto;

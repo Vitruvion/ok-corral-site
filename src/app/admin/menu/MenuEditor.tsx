@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from 'react'
 import type { AdminDrink } from '@/lib/admin/drinks-repo'
+// Imported, never re-declared: if the board's exclusion list and this label
+// were maintained separately they would eventually disagree, and the whole
+// point of the label is that it tells the truth about the TV.
+import { isBoardExcluded } from '@/app/menu-board/board-columns'
 import styles from './menu.module.css'
 
 /**
@@ -191,7 +195,18 @@ export default function MenuEditor({ initialDrinks }: { initialDrinks: AdminDrin
               onClick={() => setOpen(prev => ({ ...prev, [category]: !isOpen }))}
               aria-expanded={isOpen}
             >
-              <span className={styles.categoryName}>{category}</span>
+              <span className={styles.categoryHead}>
+                <span className={styles.categoryName}>{category}</span>
+                {/* "live" here means the `active` column: on the WEBSITE. A
+                    category the board excludes is still fully live by that
+                    measure, so without this label "1/1 live" reads as "on the
+                    TV" and invites someone to start toggling rows off trying
+                    to fix a board that was never going to show them.
+                    Code-level decision, deliberately not editable here. */}
+                {isBoardExcluded(category) && (
+                  <span className={styles.websiteOnly}>website only</span>
+                )}
+              </span>
               <span className={styles.categoryCount}>
                 {liveCount}/{list.length} live
               </span>

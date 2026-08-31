@@ -14,7 +14,8 @@ import styles from './menu-board.module.css'
  * the wall. Renders outside the site chrome by simply not using ClientShell,
  * which is where Topbar/Footer/ProgressRail/CartDrawer actually live.
  *
- * Column placement lives in MenuBoardView (COLUMN_MAP).
+ * Column placement and the board-only exclusion list live in
+ * ./board-columns (COLUMN_MAP, BOARD_EXCLUDED_CATEGORIES).
  */
 
 export const revalidate = 300
