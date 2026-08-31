@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { countIssuedTickets, getTicketableEvent, MAX_TICKETS_PER_ORDER } from '@/lib/tickets/repo'
+import { getTicketableEvent, MAX_TICKETS_PER_ORDER } from '@/lib/tickets/repo'
+import { getOccupancy } from '@/lib/tickets/occupancy'
 
 /**
  * GET /api/tickets/availability?event=<slug|uuid>
@@ -55,14 +56,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(off, { headers: { 'Cache-Control': 'no-store' } })
     }
 
-    const capacity = event.ticket_capacity
-    const remaining = capacity === null ? null : Math.max(0, capacity - (await countIssuedTickets(event.id)))
+    // Shared count: online tickets plus door admissions.
+    const occupancy = await getOccupancy(event.id, event.ticket_capacity)
+    // Clamped at zero for the PUBLIC payload: an oversold show is the
+    // bar's business, and "-3 left" on the storefront helps nobody.
+    const remaining = occupancy.remaining === null ? null : Math.max(0, occupancy.remaining)
 
     const body: Availability = {
       on_sale: true,
       price,
       remaining,
-      sold_out: remaining !== null && remaining <= 0,
+      sold_out: occupancy.soldOut,
       max_per_order:
         remaining === null ? MAX_TICKETS_PER_ORDER : Math.min(MAX_TICKETS_PER_ORDER, remaining),
       blurb: event.ticket_blurb,

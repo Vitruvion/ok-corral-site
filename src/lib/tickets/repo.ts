@@ -1,5 +1,8 @@
 import { getServiceSupabase } from '@/lib/supabase'
 import { eventDateParts, venueTodayParts } from '@/lib/events'
+// One shared occupancy count. See occupancy.ts for why this is not
+// four separate queries any more.
+import { getOccupancy } from './occupancy'
 
 /**
  * Data access for ticketing.
@@ -93,24 +96,6 @@ export async function getTicketableEvent(idOrSlug: string): Promise<TicketableEv
   } as TicketableEvent
 }
 
-/**
- * Tickets already issued for an event.
- *
- * Counts everything that is not void -- a 'used' ticket still occupies
- * a seat, so only an explicitly voided one frees capacity back up.
- */
-export async function countIssuedTickets(eventId: string): Promise<number> {
-  const sb = serviceClient()
-  const { count, error } = await sb
-    .from('tickets')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .neq('status', 'void')
-
-  if (error) throw new Error(`ticket count failed: ${error.message}`)
-  return count ?? 0
-}
-
 export type SaleCheck =
   | { ok: true; event: TicketableEvent; price: number; issued: number; remaining: number | null }
   | { ok: false; error: string; soldOut?: boolean }
@@ -156,11 +141,12 @@ export async function checkSaleable(idOrSlug: string, quantity: number): Promise
     if (past) return { ok: false, error: 'This event has already happened.' }
   }
 
-  const issued = await countIssuedTickets(event.id)
-  const capacity = event.ticket_capacity
+  // Counts online tickets AND door admissions. A seat sold at the door
+  // is a seat, and before this the two disagreed.
+  const occupancy = await getOccupancy(event.id, event.ticket_capacity)
 
-  if (capacity !== null) {
-    const remaining = capacity - issued
+  if (occupancy.capacity !== null) {
+    const remaining = occupancy.remaining as number
     if (remaining <= 0) {
       return { ok: false, error: 'This show is sold out.', soldOut: true }
     }
@@ -174,8 +160,8 @@ export async function checkSaleable(idOrSlug: string, quantity: number): Promise
         soldOut: true,
       }
     }
-    return { ok: true, event, price, issued, remaining }
+    return { ok: true, event, price, issued: occupancy.admitted, remaining }
   }
 
-  return { ok: true, event, price, issued, remaining: null }
+  return { ok: true, event, price, issued: occupancy.admitted, remaining: null }
 }

@@ -1,5 +1,6 @@
 import { serviceClient } from './repo'
 import { signTicket } from './codes'
+import { countAdmissions, describeOccupancy, type AdmissionCounts } from './occupancy'
 import { displayEventDate } from './complete'
 
 /**
@@ -44,8 +45,21 @@ export type DoorEvent = {
   dateLabel: string
   time: string | null
   doors: string | null
+  /** Everyone holding a seat: online tickets plus door admissions. */
   issued: number
+  /**
+   * Tickets actually scanned in.
+   *
+   * A SEPARATE question from occupancy, and deliberately still its own
+   * count: it asks who has walked through the door, not who is entitled
+   * to. A door sale is admitted the moment it is rung, so it counts in
+   * both -- but an unscanned online ticket counts in `issued` only.
+   */
   used: number
+  ticketPrice: number | null
+  capacity: number | null
+  /** Null when capacity is null (unlimited). */
+  remaining: number | null
 }
 
 export type ManifestTicket = {
@@ -76,35 +90,51 @@ export async function listDoorEvents(): Promise<DoorEvent[]> {
 
   const { data: events, error } = await sb
     .from('events')
-    .select('id, slug, name, date, weekday, time, doors, tickets_on_sale')
+    .select('id, slug, name, date, weekday, time, doors, ticket_price, ticket_capacity, tickets_on_sale')
     .eq('tickets_on_sale', true)
     .order('date', { ascending: true })
 
   if (error) throw new Error(`door event list failed: ${error.message}`)
   if (!events?.length) return []
 
-  const { data: tickets, error: tErr } = await sb
-    .from('tickets')
-    .select('event_id, status')
-    .in('event_id', events.map(e => e.id))
+  const ids = events.map(e => e.id)
 
-  if (tErr) throw new Error(`door ticket counts failed: ${tErr.message}`)
+  // Occupancy comes from the shared count. The SCANNED count is a
+  // different question and stays its own query -- see DoorEvent.used.
+  const [admissions, scanned] = await Promise.all([
+    countAdmissions(ids),
+    countScanned(ids),
+  ])
 
-  const counts = new Map<string, { issued: number; used: number }>()
-  for (const t of tickets ?? []) {
-    if (t.status === 'void') continue
-    const c = counts.get(t.event_id) ?? { issued: 0, used: 0 }
-    c.issued += 1
-    if (t.status === 'used') c.used += 1
-    counts.set(t.event_id, c)
-  }
-
-  return events.map(e => toDoorEvent(e, counts.get(e.id)))
+  return events.map(e => toDoorEvent(e, admissions.get(e.id), scanned.get(e.id) ?? 0))
 }
 
-function toDoorEvent(row: any, count?: { issued: number; used: number }): DoorEvent {
+/**
+ * How many tickets have actually been scanned in.
+ *
+ * Door sales are added on top by toDoorEvent: someone who paid at the
+ * door has walked in by definition, so they belong in this number even
+ * though they hold no ticket row to scan.
+ */
+async function countScanned(eventIds: string[]): Promise<Map<string, number>> {
+  const sb = serviceClient()
+  const { data, error } = await sb
+    .from('tickets')
+    .select('event_id')
+    .in('event_id', eventIds)
+    .eq('status', 'used')
+
+  if (error) throw new Error(`door scan counts failed: ${error.message}`)
+
+  const out = new Map<string, number>()
+  for (const t of data ?? []) out.set(t.event_id, (out.get(t.event_id) ?? 0) + 1)
+  return out
+}
+
+function toDoorEvent(row: any, counts?: AdmissionCounts, scanned = 0): DoorEvent {
   const date =
     typeof row.date === 'string' ? row.date : new Date(row.date).toISOString().slice(0, 10)
+  const occupancy = describeOccupancy(counts, row.ticket_capacity)
   return {
     id: row.id,
     slug: row.slug,
@@ -113,8 +143,16 @@ function toDoorEvent(row: any, count?: { issued: number; used: number }): DoorEv
     dateLabel: displayEventDate(date, row.weekday ?? null),
     time: row.time ?? null,
     doors: row.doors ?? null,
-    issued: count?.issued ?? 0,
-    used: count?.used ?? 0,
+    issued: occupancy.admitted,
+    // Someone who paid at the door is inside, so they count as through
+    // the door even though there is no ticket row to scan.
+    used: scanned + occupancy.doorAdmissions,
+    ticketPrice:
+      row.ticket_price === null || row.ticket_price === undefined
+        ? null
+        : Number(row.ticket_price),
+    capacity: occupancy.capacity,
+    remaining: occupancy.remaining,
   }
 }
 
@@ -131,7 +169,7 @@ export async function buildManifest(eventId: string): Promise<DoorManifest | nul
 
   const { data: event, error: evErr } = await sb
     .from('events')
-    .select('id, slug, name, date, weekday, time, doors, tickets_on_sale')
+    .select('id, slug, name, date, weekday, time, doors, ticket_price, ticket_capacity, tickets_on_sale')
     .eq('id', eventId)
     .maybeSingle()
 
@@ -146,17 +184,13 @@ export async function buildManifest(eventId: string): Promise<DoorManifest | nul
 
   if (error) throw new Error(`manifest build failed: ${error.message}`)
 
-  let used = 0
-  let issued = 0
+  let scanned = 0
 
   const tickets: ManifestTicket[] = (rows ?? []).map((r: any) => {
     // Supabase returns an embedded to-one relation as an object, but
     // types it as a possible array. Normalise before reading it.
     const order = Array.isArray(r.ticket_orders) ? r.ticket_orders[0] : r.ticket_orders
-    if (r.status !== 'void') {
-      issued += 1
-      if (r.status === 'used') used += 1
-    }
+    if (r.status === 'used') scanned += 1
     return {
       code: String(r.code),
       sig: signTicket(String(r.code), eventId),
@@ -170,8 +204,13 @@ export async function buildManifest(eventId: string): Promise<DoorManifest | nul
     }
   })
 
+  // The header's occupancy figure is the SAME shared count as
+  // everywhere else -- it must not be derived from the ticket rows
+  // above, which know nothing about door sales.
+  const admissions = await countAdmissions([eventId])
+
   return {
-    event: toDoorEvent(event, { issued, used }),
+    event: toDoorEvent(event, admissions.get(eventId), scanned),
     tickets,
     generated_at: new Date().toISOString(),
   }

@@ -18,15 +18,54 @@ import type { DoorManifest, ManifestTicket } from '@/lib/tickets/door'
  */
 
 const DB_NAME = 'okcorral-door'
-const DB_VERSION = 1
+
+/**
+ * v1 -> v2 adds the door-sale queue. Nothing else changes.
+ *
+ * THE UPGRADE MUST NOT LOSE THE EXISTING STORES. A phone already at the
+ * door is carrying a v1 database that may hold unsent scans, and from
+ * v2 it can hold unsent SALES -- which is money. If an upgrade dropped
+ * or recreated a store, those would vanish with no error and nothing to
+ * notice. So every store is created behind a `contains` guard and
+ * nothing is ever deleted or rebuilt: an upgrade only ever ADDS.
+ */
+const DB_VERSION = 2
 const MANIFESTS = 'manifests'
 const QUEUE = 'queue'
+
+/**
+ * Door sales, keyed by a CLIENT-GENERATED uuid.
+ *
+ * A separate store rather than a flag on `queue`, for two reasons. The
+ * key: `queue` is autoIncrement, and a sale needs the client's own uuid
+ * as its key so a retried flush cannot record it twice -- those two
+ * cannot coexist in one store. And the blast radius: a bug in sale
+ * handling cannot corrupt the scan queue if it cannot reach it.
+ */
+const SALES = 'sales'
 
 export type QueuedScan = {
   id?: number
   event_id: string
   code: string
   scanned_at: string
+}
+
+/**
+ * A door sale waiting to reach the server.
+ *
+ * `id` is generated on the client and used as both the store key and
+ * the row id the server inserts. That is the idempotency: a flush that
+ * is retried after a timeout it never saw the answer to writes the same
+ * primary key twice, and the second one is a no-op. A duplicated scan
+ * is harmless; a duplicated SALE corrupts the night's takings.
+ */
+export type QueuedSale = {
+  id: string
+  event_id: string
+  quantity: number
+  payment_method: 'square' | 'cash'
+  sold_at: string
 }
 
 /** Local copy of a manifest, plus when this device fetched it. */
@@ -47,6 +86,12 @@ function open(): Promise<IDBDatabase | null> {
         }
         if (!db.objectStoreNames.contains(QUEUE)) {
           db.createObjectStore(QUEUE, { keyPath: 'id', autoIncrement: true })
+        }
+        // Added in v2. Guarded like the others, and deliberately NOT
+        // autoIncrement: the key is the sale's client-generated uuid,
+        // which is what makes a re-flush idempotent.
+        if (!db.objectStoreNames.contains(SALES)) {
+          db.createObjectStore(SALES, { keyPath: 'id' })
         }
       }
       req.onsuccess = () => resolve(req.result)
@@ -201,6 +246,45 @@ export async function localUsedByEvent(eventIds: string[]): Promise<Record<strin
 export async function queueSize(): Promise<number> {
   const n = await tx<number>(QUEUE, 'readonly', s => s.count())
   return n ?? 0
+}
+
+// ── Door sales ────────────────────────────────────────────────────
+export async function enqueueSale(sale: QueuedSale): Promise<void> {
+  // put, not add: re-queuing the same id overwrites rather than
+  // throwing, which is the behaviour a retry wants.
+  await tx(SALES, 'readwrite', s => s.put(sale))
+}
+
+export async function listSales(): Promise<QueuedSale[]> {
+  const rows = await tx<any[]>(SALES, 'readonly', s => s.getAll())
+  return rows ?? []
+}
+
+export async function removeSales(ids: string[]): Promise<void> {
+  const db = await open()
+  if (!db || ids.length === 0) return
+  try {
+    const t = db.transaction(SALES, 'readwrite')
+    const store = t.objectStore(SALES)
+    for (const id of ids) store.delete(id)
+  } catch (err) {
+    console.warn('[door] could not clear queued sales', err)
+  }
+}
+
+/**
+ * People admitted by unsent door sales, per event.
+ *
+ * Feeds the picker's occupancy figure the same way queued scans do: a
+ * sale that has not reached the server has still happened, and the
+ * number must not fall when the wifi does.
+ */
+export async function pendingSalesByEvent(): Promise<Record<string, number>> {
+  const out: Record<string, number> = {}
+  for (const sale of await listSales()) {
+    out[sale.event_id] = (out[sale.event_id] ?? 0) + sale.quantity
+  }
+  return out
 }
 
 /**

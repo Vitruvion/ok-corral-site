@@ -86,7 +86,10 @@ export default function TicketsView({ events }: { events: EventTickets[] }) {
               </button>
 
               <div className={styles.counts}>
-                <Stat label="Sold" value={String(ev.issued)} />
+                {/* Everyone holding a seat: online tickets plus door
+                    admissions. The two used to be counted separately and
+                    disagreed. */}
+                <Stat label="Admitted" value={String(ev.admitted)} />
                 <Stat
                   label="Capacity"
                   // "No cap" rather than "unlimited": the stat strip is four
@@ -101,6 +104,17 @@ export default function TicketsView({ events }: { events: EventTickets[] }) {
                 />
                 <Stat label="Price" value={ev.price === null ? '—' : money(ev.price)} />
               </div>
+
+              {/* Where the admitted figure came from. Only worth showing
+                  once a door sale exists -- before that it is just the
+                  online number said twice. */}
+              {ev.doorAdmissions > 0 && (
+                <div className={styles.channelSplit}>
+                  <span>{ev.issued} online</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{ev.doorAdmissions} at the door</span>
+                </div>
+              )}
 
               {isOpen && (
                 <div className={styles.body}>
@@ -122,7 +136,10 @@ export default function TicketsView({ events }: { events: EventTickets[] }) {
                             {methodLabel(r.payment_method)}
                           </span>
                           <span className={styles.revenueCount}>
-                            {r.tickets} ticket{r.tickets === 1 ? '' : 's'} · {r.orders} order
+                            {/* "admitted", never "tickets": a door sale has a
+                                quantity but issues no ticket records, so half
+                                these rows have no tickets to speak of. */}
+                            {r.admitted} admitted · {r.orders} order
                             {r.orders === 1 ? '' : 's'}
                           </span>
                           <span className={styles.revenueAmount}>{money(r.amount)}</span>
@@ -131,8 +148,10 @@ export default function TicketsView({ events }: { events: EventTickets[] }) {
                     </ul>
                   )}
                   <p className={styles.reconcileNote}>
-                    Reconcile each line against its own source. These are not added up
-                    on purpose.
+                    Reconcile each line against its own source: Stripe lands in the
+                    bank on its own, Square and cash against the register at close.
+                    These are not added up on purpose — one combined figure would be
+                    counted twice.
                   </p>
 
                   <h2 className={styles.sectionTitle}>

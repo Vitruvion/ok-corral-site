@@ -5,13 +5,17 @@ import type { DoorEvent, DoorManifest, ManifestTicket } from '@/lib/tickets/door
 import { formatTicketCode, normalizeTicketCode } from '@/lib/tickets/code-format'
 import {
   deviceId,
+  enqueueSale,
   enqueueScan,
   listQueue,
   loadManifest,
   localUsedByEvent,
+  listSales,
   markUsedLocally,
+  pendingSalesByEvent,
   queuedByEvent,
   removeQueued,
+  removeSales,
   saveManifest,
 } from '@/lib/door/db'
 import { startScanner, type ScannerHandle } from '@/lib/door/scanner'
@@ -71,6 +75,8 @@ type Result =
   | { kind: 'void'; name: string | null; code: string }
 
 type Mode = 'scan' | 'search'
+
+const money = (n: number): string => `$${n.toFixed(n % 1 === 0 ? 0 : 2)}`
 
 const ago = (iso: string | null): string => {
   if (!iso) return 'a moment ago'
@@ -137,6 +143,9 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
   const [decoder, setDecoder] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [conflicts, setConflicts] = useState<string[]>([])
+  /** Door-sale sheet. Null when closed -- it is never a mode. */
+  const [sale, setSale] = useState<{ qty: number; busy: boolean } | null>(null)
+  const [pendingSales, setPendingSales] = useState<Record<string, number>>({})
   const [, forceTick] = useState(0)
 
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -172,6 +181,25 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
 
   const refreshQueueCount = useCallback(async () => {
     setQueued((await listQueue()).length)
+  }, [])
+
+  // ── Local counts ──────────────────────────────────────────────
+  const refreshLocalCounts = useCallback(async (ids: string[]) => {
+    const [used, queuedScans, queuedSales] = await Promise.all([
+      localUsedByEvent(ids),
+      queuedByEvent(),
+      pendingSalesByEvent(),
+    ])
+    setLocalUsed(used)
+    setPendingSales(queuedSales)
+    // Unsent scans AND unsent sales. Both have happened as far as the
+    // door is concerned; only the server has not heard yet.
+    const pending: Record<string, number> = {}
+    for (const [id, codes] of Object.entries(queuedScans)) pending[id] = codes.length
+    for (const [id, people] of Object.entries(queuedSales)) {
+      pending[id] = (pending[id] ?? 0) + people
+    }
+    setPendingByEvent(pending)
   }, [])
 
   // ── Manifest ──────────────────────────────────────────────────
@@ -265,17 +293,66 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
     await refreshQueueCount()
   }, [refreshQueueCount])
 
+  /**
+   * Sends any door sales this device is holding.
+   *
+   * Runs on the same schedule as the scan flush. Idempotent server-side
+   * on the sale's uuid, so a retry after a timeout we never saw the
+   * answer to records one sale, not two.
+   */
+  const flushSales = useCallback(async () => {
+    if (!navigator.onLine) return
+    const ev = eventRef.current
+    if (!ev) return
+
+    const pending = (await listSales()).filter(s => s.event_id === ev.id)
+    if (pending.length === 0) return
+
+    try {
+      const res = await fetch('/api/admin/door/sale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: ev.id,
+          device_id: device.current,
+          sales: pending.map(s => ({
+            id: s.id,
+            quantity: s.quantity,
+            payment_method: s.payment_method,
+            sold_at: s.sold_at,
+          })),
+        }),
+      })
+      const data = await res.json()
+      const settled: string[] = (data.results ?? []).map((r: any) => r.id)
+      // Anything the server answered for is settled, whether it wrote
+      // the row or found it already there.
+      await removeSales(settled)
+    } catch {
+      // Still offline. The sales stay in IndexedDB and survive a
+      // restart, which is the whole point -- this is money.
+    }
+    await refreshLocalCounts([ev.id])
+  }, [refreshLocalCounts])
+
   useEffect(() => {
     if (!event) return
     flushQueue()
-    const t = setInterval(flushQueue, FLUSH_MS)
-    const onOnline = () => flushQueue()
+    flushSales()
+    const t = setInterval(() => {
+      flushQueue()
+      flushSales()
+    }, FLUSH_MS)
+    const onOnline = () => {
+      flushQueue()
+      flushSales()
+    }
     window.addEventListener('online', onOnline)
     return () => {
       clearInterval(t)
       window.removeEventListener('online', onOnline)
     }
-  }, [event, flushQueue])
+  }, [event, flushQueue, flushSales])
 
   // ── Picker counts ─────────────────────────────────────────────
   /**
@@ -285,14 +362,6 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
    * Always runs, even when the server fetch fails. That is the point --
    * going offline must not make the number go backwards.
    */
-  const refreshLocalCounts = useCallback(async (ids: string[]) => {
-    const [used, queued] = await Promise.all([localUsedByEvent(ids), queuedByEvent()])
-    setLocalUsed(used)
-    setPendingByEvent(
-      Object.fromEntries(Object.entries(queued).map(([id, codes]) => [id, codes.length]))
-    )
-  }, [])
-
   const refreshCounts = useCallback(async () => {
     let ids = serverEvents.map(e => e.id)
     try {
@@ -404,6 +473,71 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
       await refreshQueueCount()
     },
     [refreshQueueCount]
+  )
+
+  // ── Door sales ────────────────────────────────────────────────
+  /**
+   * Records a sale taken at the door.
+   *
+   * NO TICKET, NO QR, NO EMAIL -- it is a tally. And this app does not
+   * take the payment: a card is rung on Square, cash goes in the
+   * register. All that happens here is that the sale is written down.
+   *
+   * Queued first, then sent. The queue is the durable record: a sale
+   * only leaves it once the server has answered for it, so closing the
+   * app mid-sale cannot lose money.
+   */
+  const recordSale = useCallback(
+    async (quantity: number, paymentMethod: 'square' | 'cash') => {
+      const ev = eventRef.current
+      if (!ev) return
+
+      const entry = {
+        // The idempotency key. Same value goes in the queue and becomes
+        // the row's primary key, so a retried flush cannot double-count.
+        id: crypto.randomUUID(),
+        event_id: ev.id,
+        quantity,
+        payment_method: paymentMethod,
+        sold_at: new Date().toISOString(),
+      }
+
+      await enqueueSale(entry)
+      await refreshLocalCounts([ev.id])
+
+      if (navigator.onLine) {
+        try {
+          const res = await fetch('/api/admin/door/sale', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event_id: ev.id,
+              device_id: device.current,
+              // No price. The server reads it from the event.
+              id: entry.id,
+              quantity: entry.quantity,
+              payment_method: entry.payment_method,
+              sold_at: entry.sold_at,
+            }),
+          })
+          if (res.ok) {
+            await removeSales([entry.id])
+            const data = await res.json()
+            if (data.occupancy) {
+              setEvent(prev =>
+                prev && prev.id === ev.id
+                  ? { ...prev, issued: data.occupancy.admitted, remaining: data.occupancy.remaining }
+                  : prev
+              )
+            }
+          }
+        } catch {
+          // Leave it queued; the flush loop will carry it.
+        }
+        await refreshLocalCounts([ev.id])
+      }
+    },
+    [refreshLocalCounts]
   )
 
   /** Asks the server about one code the local manifest does not have. */
@@ -577,14 +711,21 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
           // concerned, and the count going backwards when the wifi drops
           // would be actively misleading about how many people are
           // still outside.
-          const used = Math.max(ev.used, localUsed[ev.id] ?? 0)
+          //
+          // Unsent door sales are added to BOTH halves. Someone who paid
+          // at the door is admitted AND inside, so a queued sale that
+          // showed up only as "+2 unsent" against "0 of 0" would read as
+          // if nothing had happened.
+          const unsentSales = pendingSales[ev.id] ?? 0
+          const used = Math.max(ev.used, localUsed[ev.id] ?? 0) + unsentSales
+          const admitted = Math.max(ev.issued, localUsed[ev.id] ?? 0) + unsentSales
           const pending = pendingByEvent[ev.id] ?? 0
           return (
             <button key={ev.id} className={styles.eventCard} onClick={() => chooseEvent(ev)}>
               <span className={styles.eventName}>{ev.name}</span>
               <span className={styles.eventDate}>{ev.dateLabel}</span>
               <span className={styles.eventCount}>
-                {used} of {ev.issued} scanned
+                {used} of {admitted} scanned
                 {pending > 0 && (
                   <span className={styles.pending} title={`${pending} not yet sent to the server`}>
                     +{pending} unsent
@@ -621,11 +762,22 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
                 : 'Not loaded · tap to refresh'}
           </button>
         </div>
+        {/* Two separate controls, neither of them a mode you can get
+            stuck in. Scanning is the common action and stays put;
+            "Sell" opens a sheet that closes itself. */}
         <button
           className={styles.modeBtn}
           onClick={() => setMode(m => (m === 'scan' ? 'search' : 'scan'))}
         >
           {mode === 'scan' ? 'Look up' : 'Scan'}
+        </button>
+        <button
+          className={styles.sellBtn}
+          onClick={() => setSale({ qty: 1, busy: false })}
+          disabled={event.ticketPrice === null}
+          title={event.ticketPrice === null ? 'This event has no ticket price set' : undefined}
+        >
+          Sell
         </button>
       </header>
 
@@ -675,6 +827,25 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
             ))}
           </ul>
         </div>
+      )}
+
+      {sale && event.ticketPrice !== null && (
+        <SaleSheet
+          price={event.ticketPrice}
+          qty={sale.qty}
+          busy={sale.busy}
+          admitted={Math.max(event.issued, localUsed[event.id] ?? 0) + (pendingSales[event.id] ?? 0)}
+          capacity={event.capacity}
+          onQty={qty => setSale(s => (s ? { ...s, qty } : s))}
+          onCancel={() => setSale(null)}
+          onConfirm={async method => {
+            setSale(s => (s ? { ...s, busy: true } : s))
+            await recordSale(sale.qty, method)
+            // Straight back to the camera. There is a line waiting and
+            // nothing here needs acknowledging.
+            setSale(null)
+          }}
+        />
       )}
 
       {result && <ResultScreen result={result} onDismiss={dismiss} />}
@@ -751,6 +922,107 @@ function ResultScreen({ result, onDismiss }: { result: Result; onDismiss: () => 
           <div className={styles.resTap}>Tap to dismiss</div>
         </>
       )}
+    </div>
+  )
+}
+
+// ── Door sale ─────────────────────────────────────────────────────
+/**
+ * The sell sheet.
+ *
+ * The total is the biggest thing on it, because that is the number
+ * being read aloud to whoever is standing there. Card and cash are two
+ * large targets rather than a picker plus a confirm -- choosing the
+ * method IS the confirmation, which removes a tap from the common path.
+ */
+function SaleSheet({
+  price,
+  qty,
+  busy,
+  admitted,
+  capacity,
+  onQty,
+  onCancel,
+  onConfirm,
+}: {
+  price: number
+  qty: number
+  busy: boolean
+  admitted: number
+  capacity: number | null
+  onQty: (n: number) => void
+  onCancel: () => void
+  onConfirm: (method: 'square' | 'cash') => void
+}) {
+  const total = price * qty
+
+  return (
+    <div className={styles.sheetBackdrop} onClick={busy ? undefined : onCancel}>
+      <div className={styles.sheet} onClick={e => e.stopPropagation()} role="dialog" aria-label="Door sale">
+        <div className={styles.sheetHead}>Door sale</div>
+
+        <div className={styles.sheetStepper}>
+          <button
+            className={styles.sheetStep}
+            onClick={() => onQty(Math.max(1, qty - 1))}
+            disabled={qty <= 1 || busy}
+            aria-label="One fewer"
+          >
+            −
+          </button>
+          <span className={styles.sheetQty} aria-live="polite">{qty}</span>
+          <button
+            className={styles.sheetStep}
+            onClick={() => onQty(Math.min(50, qty + 1))}
+            disabled={busy}
+            aria-label="One more"
+          >
+            +
+          </button>
+        </div>
+
+        <div className={styles.sheetTotal}>{money(total)}</div>
+        <div className={styles.sheetUnit}>
+          {qty} × {money(price)}
+        </div>
+
+        {/*
+          Information, not a warning. ticket_capacity is a business
+          decision per show, not a legal occupancy limit, and going over
+          is a normal call the doorman makes with the room in front of
+          them. Shown only at or past the number, and only when there is
+          a number -- a null capacity means unlimited and says nothing.
+        */}
+        {capacity !== null && admitted >= capacity && (
+          <div className={styles.sheetCapacity}>
+            {admitted} of {capacity} sold
+          </div>
+        )}
+
+        <div className={styles.sheetPay}>
+          <button
+            className={styles.payCard}
+            onClick={() => onConfirm('square')}
+            disabled={busy}
+          >
+            <span className={styles.payLabel}>Card</span>
+            {/* This app takes no payment. Say so where it cannot be missed. */}
+            <span className={styles.payHint}>Ring this on Square.</span>
+          </button>
+          <button
+            className={styles.payCash}
+            onClick={() => onConfirm('cash')}
+            disabled={busy}
+          >
+            <span className={styles.payLabel}>Cash</span>
+            <span className={styles.payHint}>Into the register.</span>
+          </button>
+        </div>
+
+        <button className={styles.sheetCancel} onClick={onCancel} disabled={busy}>
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }

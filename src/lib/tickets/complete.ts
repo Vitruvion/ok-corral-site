@@ -2,6 +2,7 @@ import type Stripe from 'stripe'
 import { Resend } from 'resend'
 import { getStripe } from '@/lib/stripe'
 import { MARKETING_FIELD_KEY, serviceClient, TENANT_ID } from './repo'
+import { getOccupancy } from './occupancy'
 import { buildQrPayload, generateTicketCode } from './codes'
 import {
   renderOversellEmail,
@@ -223,29 +224,14 @@ function isCodeCollision(error: { code?: string; message?: string }): boolean {
 export type Oversell = { capacity: number; issued: number } | null
 
 async function checkOversell(eventId: string): Promise<Oversell> {
-  const sb = serviceClient()
-
-  const { data: event, error: evErr } = await sb
-    .from('events')
-    .select('ticket_capacity')
-    .eq('id', eventId)
-    .maybeSingle()
-
-  if (evErr) throw new Error(`event capacity lookup failed: ${evErr.message}`)
-
-  const capacity = event?.ticket_capacity
-  if (capacity === null || capacity === undefined) return null
-
-  const { count, error: cErr } = await sb
-    .from('tickets')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .neq('status', 'void')
-
-  if (cErr) throw new Error(`ticket count failed: ${cErr.message}`)
-
-  const issued = count ?? 0
-  return issued > Number(capacity) ? { capacity: Number(capacity), issued } : null
+  // Shared count -- online tickets AND door admissions. A show can be
+  // pushed over by someone paying at the door just as easily as online,
+  // and this used to only see half of that.
+  const occupancy = await getOccupancy(eventId)
+  if (occupancy.capacity === null) return null
+  return occupancy.admitted > occupancy.capacity
+    ? { capacity: occupancy.capacity, issued: occupancy.admitted }
+    : null
 }
 
 // ── Session parsing ───────────────────────────────────────────────

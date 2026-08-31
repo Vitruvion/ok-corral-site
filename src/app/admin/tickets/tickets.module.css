@@ -190,6 +190,19 @@
   color: var(--live-red);
 }
 
+/* Where the admitted figure came from, when it is not all one channel. */
+.channelSplit {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 16px 0;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
 /* ── Body ─────────────────────────────────────────────────────── */
 .body { padding: 4px 16px 18px; }
 

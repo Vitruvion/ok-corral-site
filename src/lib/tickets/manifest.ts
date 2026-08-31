@@ -1,4 +1,5 @@
 import { serviceClient } from './repo'
+import { countAdmissions, describeOccupancy } from './occupancy'
 import { displayEventDate } from './complete'
 
 /**
@@ -31,7 +32,14 @@ export type TicketOrderRow = {
 export type RevenueLine = {
   payment_method: string
   orders: number
-  tickets: number
+  /**
+   * People through the door on this payment method.
+   *
+   * NOT "tickets": a door sale has a quantity but issues no ticket
+   * records at all, so calling this a ticket count would be wrong for
+   * half the rows. "Admitted" is true of both channels.
+   */
+  admitted: number
   amount: number
 }
 
@@ -44,8 +52,12 @@ export type EventTickets = {
   ticketsOnSale: boolean
   price: number | null
   capacity: number | null
-  /** Non-void tickets actually issued. */
+  /** Non-void rows in `tickets`. Online seats only. */
   issued: number
+  /** Sum of quantity over paid door orders. Issues no ticket rows. */
+  doorAdmissions: number
+  /** issued + doorAdmissions -- everyone holding a seat. */
+  admitted: number
   /** Null when capacity is null (unlimited). */
   remaining: number | null
   /**
@@ -80,17 +92,8 @@ export async function loadTicketEvents(): Promise<EventTickets[]> {
 
   if (orErr) throw new Error(`ticket_orders lookup failed: ${orErr.message}`)
 
-  const { data: ticketRows, error: tErr } = await sb
-    .from('tickets')
-    .select('event_id, status')
-    .neq('status', 'void')
-
-  if (tErr) throw new Error(`tickets lookup failed: ${tErr.message}`)
-
-  const issuedByEvent = new Map<string, number>()
-  for (const t of ticketRows ?? []) {
-    issuedByEvent.set(t.event_id, (issuedByEvent.get(t.event_id) ?? 0) + 1)
-  }
+  // Shared occupancy count -- online tickets plus door admissions.
+  const admissions = await countAdmissions((eventRows ?? []).map(e => e.id))
 
   const ordersByEvent = new Map<string, TicketOrderRow[]>()
   for (const o of orderRows ?? []) {
@@ -114,10 +117,7 @@ export async function loadTicketEvents(): Promise<EventTickets[]> {
     .filter(e => e.tickets_on_sale === true || ordersByEvent.has(e.id))
     .map(e => {
       const orders = ordersByEvent.get(e.id) ?? []
-      const issued = issuedByEvent.get(e.id) ?? 0
-      const capacity = e.ticket_capacity === null || e.ticket_capacity === undefined
-        ? null
-        : Number(e.ticket_capacity)
+      const occupancy = describeOccupancy(admissions.get(e.id), e.ticket_capacity)
       const date =
         typeof e.date === 'string' ? e.date : new Date(e.date).toISOString().slice(0, 10)
 
@@ -129,9 +129,11 @@ export async function loadTicketEvents(): Promise<EventTickets[]> {
         dateLabel: displayEventDate(date, e.weekday ?? null),
         ticketsOnSale: e.tickets_on_sale === true,
         price: e.ticket_price === null || e.ticket_price === undefined ? null : Number(e.ticket_price),
-        capacity,
-        issued,
-        remaining: capacity === null ? null : capacity - issued,
+        capacity: occupancy.capacity,
+        issued: occupancy.ticketsIssued,
+        doorAdmissions: occupancy.doorAdmissions,
+        admitted: occupancy.admitted,
+        remaining: occupancy.remaining,
         revenue: splitRevenue(orders),
         orders,
       }
@@ -154,11 +156,11 @@ function splitRevenue(orders: TicketOrderRow[]): RevenueLine[] {
     const line = byMethod.get(o.payment_method) ?? {
       payment_method: o.payment_method,
       orders: 0,
-      tickets: 0,
+      admitted: 0,
       amount: 0,
     }
     line.orders += 1
-    line.tickets += o.quantity
+    line.admitted += o.quantity
     line.amount += o.total
     byMethod.set(o.payment_method, line)
   }
