@@ -1,0 +1,114 @@
+/*
+ * Buy-tickets widget. Sits inside .expandActions on the event card, so
+ * it has to survive being one flex item among Add to Calendar / Share.
+ */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Takes the full row when the actions wrap on a phone, so the stepper
+     and the buy button never end up on separate lines from each other. */
+  flex: 1 1 auto;
+  min-width: 260px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--ink-4);
+  border-radius: 2px;
+  background: rgba(235, 228, 212, 0.03);
+  flex: 0 0 auto;
+}
+
+.step {
+  /* 44px is the smallest reliable touch target; this row gets used on a
+     phone in a dark bar. */
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  color: var(--ember);
+  font-family: var(--ff-mono);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.step:disabled {
+  color: var(--bone-mute);
+  cursor: not-allowed;
+}
+
+.qty {
+  min-width: 34px;
+  text-align: center;
+  font-family: var(--ff-mono);
+  font-size: 16px;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.price {
+  color: var(--bone-mute);
+}
+
+.remaining {
+  color: var(--ember);
+}
+
+.blurb {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--bone-mute);
+  max-width: 46ch;
+}
+
+.error {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--live-red);
+}
+
+/*
+ * Sold out replaces the whole widget. Muted rather than alarming - it is
+ * good news for the bar, and a red warning box reads like a site error.
+ */
+.soldOut {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  background: rgba(235, 228, 212, 0.04);
+  border: 1px solid var(--ink-4);
+  border-radius: 2px;
+}

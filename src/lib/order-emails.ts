@@ -73,7 +73,7 @@ const hoursLine = (): string => {
   return h ? `Open daily ${h.open} – ${h.close}` : 'Open daily'
 }
 
-function escape(s: string): string {
+export function escape(s: string): string {
   return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -83,7 +83,12 @@ function escape(s: string): string {
 }
 
 // ── Shared HTML chrome ────────────────────────────────────────────
-function shell(kicker: string, bodyHtml: string, footerHtml: string): string {
+/**
+ * The dark-saloon frame every transactional email shares. Exported so the
+ * ticket emails render inside the same chrome rather than growing a second,
+ * slightly-different house style.
+ */
+export function shell(kicker: string, bodyHtml: string, footerHtml: string): string {
   return `<!doctype html>
 <html>
 <body style="margin:0;background:#0b0908;color:#ebe4d4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">

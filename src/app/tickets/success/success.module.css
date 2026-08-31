@@ -1,0 +1,71 @@
+.page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background: var(--ink);
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  padding: 36px 28px;
+  border: 1px solid var(--ink-4);
+  border-radius: 3px;
+  background: var(--ink-2, #141110);
+  text-align: center;
+}
+
+.kicker {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 14px;
+}
+
+.title {
+  font-family: var(--ff-display);
+  font-size: clamp(28px, 7vw, 40px);
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--bone);
+  margin: 0 0 20px;
+}
+
+.body {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--bone-dim);
+  margin: 0 0 14px;
+}
+
+.contact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 22px 0 8px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.contact a {
+  color: var(--ember);
+  text-decoration: none;
+}
+
+.reference {
+  margin: 12px 0 24px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--bone-mute);
+  /* A session id is long and has no spaces; without this it widens the
+     card past the phone on a 360px screen. */
+  overflow-wrap: anywhere;
+}

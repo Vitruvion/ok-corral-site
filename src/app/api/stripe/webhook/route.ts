@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { Resend } from 'resend'
 import { getStripe } from '@/lib/stripe'
+import { handleTicketCompletion } from '@/lib/tickets/complete'
 import { getServiceSupabase } from '@/lib/supabase'
 import { classifyFulfillment, type FulfillmentType } from '@/lib/fulfillment'
 import {
@@ -13,11 +14,22 @@ import {
 } from '@/lib/order-emails'
 
 /**
- * Stripe webhook — merch payment completion.
+ * Stripe webhook — payment completion for merch AND tickets.
  *
- * Flips a merch_orders row from 'pending' to 'paid', records the REAL amount
- * Stripe collected (including shipping), the fulfillment choice, the customer
- * email and the shipping address, then sends the confirmation emails.
+ * ONE endpoint, branching on session.metadata.kind. Stripe is already
+ * pointed at this URL; a second endpoint would mean a second signing
+ * secret, a second thing to configure in two dashboards, and a second
+ * thing to break. The merch path below is unchanged — a regression there
+ * takes real money offline, so tickets were added beside it rather than
+ * through it.
+ *
+ * MERCH: flips a merch_orders row from 'pending' to 'paid', records the REAL
+ * amount Stripe collected (including shipping), the fulfillment choice, the
+ * customer email and the shipping address, then sends the confirmation emails.
+ *
+ * TICKETS: issues the ticket rows, claims the order, re-checks capacity and
+ * sends the QR confirmation. See @/lib/tickets/complete, which documents why
+ * issuance happens BEFORE the claim.
  *
  * Runtime notes:
  *  - `nodejs` runtime + `force-dynamic`: signature verification needs Node
@@ -27,7 +39,8 @@ import {
  *    payload and every signature check would fail.
  *
  * Gift cards are deliberately ignored here — that flow moved to Square's
- * hosted page. Any non-merch session is acknowledged and dropped.
+ * hosted page. Any session that is neither merch nor tickets is acknowledged
+ * and dropped.
  */
 
 export const runtime = 'nodejs'
@@ -73,8 +86,10 @@ export async function POST(req: NextRequest) {
 
   const session = event.data.object as Stripe.Checkout.Session
 
-  if (session.metadata?.kind !== 'merch') {
-    return NextResponse.json({ received: true, ignored: 'non-merch session' })
+  const kind = session.metadata?.kind
+  if (kind !== 'merch' && kind !== 'tickets') {
+    // Gift cards moved to Square's hosted page; anything else is not ours.
+    return NextResponse.json({ received: true, ignored: `kind=${kind ?? 'none'}` })
   }
 
   // `completed` can fire before funds settle for async payment methods. We
@@ -84,8 +99,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await handleMerchCompletion(stripe, session)
-    return NextResponse.json({ received: true, ...result })
+    const result =
+      kind === 'tickets'
+        ? await handleTicketCompletion(stripe, session)
+        : await handleMerchCompletion(stripe, session)
+    return NextResponse.json({ received: true, kind, ...result })
   } catch (err: any) {
     // A genuine failure (DB unreachable, Stripe retrieve failed). Non-2xx so
     // Stripe retries — the handler is idempotent, so a retry is safe.

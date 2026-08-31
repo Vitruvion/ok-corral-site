@@ -115,6 +115,24 @@ export type EventData = {
   signup_url?: string | null
   /** Path to the event poster image (3:4-ish aspect). */
   poster_url?: string | null
+  /**
+   * Direct ticket sales, replacing Eventbrite one show at a time.
+   *
+   * When `tickets_on_sale` is false -- the default for every existing row --
+   * the event behaves exactly as it always has: eventbrite_url renders the
+   * "Get Tickets" link, or the Free Admission badge shows. The two mechanisms
+   * are deliberately independent so the cutover can happen per show.
+   *
+   * Availability (how many are left, whether it is sold out) is NOT here.
+   * It changes with every purchase and this data is served through ISR, so a
+   * cached page would happily sell a sold-out show. The buy widget reads it
+   * live from /api/tickets/availability instead.
+   */
+  tickets_on_sale?: boolean
+  /** Dollars. Null whenever tickets_on_sale is false. */
+  ticket_price?: number | null
+  /** Short line shown next to the buy button - refund policy, age limits. */
+  ticket_blurb?: string | null
   /** Auto-expand on page load. Used for the upcoming/headline show. */
   featured?: boolean
   /** Names that appear in `support` or `description` get auto-linkified. */

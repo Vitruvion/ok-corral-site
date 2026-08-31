@@ -6,6 +6,7 @@ import ImageOrPlaceholder from './ImageOrPlaceholder'
 import { downloadIcs } from '@/lib/ics'
 import { shareOrCopy } from '@/lib/share'
 import { InstagramIcon, FacebookIcon, TikTokIcon } from './SocialIcons'
+import TicketPurchase from './TicketPurchase'
 import styles from './Events.module.css'
 
 
@@ -208,7 +209,21 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
                             Sign Up for the Contest →
                           </a>
                         )}
-                        {ev.eventbrite_url ? (
+                        {/* Three mutually exclusive states, checked in this
+                            order. Direct sales win when the show has been cut
+                            over; otherwise the Eventbrite link and the Free
+                            Admission badge behave exactly as they always have.
+                            Nothing about the existing two paths changed - the
+                            cutover is one show at a time, by flipping
+                            tickets_on_sale on that event's row. */}
+                        {ev.tickets_on_sale ? (
+                          <TicketPurchase
+                            eventId={ev.id}
+                            eventName={ev.name}
+                            price={ev.ticket_price ?? null}
+                            blurb={ev.ticket_blurb ?? null}
+                          />
+                        ) : ev.eventbrite_url ? (
                           <a
                             href={ev.eventbrite_url}
                             target="_blank"

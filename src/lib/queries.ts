@@ -74,7 +74,7 @@ export async function fetchEvents(): Promise<EventData[]> {
   try {
     const { data, error } = await sb
       .from('events')
-      .select('id, slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url, signup_url, poster_url, featured, related_links, youtube_url')
+      .select('id, slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url, signup_url, poster_url, featured, related_links, youtube_url, tickets_on_sale, ticket_price, ticket_blurb')
       .eq('active', true)
       .order('sort_order', { ascending: true })
       .order('date', { ascending: true })
@@ -108,6 +108,14 @@ export async function fetchEvents(): Promise<EventData[]> {
           }))
         : undefined,
       youtube_url: row.youtube_url ?? null,
+      // Direct ticket sales. Absent columns (a database that has not run
+      // migration 0012 yet) read as "not on sale", which is exactly the
+      // old behaviour.
+      tickets_on_sale: row.tickets_on_sale === true,
+      ticket_price: row.ticket_price === null || row.ticket_price === undefined
+        ? null
+        : Number(row.ticket_price),
+      ticket_blurb: row.ticket_blurb ? m(row.ticket_blurb) : null,
     })))
   } catch (e) {
     log('events', e)
