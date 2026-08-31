@@ -164,6 +164,40 @@ export async function removeQueued(ids: number[]): Promise<void> {
   }
 }
 
+/**
+ * Distinct queued codes per event.
+ *
+ * Distinct because a double-tap offline enqueues the same code twice,
+ * and one person cannot walk in twice.
+ */
+export async function queuedByEvent(): Promise<Record<string, string[]>> {
+  const rows = await listQueue()
+  const byEvent: Record<string, Set<string>> = {}
+  for (const r of rows) {
+    ;(byEvent[r.event_id] ??= new Set()).add(r.code)
+  }
+  return Object.fromEntries(Object.entries(byEvent).map(([k, v]) => [k, [...v]]))
+}
+
+/**
+ * How many tickets this device believes are used, per event, from the
+ * stored manifests.
+ *
+ * This is the local truth the picker needs: a scan sitting in the
+ * offline queue has already happened as far as the door is concerned,
+ * and the count must not go backwards just because the server has not
+ * heard about it yet.
+ */
+export async function localUsedByEvent(eventIds: string[]): Promise<Record<string, number>> {
+  const out: Record<string, number> = {}
+  for (const id of eventIds) {
+    const stored = await loadManifest(id)
+    if (!stored) continue
+    out[id] = stored.tickets.filter(t => t.status === 'used').length
+  }
+  return out
+}
+
 export async function queueSize(): Promise<number> {
   const n = await tx<number>(QUEUE, 'readonly', s => s.count())
   return n ?? 0

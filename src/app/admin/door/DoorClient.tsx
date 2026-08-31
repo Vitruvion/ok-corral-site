@@ -8,7 +8,9 @@ import {
   enqueueScan,
   listQueue,
   loadManifest,
+  localUsedByEvent,
   markUsedLocally,
+  queuedByEvent,
   removeQueued,
   saveManifest,
 } from '@/lib/door/db'
@@ -40,6 +42,16 @@ const STALE_MS = 30 * 60_000
 
 /** Retry cadence for the offline queue. */
 const FLUSH_MS = 20_000
+
+/**
+ * How often the event picker refreshes its scanned counts.
+ *
+ * That count is how whoever is on the door knows how many people are
+ * still outside, so a stale one is worse than useless. 30s is often
+ * enough to be current and cheap enough to be invisible -- and it only
+ * runs while the picker is actually on screen.
+ */
+const PICKER_POLL_MS = 30_000
 
 /**
  * Ignore repeat decodes of the same code inside this window.
@@ -110,6 +122,11 @@ function buzz(ok: boolean) {
 
 export default function DoorClient({ events }: { events: DoorEvent[] }) {
   const [event, setEvent] = useState<DoorEvent | null>(null)
+  /** Server counts. Seeded from the server render, refreshed thereafter. */
+  const [serverEvents, setServerEvents] = useState<DoorEvent[]>(events)
+  /** What THIS device knows, including scans the server has not seen. */
+  const [localUsed, setLocalUsed] = useState<Record<string, number>>({})
+  const [pendingByEvent, setPendingByEvent] = useState<Record<string, number>>({})
   const [manifest, setManifest] = useState<DoorManifest | null>(null)
   const [fetchedAt, setFetchedAt] = useState<number | null>(null)
   const [mode, setMode] = useState<Mode>('scan')
@@ -259,6 +276,88 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
       window.removeEventListener('online', onOnline)
     }
   }, [event, flushQueue])
+
+  // ── Picker counts ─────────────────────────────────────────────
+  /**
+   * Reads what this device knows: used marks in the stored manifests,
+   * plus anything still sitting in the offline queue.
+   *
+   * Always runs, even when the server fetch fails. That is the point --
+   * going offline must not make the number go backwards.
+   */
+  const refreshLocalCounts = useCallback(async (ids: string[]) => {
+    const [used, queued] = await Promise.all([localUsedByEvent(ids), queuedByEvent()])
+    setLocalUsed(used)
+    setPendingByEvent(
+      Object.fromEntries(Object.entries(queued).map(([id, codes]) => [id, codes.length]))
+    )
+  }, [])
+
+  const refreshCounts = useCallback(async () => {
+    let ids = serverEvents.map(e => e.id)
+    try {
+      const res = await fetch('/api/admin/door/manifest', { cache: 'no-store' })
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data.events)) {
+          setServerEvents(data.events)
+          ids = data.events.map((e: DoorEvent) => e.id)
+        }
+      }
+    } catch {
+      // Keep the counts we have. Replacing them with nothing would make
+      // the door look emptier than it is, which is the worst direction
+      // for this particular number to be wrong in.
+    }
+    await refreshLocalCounts(ids)
+  }, [serverEvents, refreshLocalCounts])
+
+  /**
+   * Keeps the picker current WHILE IT IS VISIBLE, and only then.
+   *
+   * Three triggers, because a phone at a door hits all three: coming
+   * back from scan mode (this effect re-runs when `event` becomes
+   * null), the app being reopened after iOS backgrounded it, and the
+   * plain passage of time.
+   *
+   * Everything is torn down on the way out, so entering scan mode
+   * leaves no interval and no listeners behind -- the camera loop
+   * should not be competing with a poll for a screen nobody is looking
+   * at.
+   */
+  useEffect(() => {
+    if (event) return
+
+    let cancelled = false
+    const run = () => {
+      if (!cancelled) void refreshCounts()
+    }
+
+    run()
+    const timer = window.setInterval(run, PICKER_POLL_MS)
+
+    // visibilitychange covers backgrounding; pageshow additionally
+    // covers iOS restoring a page from its back/forward cache, which
+    // does not always fire visibilitychange.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') run()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', run)
+    window.addEventListener('pageshow', run)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', run)
+      window.removeEventListener('pageshow', run)
+    }
+    // Deliberately keyed on `event` only. Including refreshCounts would
+    // tear down and rebuild the interval every time the counts change,
+    // which is every poll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event])
 
   // ── Admitting a ticket ────────────────────────────────────────
   const admit = useCallback(
@@ -466,21 +565,35 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
   if (!event) {
     return (
       <div className={styles.events}>
-        {events.length === 0 && (
+        {serverEvents.length === 0 && (
           <p className={styles.empty}>
             No events have ticket sales switched on. Set <code>tickets_on_sale</code> on
             an event first.
           </p>
         )}
-        {events.map(ev => (
-          <button key={ev.id} className={styles.eventCard} onClick={() => chooseEvent(ev)}>
-            <span className={styles.eventName}>{ev.name}</span>
-            <span className={styles.eventDate}>{ev.dateLabel}</span>
-            <span className={styles.eventCount}>
-              {ev.used} of {ev.issued} scanned
-            </span>
-          </button>
-        ))}
+        {serverEvents.map(ev => {
+          // The higher of the two, never the server's alone. A scan
+          // waiting in the queue has happened as far as the door is
+          // concerned, and the count going backwards when the wifi drops
+          // would be actively misleading about how many people are
+          // still outside.
+          const used = Math.max(ev.used, localUsed[ev.id] ?? 0)
+          const pending = pendingByEvent[ev.id] ?? 0
+          return (
+            <button key={ev.id} className={styles.eventCard} onClick={() => chooseEvent(ev)}>
+              <span className={styles.eventName}>{ev.name}</span>
+              <span className={styles.eventDate}>{ev.dateLabel}</span>
+              <span className={styles.eventCount}>
+                {used} of {ev.issued} scanned
+                {pending > 0 && (
+                  <span className={styles.pending} title={`${pending} not yet sent to the server`}>
+                    +{pending} unsent
+                  </span>
+                )}
+              </span>
+            </button>
+          )
+        })}
       </div>
     )
   }

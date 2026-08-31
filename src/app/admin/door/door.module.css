@@ -95,7 +95,29 @@
   color: var(--bone-mute);
 }
 
-.eventCount { color: var(--ember); }
+.eventCount {
+  color: var(--ember);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/*
+ * Marks a count that is AHEAD of the server -- scans taken on this
+ * phone that have not flushed yet. Muted rather than alarming: nothing
+ * is wrong, the number is simply the honest one and the server has not
+ * caught up.
+ */
+.pending {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--bone-mute);
+  border: 1px solid var(--ink-4);
+  border-radius: 999px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
 
 /* ── Scan mode ────────────────────────────────────────────────── */
 .scanner {
