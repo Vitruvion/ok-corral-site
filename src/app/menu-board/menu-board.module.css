@@ -38,11 +38,12 @@
      resizing the wordmark can't drift their relationship — at any value the
      prefix stays a third of the wordmark and the gap a fifth of it, exactly
      as when this was 3vw / 1vw / 0.6vw. */
-  /* 10vw, not the 4.5vw first tried: 4.5 only reached 33% of board content
-     width. 10vw lands the wordmark at ~74% — inside the 70-80% target — with
-     the THE+wordmark lockup at ~87%, leaving real margin either side. Width
-     here comes purely from type size; see .markName. */
-  --mark-size: 10vw;
+  /* 8vw. 4.5vw (first tried) only reached 33% of board content width; 10vw
+     hit 74% but left column 1 with just 40px of headroom at 1080p — about
+     half a drink row, and this board clips silently. 8vw trades a little
+     width for room to add cocktails. Width here comes purely from type size;
+     see .markName. */
+  --mark-size: 8vw;
   gap: calc(var(--mark-size) * 0.2);
   flex: 0 0 auto;
   border-bottom: 0.15vh solid var(--ink-4);
