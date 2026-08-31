@@ -27,10 +27,12 @@ import {
  * customer who paid would have no tickets and no email, and nothing
  * would say so.
  *
- * Issuing first closes that. Issuance is itself idempotent: it tops the
- * order up to `quantity` tickets rather than inserting blindly, so a
- * replay inserts nothing and a crash mid-insert is repaired by the
- * retry. The claim still decides, exactly once, whether email goes out.
+ * Issuing first closes that, and is safe to do because issuance does not
+ * rely on the claim's lock for its own correctness: (order_id, seq) is
+ * UNIQUE and the insert is ON CONFLICT DO NOTHING, so duplicate and even
+ * simultaneous deliveries are rejected by Postgres rather than by a
+ * count in JS. The claim still decides, exactly once, whether email goes
+ * out. See ensureTicketsIssued.
  */
 
 const FROM = process.env.RESEND_FROM_EMAIL || 'howdy@okcorralsaloon.com'
@@ -39,7 +41,7 @@ const OWNER_TO = process.env.RESEND_TO_EMAIL || 'howdy@okcorralsaloon.com'
 /** Retries on the (vanishingly unlikely) 60-bit code collision. */
 const CODE_COLLISION_RETRIES = 5
 
-type OrderRow = {
+export type OrderRow = {
   id: string
   event_id: string
   quantity: number
@@ -131,61 +133,90 @@ export async function handleTicketCompletion(
 
 // ── Issuance ──────────────────────────────────────────────────────
 /**
- * Tops the order up to `quantity` tickets and returns all of them.
+ * Issues this order's tickets and returns all of them.
  *
- * Idempotent by construction: it counts what exists first and only
- * inserts the shortfall, so a webhook replay inserts nothing and a
- * partial failure is repaired by the next delivery.
+ * CONCURRENCY. Stripe can deliver the same event twice AT ONCE -- a
+ * retry can overlap a slow first delivery. This used to count existing
+ * tickets and insert the shortfall, which is a check-then-insert: two
+ * deliveries could both count zero and both insert `quantity` rows,
+ * double-issuing against one payment. No JS can close that, because the
+ * count is stale the moment it is read.
+ *
+ * So the database decides instead. Every ticket carries an ordinal
+ * within its order, (order_id, seq) is UNIQUE (migration 0013), and all
+ * `quantity` rows go in as ONE statement with ON CONFLICT DO NOTHING.
+ * Whichever delivery reaches an ordinal first wins it; the loser's row
+ * is discarded by Postgres. The invariant lives in the schema, so it
+ * holds however the callers behave.
+ *
+ * The read-back afterwards is what makes this correct rather than just
+ * safe: the winning codes may be the other delivery's, so the email has
+ * to be built from what is actually in the table, never from what this
+ * call happened to generate.
  */
-async function ensureTicketsIssued(order: OrderRow): Promise<TicketLine[]> {
-  const sb = serviceClient()
-
-  const { data: existing, error: exErr } = await sb
-    .from('tickets')
-    .select('code')
-    .eq('order_id', order.id)
-    .order('created_at', { ascending: true })
-
-  if (exErr) throw new Error(`tickets lookup failed: ${exErr.message}`)
-
-  const codes = (existing ?? []).map(t => String(t.code))
-  const missing = order.quantity - codes.length
-
-  if (missing > 0) {
-    for (let i = 0; i < missing; i++) {
-      codes.push(await insertOneTicket(order))
-    }
-    console.info(`[stripe-webhook] issued ${missing} ticket(s) for order ${order.id}`)
-  }
-
-  return codes.map(code => ({ code, payload: buildQrPayload(code, order.event_id) }))
-}
-
-async function insertOneTicket(order: OrderRow): Promise<string> {
+export async function ensureTicketsIssued(order: OrderRow): Promise<TicketLine[]> {
   const sb = serviceClient()
 
   for (let attempt = 0; attempt < CODE_COLLISION_RETRIES; attempt++) {
-    const code = generateTicketCode()
-    const { error } = await sb.from('tickets').insert({
+    const rows = Array.from({ length: order.quantity }, (_, i) => ({
       tenant_id: TENANT_ID,
       order_id: order.id,
       event_id: order.event_id,
-      code,
+      seq: i + 1,
+      code: generateTicketCode(),
       status: 'valid',
       source: 'online',
-    })
+    }))
 
-    if (!error) return code
+    const { error } = await sb
+      .from('tickets')
+      .upsert(rows, { onConflict: 'order_id,seq', ignoreDuplicates: true })
 
-    const duplicate = error.code === '23505' || /duplicate key value/i.test(error.message ?? '')
-    if (!duplicate) throw new Error(`ticket insert failed: ${error.message}`)
-    // 60 bits of entropy makes this effectively unreachable; the loop
-    // exists so that if it ever does happen it self-corrects instead of
-    // failing someone's order.
-    console.warn(`[stripe-webhook] ticket code collision on ${code} - retrying`)
+    if (!error) break
+
+    // A collision on the ordinal is the concurrent-delivery case and is
+    // absorbed by ON CONFLICT, so it never surfaces here. A collision on
+    // `code` is the 60-bit birthday case, is NOT covered by that conflict
+    // target, and does surface -- retry the batch with fresh codes.
+    if (!isCodeCollision(error)) {
+      throw new Error(`ticket insert failed: ${error.message}`)
+    }
+    console.warn(`[stripe-webhook] ticket code collision on order ${order.id} - retrying`)
+    if (attempt === CODE_COLLISION_RETRIES - 1) {
+      throw new Error('could not generate unique ticket codes')
+    }
   }
 
-  throw new Error('could not generate a unique ticket code')
+  // Read back the winners, whoever wrote them.
+  const { data, error } = await sb
+    .from('tickets')
+    .select('code, seq')
+    .eq('order_id', order.id)
+    .order('seq', { ascending: true })
+
+  if (error) throw new Error(`tickets lookup failed: ${error.message}`)
+
+  const tickets = (data ?? []).map(t => ({
+    code: String(t.code),
+    payload: buildQrPayload(String(t.code), order.event_id),
+  }))
+
+  if (tickets.length !== order.quantity) {
+    // Not fatal: the customer's tickets exist and the email is worth
+    // sending. But a mismatch means something wrote outside this path,
+    // and it should be visible rather than quietly shipped.
+    console.error(
+      `[stripe-webhook] order ${order.id} has ${tickets.length} tickets, expected ${order.quantity}`
+    )
+  }
+
+  return tickets
+}
+
+/** Unique violation on tickets.code, as opposed to on (order_id, seq). */
+function isCodeCollision(error: { code?: string; message?: string }): boolean {
+  const isUnique = error?.code === '23505' || /duplicate key value/i.test(error?.message ?? '')
+  return isUnique && /code/i.test(error?.message ?? '')
 }
 
 // ── Capacity ──────────────────────────────────────────────────────
