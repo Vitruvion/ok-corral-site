@@ -29,6 +29,11 @@
 .header {
   display: flex;
   align-items: baseline;
+  /* Centres "The" and the wordmark as ONE unit: they're flex items in this
+     row, so justify-content moves the pair together and their relationship
+     (baseline-aligned, 0.6vw apart) is untouched. The header itself still
+     spans the full board width, so the rule beneath it stays full width. */
+  justify-content: center;
   gap: 0.6vw;
   flex: 0 0 auto;
   border-bottom: 0.15vh solid var(--ink-4);
@@ -210,19 +215,20 @@
 
 /* ── QR panel: pinned to the bottom of its column ──────────────── */
 .qrPanel {
-  /* Pushes the panel to the bottom of the column, filling the dead space
-     under the shortest categories and balancing the board against the two
-     full-height columns. */
+  /* Auto margins on BOTH sides, so the leftover space in the column splits
+     evenly above and below and the panel sits in the middle of the blank
+     area under the last category. Was margin-top:auto alone, which pushed it
+     onto the column floor. */
   margin-top: auto;
+  margin-bottom: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Tight on purpose. This padding is chrome, not code — every vh spent here
-     is a vh the QR can't have, and the column floor is the hard limit. The
-     panel's own margin-top:auto plus this padding still separate it from
-     Featured Beer. */
+  /* No padding-top any more: it existed to hold the panel off Featured Beer
+     when it was pinned to the floor and tight against it. Now that the panel
+     is centred in open space, that padding would only push its content below
+     the true centre of its own box. */
   gap: 1vh;
-  padding-top: 1.2vh;
 }
 
 /* Same display face and ember as a category header, at half the size (1.1vw
