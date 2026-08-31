@@ -23,6 +23,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
+  // The door scanner's PWA plumbing. Both are static metadata -- a name,
+  // some icon paths, and cache logic -- and neither can reach any data.
+  //
+  // They are exempt because gating them breaks installation rather than
+  // protecting anything: a web app manifest is fetched with credentials
+  // omitted, so a gated one is redirected to the login page and fails to
+  // parse, and a service worker whose script 302s cannot update on a
+  // phone whose cookie lapsed mid-shift. The manifest DATA -- codes and
+  // purchaser names -- is at /api/admin/door/manifest and stays gated.
+  if (pathname === '/admin/door/manifest.webmanifest' || pathname === '/admin/door/sw.js') {
+    return NextResponse.next()
+  }
+
   const ok = await verifySessionEdge(req.cookies.get(ADMIN_COOKIE)?.value)
   if (ok) return NextResponse.next()
 

@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { CODE_LENGTH, SIG_LENGTH, TICKET_CODE_ALPHABET } from './code-format'
 
 /**
  * Ticket codes and the QR payload the door scanner reads.
@@ -39,24 +40,28 @@ import crypto from 'node:crypto'
  * answer is "has this ticket already been scanned?" -- that needs the
  * manifest, which the scanner downloads once before doors and updates
  * as it burns codes.
+ *
+ * HOW THE SCANNER VERIFIES WITHOUT THE SECRET
+ * It does not compute signatures at all. The server computes one per
+ * ticket and ships them inside the manifest, and the browser compares
+ * strings. The secret never leaves the server. See src/lib/tickets/door.ts
+ * for why that trade is the right one.
  * ═══════════════════════════════════════════════════════════════════
  */
 
 /**
- * 32 characters, chosen to survive being read aloud across a noisy bar
- * and typed in by someone who is not looking closely.
- *
- * Excluded: 0, 1, I, L. That kills the 0/O and 1/I/l confusions in
- * both directions -- O and U are kept because with 0 and 1 gone there
- * is nothing left for them to be mistaken FOR.
+ * Shape, alphabet and normalisation live in ./code-format, which has no
+ * node imports so the browser can use the SAME normalisation the server
+ * does. Re-exported here so existing importers are unaffected.
  */
-export const TICKET_CODE_ALPHABET = '23456789ABCDEFGHJKMNOPQRSTUVWXYZ'
-
-/** Characters per code. 12 x 5 bits = 60 bits of entropy. */
-const CODE_LENGTH = 12
-
-/** Characters of signature. 16 x 5 bits = the first 80 bits of the HMAC. */
-const SIG_LENGTH = 16
+export {
+  TICKET_CODE_ALPHABET,
+  CODE_LENGTH,
+  SIG_LENGTH,
+  formatTicketCode,
+  normalizeTicketCode,
+  isWellFormedCode,
+} from './code-format'
 
 /** Bytes of HMAC actually used. 10 bytes encodes to exactly SIG_LENGTH. */
 const SIG_BYTES = 10
@@ -121,35 +126,6 @@ export function generateTicketCode(): string {
   return out
 }
 
-/** `ABCD-EFGH-JKMN` -- for email, print, and reading aloud at the door. */
-export function formatTicketCode(code: string): string {
-  return (code.match(/.{1,4}/g) ?? [code]).join('-')
-}
-
-/**
- * Canonicalises anything a human might type or a scanner might hand
- * back: lowercase, dashes, spaces.
- *
- * A typed '0' is folded to 'O' and never the other way round, because
- * '0' is not in the alphabet so it cannot have been meant literally.
- * '1' is deliberately NOT folded -- it could stand for either I or L,
- * both of which are also out of the alphabet, so there is no
- * defensible target and a silent wrong guess is worse than a miss.
- */
-export function normalizeTicketCode(input: string): string {
-  return String(input ?? '')
-    .toUpperCase()
-    .replace(/[^0-9A-Z]/g, '')
-    .replace(/0/g, 'O')
-}
-
-/** Shape check only -- says nothing about whether the code is genuine. */
-export function isWellFormedCode(code: string): boolean {
-  if (code.length !== CODE_LENGTH) return false
-  for (const ch of code) if (!TICKET_CODE_ALPHABET.includes(ch)) return false
-  return true
-}
-
 // ── Signing ───────────────────────────────────────────────────────
 /**
  * The signature half of the payload: 80 bits of
@@ -190,8 +166,7 @@ export type VerifyResult =
   | { ok: false; reason: 'malformed' | 'unknown-version' | 'bad-signature' }
 
 /**
- * Offline authenticity check. Everything Phase 2's scanner needs to
- * answer "is this real?" with no network call.
+ * Server-side authenticity check.
  *
  * Compared with timingSafeEqual. The margin barely matters against a
  * door scanner, but a plain === on a signature is the kind of thing
