@@ -105,9 +105,17 @@ export default function MenuBoardView({
   return (
     <div className={styles.columns}>
       {columns.map((categories, i) => (
-        <div key={i} className={styles.column}>
+        // data-board-* hooks are read by OverflowGuard. They're plain
+        // attributes rather than class names on purpose: CSS module classes
+        // are hashed, so matching on them would break the moment the build
+        // hashes differently.
+        <div key={i} className={styles.column} data-board-column={i}>
           {categories.map(category => (
-            <section key={category} className={styles.category}>
+            <section
+              key={category}
+              className={styles.category}
+              data-board-category={category}
+            >
               <h2 className={styles.categoryName}>{category}</h2>
               <ul className={styles.items}>
                 {drinks[category].map((drink, j) => {
@@ -116,6 +124,7 @@ export default function MenuBoardView({
                     <li
                       key={`${drink.name}-${j}`}
                       className={`${styles.item} ${note ? '' : styles.itemBare}`}
+                      data-board-item={drink.name}
                     >
                       <div className={styles.itemHead}>
                         <span className={styles.itemName}>{drink.name}</span>

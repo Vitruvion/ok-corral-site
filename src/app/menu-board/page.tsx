@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getDrinks } from '@/lib/queries'
 import { getBoardQrSvg } from './qr'
 import MenuBoardView from './MenuBoardView'
+import OverflowGuard from './OverflowGuard'
 import RefreshLoop from './RefreshLoop'
 import styles from './menu-board.module.css'
 
@@ -29,8 +30,10 @@ export default async function MenuBoardPage() {
   const [drinks, qrSvg] = await Promise.all([getDrinks(), getBoardQrSvg()])
 
   return (
-    <main className={styles.board}>
+    // data-board marks the element OverflowGuard measures the floor against.
+    <main className={styles.board} data-board>
       <RefreshLoop />
+      <OverflowGuard />
 
       <header className={styles.header}>
         <span className={styles.markThe}>The</span>
