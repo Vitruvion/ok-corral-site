@@ -1,4 +1,5 @@
 import { serviceClient } from './repo'
+import { isEventUpcoming } from '@/lib/events'
 import { countAdmissions, describeOccupancy } from './occupancy'
 import { displayEventDate } from './complete'
 
@@ -67,6 +68,59 @@ export type EventTickets = {
    */
   revenue: RevenueLine[]
   orders: TicketOrderRow[]
+}
+
+/**
+ * An upcoming show with no ticket setup.
+ *
+ * NOT AN ERROR, and it must not read as one. Plenty of shows are free
+ * or take no advance sales, and those are the normal case. This exists
+ * only so a show that was MEANT to sell tickets cannot sit there
+ * silently offering no way to buy -- which, with Eventbrite retired, is
+ * a failure nobody would notice until a customer said so.
+ */
+export type UnconfiguredEvent = {
+  id: string
+  name: string
+  date: string
+  dateLabel: string
+  /** Why it is not ticket-ready, in the words the sheet shows. */
+  reason: 'no price set' | 'sales not switched on'
+}
+
+/**
+ * Active, still-upcoming events that are not ticket-ready.
+ *
+ * Upcoming by the venue's own calendar day, the same rule the homepage
+ * uses to retire past shows -- a show last March needs no nagging.
+ */
+export async function loadUnconfiguredEvents(): Promise<UnconfiguredEvent[]> {
+  const sb = serviceClient()
+
+  const { data, error } = await sb
+    .from('events')
+    .select('id, name, date, weekday, active, tickets_on_sale, ticket_price')
+    .eq('active', true)
+    .order('date', { ascending: true })
+
+  if (error) throw new Error(`unconfigured events lookup failed: ${error.message}`)
+
+  return (data ?? [])
+    .map(e => ({
+      ...e,
+      date: typeof e.date === 'string' ? e.date : new Date(e.date).toISOString().slice(0, 10),
+    }))
+    .filter(e => isEventUpcoming({ date: e.date } as any))
+    .filter(e => e.tickets_on_sale !== true || e.ticket_price === null || e.ticket_price === undefined)
+    .map(e => ({
+      id: e.id,
+      name: e.name,
+      date: e.date,
+      dateLabel: displayEventDate(e.date, e.weekday ?? null),
+      // On-sale-but-priceless is the genuinely odd one: someone meant to
+      // sell and stopped half way. Called out differently for that reason.
+      reason: e.tickets_on_sale === true ? 'no price set' : 'sales not switched on',
+    }))
 }
 
 export async function loadTicketEvents(): Promise<EventTickets[]> {

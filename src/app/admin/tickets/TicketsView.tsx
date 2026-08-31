@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import type { EventTickets, TicketOrderRow } from '@/lib/tickets/manifest'
+import type { EventTickets, TicketOrderRow, UnconfiguredEvent } from '@/lib/tickets/manifest'
 import styles from './tickets.module.css'
 
 /**
@@ -25,7 +25,13 @@ const METHOD_LABEL: Record<string, string> = {
 
 const methodLabel = (m: string) => METHOD_LABEL[m] ?? m
 
-export default function TicketsView({ events }: { events: EventTickets[] }) {
+export default function TicketsView({
+  events,
+  unconfigured = [],
+}: {
+  events: EventTickets[]
+  unconfigured?: UnconfiguredEvent[]
+}) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState<Record<string, boolean>>({})
 
@@ -41,17 +47,23 @@ export default function TicketsView({ events }: { events: EventTickets[] }) {
       .filter(ev => ev.orders.length > 0)
   }, [events, needle])
 
+  const nag = <NotSelling events={unconfigured} />
+
   if (events.length === 0) {
     return (
-      <p className={styles.empty}>
-        No events are selling tickets yet. Set <code>tickets_on_sale</code> and{' '}
-        <code>ticket_price</code> on an event to start.
-      </p>
+      <>
+        {nag}
+        <p className={styles.empty}>
+          No events are selling tickets yet. Set <code>tickets_on_sale</code> and{' '}
+          <code>ticket_price</code> on an event to start.
+        </p>
+      </>
     )
   }
 
   return (
     <>
+      {nag}
       <input
         className={styles.search}
         type="search"
@@ -198,6 +210,41 @@ export default function TicketsView({ events }: { events: EventTickets[] }) {
         })}
       </div>
     </>
+  )
+}
+
+/**
+ * Upcoming shows with no ticket setup.
+ *
+ * INFORMATIONAL, and styled to say so: muted, no red, no warning icon,
+ * no call to action. Most of these are free shows or door-only nights
+ * and are perfectly fine. It is here so that a show which was meant to
+ * sell tickets cannot sit unnoticed with no way to buy -- with
+ * Eventbrite retired there is no fallback link to catch it.
+ *
+ * Deliberately NO toggle. Switching sales on is a decision made with a
+ * price in hand, not a tap from a list.
+ */
+function NotSelling({ events }: { events: UnconfiguredEvent[] }) {
+  if (events.length === 0) return null
+
+  return (
+    <section className={styles.notSelling}>
+      <h2 className={styles.notSellingHead}>Not selling tickets</h2>
+      <ul className={styles.notSellingList}>
+        {events.map(e => (
+          <li key={e.id} className={styles.notSellingRow}>
+            <span className={styles.notSellingName}>{e.name}</span>
+            <span className={styles.notSellingDate}>{e.dateLabel}</span>
+            <span className={styles.notSellingWhy}>{e.reason}</span>
+          </li>
+        ))}
+      </ul>
+      <p className={styles.notSellingNote}>
+        Free and door-only shows belong here. Listed so a show that was meant to
+        sell tickets doesn&rsquo;t sit unnoticed.
+      </p>
+    </section>
   )
 }
 

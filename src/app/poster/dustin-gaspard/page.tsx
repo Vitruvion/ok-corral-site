@@ -161,9 +161,12 @@ export default function DustinGaspardPosterPage() {
 
                 {/* QR — scan for tickets */}
                 <div className={styles.qr}>
-                  {/* Eventbrite link encoded in the SVG modules; cream
-                      plate + #902C1A barn-red modules match the poster
-                      palette so it sits naturally on the parchment. */}
+                  {/* The site's own events section encoded in the SVG
+                      modules -- it pointed at Eventbrite until that was
+                      retired. Cream plate + #902C1A barn-red modules match
+                      the poster palette so it sits naturally on the
+                      parchment. Regenerate with the qrcode package at
+                      2173px, ECC M, margin 4. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     className={styles.qrImage}

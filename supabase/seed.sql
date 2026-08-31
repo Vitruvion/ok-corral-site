@@ -19,9 +19,11 @@
 set client_encoding to E'UTF8';
 
 -- -- Events ------------------------------------------------------
--- eventbrite_url: paste the Eventbrite URL for ticketed shows.
--- Leave it null for free shows - the UI auto-renders a "Free
--- Admission . No Cover" badge when there's no URL.
+-- eventbrite_url: historical only. Eventbrite is retired and nothing
+--   reads this column; it is kept as a record of past shows. Tickets
+--   are sold through tickets_on_sale + ticket_price.
+-- Leave it null. Free shows are those with tickets_on_sale false,
+--   which the UI renders as a "Free Admission . No Cover" badge.
 --
 -- Old placeholder events (dust-devils, line-dance, midnight-rodeo) and
 -- past one-off events are deactivated below so they stop showing
@@ -34,7 +36,7 @@ update events set active = false where slug in (
 );
 
 -- Bad Dog x The OK Corral collab (free walk-in event).
--- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
+-- tickets_on_sale false renders the "Free Admission . No Cover" badge.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
   description, eventbrite_url, signup_url, poster_url, featured, related_links,
@@ -73,7 +75,7 @@ on conflict (slug) do update set
   sort_order = excluded.sort_order;
 
 -- Bar Jay Bar live (free 21+ walk-in show).
--- eventbrite_url null triggers the "Free Admission . No Cover" badge in the UI.
+-- tickets_on_sale false renders the "Free Admission . No Cover" badge.
 insert into events (
   slug, date, weekday, name, support, time, doors, genre, tickets, tags,
   description, eventbrite_url, signup_url, poster_url, featured, related_links,

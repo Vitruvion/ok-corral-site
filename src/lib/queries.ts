@@ -74,7 +74,7 @@ export async function fetchEvents(): Promise<EventData[]> {
   try {
     const { data, error } = await sb
       .from('events')
-      .select('id, slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, eventbrite_url, signup_url, poster_url, featured, related_links, youtube_url, tickets_on_sale, ticket_price, ticket_blurb')
+      .select('id, slug, date, weekday, name, support, time, doors, genre, tickets, tags, description, signup_url, poster_url, featured, related_links, youtube_url, tickets_on_sale, ticket_price, ticket_blurb')
       .eq('active', true)
       .order('sort_order', { ascending: true })
       .order('date', { ascending: true })
@@ -92,7 +92,6 @@ export async function fetchEvents(): Promise<EventData[]> {
       tickets: m(row.tickets),
       tags: (row.tags ?? []).map(unmojibake),
       description: m(row.description),
-      eventbrite_url: row.eventbrite_url ?? null,
       signup_url: row.signup_url ?? null,
       poster_url: row.poster_url ?? null,
       featured: !!row.featured,

@@ -102,12 +102,7 @@ export type EventData = {
   tags: string[]
   description: string
   /**
-   * If set, the Events UI shows a "Get Tickets →" button that links here.
-   * If null/empty, the event renders a "Free Admission · No Cover" badge.
-   */
-  eventbrite_url: string | null
-  /**
-   * Optional, SEPARATE from eventbrite_url. When set, the Events UI shows a
+   * Optional. When set, the Events UI shows a
    * prominent "Sign Up for the Contest" button alongside (not instead of) the
    * Free Admission badge. Used for optional opt-in actions like a contest
    * signup where general entry is still free. Opens in a new tab.
@@ -119,9 +114,10 @@ export type EventData = {
    * Direct ticket sales, replacing Eventbrite one show at a time.
    *
    * When `tickets_on_sale` is false -- the default for every existing row --
-   * the event behaves exactly as it always has: eventbrite_url renders the
-   * "Get Tickets" link, or the Free Admission badge shows. The two mechanisms
-   * are deliberately independent so the cutover can happen per show.
+   * the event shows the "Free Admission - No Cover" badge. Eventbrite was
+   * retired once every show had been cut over; the events.eventbrite_url
+   * COLUMN still exists and still holds its old values as a record of past
+   * shows, but nothing reads it.
    *
    * Availability (how many are left, whether it is sold out) is NOT here.
    * It changes with every purchase and this data is served through ISR, so a
@@ -158,7 +154,6 @@ export const EVENTS: EventData[] = [
     tickets: 'Free',
     tags: ['collab', 'food'],
     description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers — fastest wins a cash prize and more. Contest kicks off at 7:30 PM, so sign up early.",
-    eventbrite_url: null,
     signup_url: 'https://partiful.com/e/IgNB4661lOfxsTgIF9Sh',
     poster_url: '/assets/events/bad-dog-collab-v2.png',
     related_links: [
@@ -184,7 +179,6 @@ export const EVENTS: EventData[] = [
     tickets: 'Free · 21+',
     tags: ['live music', '21+'],
     description: "Bar Jay Bar live — high-energy honky tonk, theatrical chaos, and yes, the band climbs on each other mid-song. Free, 21+. Walk in.",
-    eventbrite_url: null,
     poster_url: '/assets/events/barjaybar.png',
     related_links: [
       {
@@ -206,7 +200,6 @@ export const EVENTS: EventData[] = [
     tickets: '$15',
     tags: ['live music', 'special event'],
     description: "Singer-songwriter Dustin Dale Gaspard of Cow Island, Louisiana brings his alternative folk sound to The OK Corral for one unforgettable night. A Season 28 contestant on NBC's The Voice, Dustin is born and raised in deep Southern Louisiana — his music is steeped in Cajun soul, raw storytelling, and a voice that fills every corner of the room. Opening the night at 8:30 is Tanner Bingaman — a songwriter, banjoist, and poet from the hills of Appalachia. Featured on NPR, awarded Emerging Artist of the Year by the Susquehanna Folk Music Society, and currently touring with Dustin on a 10,000-mile run down the West Coast. Two artists, one stage, one hell of a Thursday night.",
-    eventbrite_url: 'https://www.eventbrite.com/e/dustin-dale-gaspard-tickets-1989628449251?aff=oddtdtcreator',
     poster_url: '/assets/posters/dustin-gaspard.jpg',
     youtube_url: 'https://www.youtube.com/watch?v=_6SMeYNM8gM',
     featured: true,

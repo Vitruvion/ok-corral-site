@@ -33,11 +33,14 @@ export function eventToIcs(ev: EventData): string | null {
 
   const uid = `${ev.id}@okcorralsaloon.com`
   const summary = ev.name
-  const url = ev.eventbrite_url || ''
+  // The site, always. This used to be the Eventbrite listing, which is
+  // no longer where tickets are sold -- and a calendar entry pointing at
+  // a retired listing is worse than one pointing at the bar.
+  const url = 'https://www.okcorralsaloon.com/#events'
   const descParts: string[] = []
   if (ev.description) descParts.push(ev.description)
   if (ev.support)     descParts.push(`\nLineup: ${ev.support}`)
-  if (url)            descParts.push(`\nTickets: ${url}`)
+  descParts.push(`\nDetails: ${url}`)
   const description = descParts.join('').trim()
 
   // DTSTAMP must be UTC. We use the event's creation moment is unknown, so

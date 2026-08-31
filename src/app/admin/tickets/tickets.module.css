@@ -80,6 +80,79 @@
 
 .search::placeholder { color: var(--bone-mute); }
 
+/* ── Not selling ──────────────────────────────────────────────────
+   Informational, and it has to LOOK informational. No red, no amber, no
+   warning glyph, no button: most of these are free shows and nothing is
+   wrong with them. Muted enough to scan past, present enough that a show
+   which should have been selling cannot hide in it. */
+.notSelling {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink-2);
+}
+
+.notSellingHead {
+  margin: 0 0 10px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+.notSellingList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notSellingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.notSellingName {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  color: var(--bone-dim);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notSellingDate {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--bone-mute);
+}
+
+.notSellingWhy {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  border: 1px solid var(--ink-4);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.notSellingNote {
+  margin: 12px 0 0;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bone-mute);
+}
+
 /* ── Events ───────────────────────────────────────────────────── */
 .events { display: flex; flex-direction: column; gap: 14px; }
 

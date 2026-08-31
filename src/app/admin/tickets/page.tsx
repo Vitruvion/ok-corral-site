@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { isAuthorized } from '@/lib/admin/guard'
-import { loadTicketEvents, type EventTickets } from '@/lib/tickets/manifest'
+import {
+  loadTicketEvents,
+  loadUnconfiguredEvents,
+  type EventTickets,
+  type UnconfiguredEvent,
+} from '@/lib/tickets/manifest'
 import TicketsView from './TicketsView'
 import styles from './tickets.module.css'
 
@@ -28,12 +33,15 @@ export default async function AdminTicketsPage() {
   // as the API routes.
   if (!isAuthorized()) redirect('/admin/login?next=/admin/tickets')
 
-  let events: EventTickets[]
+  let events: EventTickets[] = []
+  let unconfigured: UnconfiguredEvent[] = []
   let loadError: string | null = null
   try {
-    events = await loadTicketEvents()
+    ;[events, unconfigured] = await Promise.all([
+      loadTicketEvents(),
+      loadUnconfiguredEvents(),
+    ])
   } catch (err) {
-    events = []
     loadError = err instanceof Error ? err.message : 'Could not load ticket sales.'
   }
 
@@ -48,7 +56,7 @@ export default async function AdminTicketsPage() {
 
       {loadError && <p className={styles.loadError}>{loadError}</p>}
 
-      <TicketsView events={events} />
+      <TicketsView events={events} unconfigured={unconfigured} />
     </main>
   )
 }

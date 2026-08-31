@@ -53,8 +53,9 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
   }
 
   const onShare = async (ev: EventData) => {
-    const fallbackUrl = typeof window !== 'undefined' ? window.location.origin + '#events' : ''
-    const url = ev.eventbrite_url || fallbackUrl
+    // Always the site now. It used to prefer the Eventbrite listing,
+    // which is no longer where tickets are sold.
+    const url = typeof window !== 'undefined' ? window.location.origin + '#events' : ''
     const result = await shareOrCopy({
       title: `${ev.name} at The OK Corral`,
       text: ev.support ? `${ev.name} ${ev.support}` : ev.name,
@@ -209,13 +210,11 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
                             Sign Up for the Contest →
                           </a>
                         )}
-                        {/* Three mutually exclusive states, checked in this
-                            order. Direct sales win when the show has been cut
-                            over; otherwise the Eventbrite link and the Free
-                            Admission badge behave exactly as they always have.
-                            Nothing about the existing two paths changed - the
-                            cutover is one show at a time, by flipping
-                            tickets_on_sale on that event's row. */}
+                        {/* Two states now, not three. Eventbrite is retired:
+                            a show either sells tickets here or it is free
+                            entry. There is deliberately no third path -- a
+                            fallback link was how a show could end up selling
+                            somewhere nobody was watching. */}
                         {ev.tickets_on_sale ? (
                           <TicketPurchase
                             eventId={ev.id}
@@ -223,16 +222,6 @@ export default function Events({ events = filterUpcomingEvents(EVENTS), recurrin
                             price={ev.ticket_price ?? null}
                             blurb={ev.ticket_blurb ?? null}
                           />
-                        ) : ev.eventbrite_url ? (
-                          <a
-                            href={ev.eventbrite_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-primary"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Get Tickets →
-                          </a>
                         ) : (
                           <span
                             className={styles.freeBadge}
