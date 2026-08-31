@@ -87,12 +87,12 @@ export default async function DoorPage() {
   }
 
   return (
+    // The page title lives in DoorClient, on the picker only. In scan
+    // mode it was 88px of chrome stacked above a screen that already
+    // claimed the whole viewport -- which is exactly how much the page
+    // scrolled by. The event name is in the scanner's own bar anyway.
     <main className={styles.page}>
       <DoorPwa />
-      <header className={styles.head}>
-        <span className={styles.kicker}>◆ Door</span>
-        <h1 className={styles.title}>Scan In</h1>
-      </header>
 
       {loadError && <p className={styles.loadError}>{loadError}</p>}
 

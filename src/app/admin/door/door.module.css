@@ -4,10 +4,18 @@
    overlay is the exception to every other rule on the site: it is meant
    to be read at arm's length without focusing on it. */
 
+/*
+ * dvh throughout, never vh. On iOS Safari 100vh is the viewport with
+ * the toolbars HIDDEN, so a 100vh child is taller than what you can
+ * actually see and the page scrolls by exactly the toolbar height.
+ */
 .page {
   min-height: 100dvh;
   background: var(--ink);
   color: var(--bone);
+  /* No rubber-banding. A stray thumb must not be able to drag the
+     viewfinder off screen while someone is waiting to get in. */
+  overscroll-behavior: none;
 }
 
 .head {
@@ -120,10 +128,31 @@
 }
 
 /* ── Scan mode ────────────────────────────────────────────────── */
+/*
+ * EXACTLY the viewport, never more.
+ *
+ * This used to be min-height: 100dvh while the page ALSO rendered its
+ * "SCAN IN" header above it -- so the screen was one viewport plus an
+ * 88px header, and scrolled by exactly 88px. The header now renders on
+ * the picker only; the event name is already in the bar below, so
+ * nothing was lost. Height rather than min-height so no future addition
+ * can quietly push past the fold again, and overflow: hidden so if one
+ * ever does it is visibly clipped rather than silently scrollable.
+ *
+ * Safe-area insets are read into custom properties so the values can be
+ * substituted in a test -- Chromium cannot emulate env(safe-area-inset-*).
+ */
 .scanner {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* Clears the home indicator. The camera absorbs it, not the controls. */
+  padding-bottom: var(--safe-bottom);
+  box-sizing: border-box;
 }
 
 .bar {
@@ -131,8 +160,12 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
+  /* Clears the notch / Dynamic Island. Added to the padding rather than
+     the height so the controls keep their full 44px targets. */
+  padding-top: calc(10px + var(--safe-top));
   border-bottom: 1px solid var(--ink-4);
   background: var(--ink-2);
+  flex: 0 0 auto;
 }
 
 .back {
@@ -381,6 +414,7 @@
 }
 
 .staleWarn {
+  flex: 0 0 auto;
   padding: 10px 14px;
   background: rgba(217, 119, 66, 0.14);
   border-bottom: 1px solid var(--ember);
@@ -392,6 +426,7 @@
 
 /* Offline has to be unmissable - it changes what the results mean. */
 .offline {
+  flex: 0 0 auto;
   padding: 10px 14px;
   background: var(--live-red);
   color: #fff;
@@ -403,6 +438,7 @@
 }
 
 .queued {
+  flex: 0 0 auto;
   padding: 8px 14px;
   background: rgba(235, 228, 212, 0.06);
   font-family: var(--ff-mono);
@@ -413,10 +449,18 @@
 }
 
 /* ── Camera ───────────────────────────────────────────────────── */
+/*
+ * Takes whatever is left and nothing more.
+ *
+ * min-height was 60dvh, which is a floor rather than a share: with the
+ * bar, a stale warning and an offline banner all present it forced the
+ * column past the viewport. min-height: 0 lets flex actually shrink it,
+ * which is the whole point of giving it flex: 1.
+ */
 .camera {
   position: relative;
   flex: 1 1 auto;
-  min-height: 60dvh;
+  min-height: 0;
   background: #000;
   overflow: hidden;
 }
@@ -531,6 +575,11 @@
 /* ── Will-call ────────────────────────────────────────────────── */
 .lookup {
   flex: 1 1 auto;
+  min-height: 0;
+  /* Will-call is a list and genuinely may be longer than the screen, so
+     this one pane scrolls -- inside the fixed shell, never the page. */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 14px 16px 40px;
 }
 

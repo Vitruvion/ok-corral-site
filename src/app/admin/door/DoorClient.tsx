@@ -138,7 +138,6 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
   const [mode, setMode] = useState<Mode>('scan')
   const [result, setResult] = useState<Result | null>(null)
   const [online, setOnline] = useState(true)
-  const [queued, setQueued] = useState(0)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [decoder, setDecoder] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -177,10 +176,6 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
       window.removeEventListener('online', set)
       window.removeEventListener('offline', set)
     }
-  }, [])
-
-  const refreshQueueCount = useCallback(async () => {
-    setQueued((await listQueue()).length)
   }, [])
 
   // ── Local counts ──────────────────────────────────────────────
@@ -237,9 +232,11 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
         setFetchedAt(stored.fetched_at)
       }
       await fetchManifest(ev, Boolean(stored))
-      await refreshQueueCount()
+      // Populates the combined unsent count for the bar in scan mode,
+      // not just for the picker.
+      await refreshLocalCounts([ev.id])
     },
-    [fetchManifest, refreshQueueCount]
+    [fetchManifest, refreshLocalCounts]
   )
 
   useEffect(() => {
@@ -290,8 +287,8 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
     } catch {
       // Still offline, or the request died. Leave the queue alone.
     }
-    await refreshQueueCount()
-  }, [refreshQueueCount])
+    await refreshLocalCounts([ev.id])
+  }, [refreshLocalCounts])
 
   /**
    * Sends any door sales this device is holding.
@@ -470,9 +467,9 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
         }
       }
       await enqueueScan({ event_id: ev.id, code: ticket.code, scanned_at: at })
-      await refreshQueueCount()
+      await refreshLocalCounts([ev.id])
     },
-    [refreshQueueCount]
+    [refreshLocalCounts]
   )
 
   // ── Door sales ────────────────────────────────────────────────
@@ -698,6 +695,11 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
   // ── Screens ───────────────────────────────────────────────────
   if (!event) {
     return (
+      <>
+        <header className={styles.head}>
+          <span className={styles.kicker}>◆ Door</span>
+          <h1 className={styles.title}>Scan In</h1>
+        </header>
       <div className={styles.events}>
         {serverEvents.length === 0 && (
           <p className={styles.empty}>
@@ -736,11 +738,16 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
           )
         })}
       </div>
+      </>
     )
   }
 
   const age = fetchedAt ? Date.now() - fetchedAt : null
   const stale = age !== null && age > STALE_MS
+  /* Queued scans plus the people in queued door sales, for THIS event --
+     the same figure the picker shows as "+N unsent", so the two screens
+     never disagree. */
+  const unsent = pendingByEvent[event.id] ?? 0
 
   return (
     <div className={styles.scanner}>
@@ -787,14 +794,20 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
         </div>
       )}
 
+      {/* Scans AND sales, as one number. Whoever is on the door does not
+          care which kind is waiting, only that something has not reached
+          the server -- and they are in scan mode all night, so this is
+          the only place the count is actually seen. Same treatment as
+          the existing offline banner; nothing new competing with the
+          camera. */}
       {!online && (
         <div className={styles.offline}>
-          OFFLINE{queued > 0 ? ` · ${queued} scan${queued === 1 ? '' : 's'} waiting` : ''}
+          OFFLINE{unsent > 0 ? ` · ${unsent} waiting` : ''}
         </div>
       )}
-      {online && queued > 0 && (
+      {online && unsent > 0 && (
         <div className={styles.queued}>
-          Sending {queued} queued scan{queued === 1 ? '' : 's'}…
+          Sending {unsent} queued item{unsent === 1 ? '' : 's'}…
         </div>
       )}
 
