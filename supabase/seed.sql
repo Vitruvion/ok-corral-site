@@ -19,6 +19,28 @@
 set client_encoding to E'UTF8';
 
 -- -- Events ------------------------------------------------------
+-- ****************************************************************
+-- *  EVENTS ARE NO LONGER SEEDED.                                *
+-- *                                                              *
+-- *  The bar adds and edits shows at /admin/events, so Supabase   *
+-- *  is the authoritative copy. This block used to UPSERT every   *
+-- *  event on conflict (slug), which would silently throw away    *
+-- *  every date move, price, poster and description the owners    *
+-- *  had entered - and re-activate shows they had hidden.         *
+-- *                                                              *
+-- *  The block below therefore only runs when the events table is *
+-- *  completely empty - i.e. first-run bootstrapping of a fresh   *
+-- *  database. On any seeded database it is a no-op.              *
+-- *                                                              *
+-- *  To deliberately reset events to these defaults, empty the    *
+-- *  table first:  delete from events;                            *
+-- *  (ticket_orders references events, so that will fail while    *
+-- *  any tickets exist - which is the point.)                     *
+-- ****************************************************************
+do $events_bootstrap$
+begin
+if not exists (select 1 from events) then
+
 -- eventbrite_url: historical only. Eventbrite is retired and nothing
 --   reads this column; it is kept as a record of past shows. Tickets
 --   are sold through tickets_on_sale + ticket_price.
@@ -157,6 +179,10 @@ on conflict (slug) do update set
 -- Ensure no other event is marked featured (the partial unique index in
 -- migration 0004 enforces this, but this is belt-and-suspenders).
 update events set featured = false where slug <> E'dustin-gaspard-2026-06-25';
+
+end if;
+end
+$events_bootstrap$;
 
 -- -- Recurring Events --------------------------------------------
 delete from recurring_events;

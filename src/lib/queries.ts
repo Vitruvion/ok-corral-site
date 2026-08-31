@@ -2,7 +2,6 @@ import { getSupabase } from './supabase'
 import { fetchInstagramPosts } from './instagram'
 import { filterUpcomingEvents } from './events'
 import {
-  EVENTS as FALLBACK_EVENTS,
   RECURRING as FALLBACK_RECURRING,
   MERCH as FALLBACK_MERCH,
   DRINK_TABS,
@@ -70,7 +69,10 @@ export async function fetchEvents(): Promise<EventData[]> {
   // linger until a couple of requests come in. Acceptable: it self-heals on the
   // following request and the DB is never touched.
   const sb = getSupabase()
-  if (!sb) return filterUpcomingEvents(FALLBACK_EVENTS)
+  // No hardcoded fallback: events live only in Supabase now that they
+  // are edited at /admin/events. An empty list is honest; a months-old
+  // lineup presented as tonight's is not.
+  if (!sb) return []
   try {
     const { data, error } = await sb
       .from('events')
@@ -79,7 +81,7 @@ export async function fetchEvents(): Promise<EventData[]> {
       .order('sort_order', { ascending: true })
       .order('date', { ascending: true })
     if (error) throw error
-    if (!data || data.length === 0) return filterUpcomingEvents(FALLBACK_EVENTS)
+    if (!data || data.length === 0) return []
     return filterUpcomingEvents(data.map(row => ({
       id: row.slug ?? row.id,
       date: typeof row.date === 'string' ? row.date : new Date(row.date).toISOString().slice(0, 10),
@@ -118,7 +120,7 @@ export async function fetchEvents(): Promise<EventData[]> {
     })))
   } catch (e) {
     log('events', e)
-    return filterUpcomingEvents(FALLBACK_EVENTS)
+    return []
   }
 }
 

@@ -1,0 +1,497 @@
+/* /admin/events - phone first, same rules as /admin/menu.
+   Every control at least 44px tall, every input 16px or larger (below
+   that iOS Safari zooms the page on focus, which is miserable
+   one-handed). Desktop just gets a max-width. */
+
+.page {
+  min-height: 100dvh;
+  background: var(--ink);
+  color: var(--bone);
+  padding: 20px 16px 64px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ink-4);
+  margin-bottom: 20px;
+}
+
+.kicker {
+  display: block;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: var(--ff-display);
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.loadError {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  color: var(--live-red);
+  border: 1px solid var(--live-red);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.empty {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  color: var(--bone-mute);
+}
+
+.editor { display: flex; flex-direction: column; gap: 12px; }
+
+.sectionHead {
+  margin: 14px 0 2px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+/* ── Which show is featured ───────────────────────────────────── */
+.featuredLine {
+  padding: 10px 14px;
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink-2);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bone-mute);
+}
+
+.featuredLine strong { color: var(--bone); }
+
+.linkBtn {
+  margin-left: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ember);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Create ───────────────────────────────────────────────────── */
+.addBtn {
+  width: 100%;
+  min-height: 52px;
+  border: 1px dashed var(--ember);
+  border-radius: 5px;
+  background: rgba(217, 119, 66, 0.08);
+  color: var(--ember);
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.create {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--ember);
+  border-radius: 5px;
+  background: var(--ink-2);
+}
+
+.createActions { display: flex; gap: 10px; margin-top: 14px; }
+
+/*
+ * Everything optional hides behind this. Adding a show should be three
+ * fields and a save -- genre, tags and a description are a separate
+ * pass, not a wall to scroll past to reach the button.
+ */
+.moreToggle {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  background: none;
+  border: 1px solid var(--ink-4);
+  border-radius: 4px;
+  color: var(--bone-mute);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.moreFields { display: flex; flex-direction: column; margin-top: 12px; }
+
+/* ── Fields ───────────────────────────────────────────────────── */
+.field { display: block; margin-bottom: 12px; }
+
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+.req {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--ember);
+}
+
+/* The weekday the date implies. Shown, never asked for. */
+.derived {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--bone-dim);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 12px;
+  background: var(--ink);
+  border: 1px solid var(--ink-4);
+  border-radius: 4px;
+  color: var(--bone);
+  font-family: var(--ff-sans);
+  /* 16px minimum or iOS zooms the page on focus. */
+  font-size: 16px;
+}
+
+.textarea { min-height: auto; line-height: 1.5; resize: vertical; }
+
+.hint {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--bone-mute);
+}
+
+.error {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--live-red);
+  border-radius: 4px;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--live-red);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.saveBtn,
+.ghostBtn,
+.cancelBtn,
+.dangerBtn,
+.featuredOn {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 4px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.saveBtn {
+  background: rgba(22, 128, 60, 0.18);
+  border: 1px solid #16803c;
+  color: #6fd17a;
+}
+
+.saveBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.ghostBtn,
+.cancelBtn {
+  background: none;
+  border: 1px solid var(--ink-4);
+  color: var(--bone-mute);
+}
+
+.featuredOn {
+  background: rgba(217, 119, 66, 0.16);
+  border: 1px solid var(--ember);
+  color: var(--ember);
+}
+
+.dangerBtn {
+  background: none;
+  border: 1px solid var(--live-red);
+  color: var(--live-red);
+}
+
+/* ── Rows ─────────────────────────────────────────────────────── */
+.row {
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink-2);
+  overflow: hidden;
+}
+
+/* Hidden from the site, so it reads as set aside rather than broken. */
+.rowOff {
+  composes: row;
+  opacity: 0.62;
+}
+
+.rowHead {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  color: var(--bone);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rowMain { flex: 1 1 auto; min-width: 0; }
+
+.rowName {
+  display: block;
+  font-family: var(--ff-display);
+  font-size: 17px;
+  line-height: 1.15;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.rowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 4px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--bone-mute);
+}
+
+.tag,
+.tagFeatured {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.tag { color: var(--bone-mute); border: 1px solid var(--ink-4); }
+.tagFeatured { color: var(--ember); border: 1px solid var(--ember); }
+
+.sold {
+  flex: 0 0 auto;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ember);
+  white-space: nowrap;
+}
+
+.chevron {
+  flex: 0 0 auto;
+  width: 22px;
+  text-align: center;
+  font-family: var(--ff-mono);
+  font-size: 22px;
+  color: var(--ember);
+}
+
+.rowBody { padding: 4px 14px 16px; }
+
+/*
+ * The number that changes what every edit below it means. Prominent
+ * without being an alarm -- nothing is wrong, but a date change on this
+ * show is a different act than on an empty one.
+ */
+.soldBanner {
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--ember);
+  border-radius: 4px;
+  background: rgba(217, 119, 66, 0.12);
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pastToggle {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  background: none;
+  border: 1px solid var(--ink-4);
+  border-radius: 4px;
+  color: var(--bone-mute);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* ── Sales ────────────────────────────────────────────────────── */
+.sales {
+  margin: 16px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink);
+}
+
+.salesOn,
+.salesOff {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.salesState {
+  flex: 1 1 auto;
+  min-width: 140px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--bone-dim);
+}
+
+.salesForm {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ink-4);
+}
+
+/* ── Poster ───────────────────────────────────────────────────── */
+.poster {
+  margin: 16px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink);
+}
+
+.posterImage {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  margin: 8px 0 12px;
+  border: 1px solid var(--ink-4);
+  border-radius: 4px;
+}
+
+.posterActions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* The input itself is hidden; the label is the target. Visually hidden
+   rather than display:none so it stays focusable from a keyboard. */
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fileButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--ember);
+  border-radius: 4px;
+  background: rgba(217, 119, 66, 0.12);
+  color: var(--ember);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.fileButton[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
+
+.posterRemove {
+  min-height: 48px;
+  padding: 0 16px;
+  background: none;
+  border: 1px solid var(--ink-4);
+  border-radius: 4px;
+  color: var(--bone-mute);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Real progress, because a poster on bar wifi is not instant and a
+   button that just sits there gets tapped again. */
+.progressTrack {
+  height: 6px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--ink-4);
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: var(--ember);
+  transition: width 0.2s ease;
+}
+
+.posterNote {
+  margin-top: 8px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--bone-mute);
+}

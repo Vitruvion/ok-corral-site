@@ -141,84 +141,26 @@ export type EventData = {
   youtube_url?: string | null
 }
 
-export const EVENTS: EventData[] = [
-  {
-    id: 'ev-bad-dog-2026-06-13',
-    date: 'June 13 2026',
-    weekday: 'Saturday',
-    name: 'Bad Dog x The OK Corral',
-    support: 'Bad Dog · hot dog eating contest · $4 dogs all afternoon',
-    time: '6–11 PM',
-    doors: '',
-    genre: 'Collab Event',
-    tickets: 'Free',
-    tags: ['collab', 'food'],
-    description: "Sometimes it's just an OK day to have a Bad Dog. Joining forces with Bad Dog for a hot dog eating contest, $4 dogs all afternoon. The challenge: eat 3 hot dogs and drink 3 beers — fastest wins a cash prize and more. Contest kicks off at 7:30 PM, so sign up early.",
-    signup_url: 'https://partiful.com/e/IgNB4661lOfxsTgIF9Sh',
-    poster_url: '/assets/events/bad-dog-collab-v2.png',
-    related_links: [
-      {
-        name: 'Bad Dog',
-        url: 'https://www.instagram.com/bad_dog_redding/',
-        role: '@bad_dog_redding',
-        // First mention in description ("OK day to have a Bad Dog") is wordplay,
-        // not a literal brand reference — keep it plain. Second mention links.
-        skipFirstInDescription: true,
-      },
-    ],
-  },
-  {
-    id: 'ev-bar-jay-bar-2026-06-17',
-    date: 'June 17 2026',
-    weekday: 'Wednesday',
-    name: 'Bar Jay Bar',
-    support: 'Honky tonk · theatrical chaos · 21+',
-    time: '9:30 PM – late',
-    doors: '',
-    genre: 'Live Music',
-    tickets: 'Free · 21+',
-    tags: ['live music', '21+'],
-    description: "Bar Jay Bar live — high-energy honky tonk, theatrical chaos, and yes, the band climbs on each other mid-song. Free, 21+. Walk in.",
-    poster_url: '/assets/events/barjaybar.png',
-    related_links: [
-      {
-        name: 'Bar Jay Bar',
-        url: 'https://www.instagram.com/barjaybar/',
-        role: '@barjaybar',
-      },
-    ],
-  },
-  {
-    id: 'ev1',
-    date: 'June 25 2026',
-    weekday: 'Thursday',
-    name: 'Dustin Dale Gaspard',
-    support: 'w/ Tanner Bingaman · 8:30 PM',
-    time: '9 PM',
-    doors: '',
-    genre: 'Alternative Folk · Cajun',
-    tickets: '$15',
-    tags: ['live music', 'special event'],
-    description: "Singer-songwriter Dustin Dale Gaspard of Cow Island, Louisiana brings his alternative folk sound to The OK Corral for one unforgettable night. A Season 28 contestant on NBC's The Voice, Dustin is born and raised in deep Southern Louisiana — his music is steeped in Cajun soul, raw storytelling, and a voice that fills every corner of the room. Opening the night at 8:30 is Tanner Bingaman — a songwriter, banjoist, and poet from the hills of Appalachia. Featured on NPR, awarded Emerging Artist of the Year by the Susquehanna Folk Music Society, and currently touring with Dustin on a 10,000-mile run down the West Coast. Two artists, one stage, one hell of a Thursday night.",
-    poster_url: '/assets/posters/dustin-gaspard.jpg',
-    youtube_url: 'https://www.youtube.com/watch?v=_6SMeYNM8gM',
-    featured: true,
-    related_links: [
-      {
-        name: 'Tanner Bingaman',
-        url: 'https://tannerbingaman.com/',
-        image: '/assets/gallery/tanner-bingaman.jpg',
-        role: 'Support · 8:30 PM',
-      },
-      {
-        name: 'Dustin Dale Gaspard',
-        url: 'https://www.instagram.com/dustindalegaspard/',
-        image: '/assets/gallery/dustin-ig.jpg',
-        role: '@dustindalegaspard',
-      },
-    ],
-  },
-]
+/*
+ * EVENTS moved to Supabase (2026-08).
+ *
+ * Shows are added and edited at /admin/events, so the database is the
+ * only source of truth for them. The hardcoded array that used to live
+ * here was a live fallback - which meant a Supabase blip could quietly
+ * serve a months-old lineup as if it were tonight's. For a what's-on
+ * list, stale-and-confident is worse than absent, so fetchEvents() now
+ * returns an empty list rather than this, and the Events section simply
+ * shows nothing.
+ *
+ * What stays, because other files import it:
+ *   - EventData   : the display shape, imported by ClientShell, Hero,
+ *                   ReserveModal, events.ts, ics.ts, queries.ts
+ *   - RelatedLink : imported by Events.tsx
+ *
+ * The original rows live on in supabase/seed.sql, which now only
+ * inserts them into a completely empty table (first-run bootstrap).
+ */
+
 
 export type RecurringEvent = {
   /** Three-letter day badge, e.g. 'MON'. */

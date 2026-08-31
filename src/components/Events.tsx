@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, type ReactNode } from 'react'
-import { EVENTS, RECURRING, type EventData, type RelatedLink, type RecurringEvent } from '@/lib/data'
-import { filterUpcomingEvents } from '@/lib/events'
+import { RECURRING, type EventData, type RelatedLink, type RecurringEvent } from '@/lib/data'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
 import { downloadIcs } from '@/lib/ics'
 import { shareOrCopy } from '@/lib/share'
@@ -15,7 +14,10 @@ type Props = {
   recurring?: RecurringEvent[]
 }
 
-export default function Events({ events = filterUpcomingEvents(EVENTS), recurring = RECURRING }: Props = {}) {
+// Events always come from the caller now; there is no hardcoded
+// fallback lineup to fall back TO. An empty list renders an empty
+// section, which is honest, where a stale one would not be.
+export default function Events({ events = [], recurring = RECURRING }: Props = {}) {
   // Pick which row should be open on first render: an event explicitly
   // flagged featured, otherwise the soonest upcoming event so the list never
   // loads fully collapsed once a featured show ages out of the filtered set.
