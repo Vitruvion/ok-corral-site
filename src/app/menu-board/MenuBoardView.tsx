@@ -24,6 +24,23 @@ export const COLUMN_MAP: readonly (readonly string[])[] = [
 ]
 
 /**
+ * Categories that exist in Supabase and render on the homepage, but are
+ * deliberately kept OFF the TV board.
+ *
+ * This is a display exclusion, not a data change: the drinks stay active in
+ * the database and the homepage drinks section is untouched. TO PUT ONE BACK
+ * ON THE BOARD, delete it from this list — nothing else. Its position is
+ * still recorded in COLUMN_MAP above, so it returns to exactly where it was.
+ *
+ * The name is intentionally left in COLUMN_MAP rather than quietly deleted
+ * from it. Removing it from the map would NOT remove it from the board:
+ * unmapped categories fall through to the lightest column, so it would simply
+ * reappear somewhere else. The exclusion is therefore checked BEFORE that
+ * fallback — see buildColumns.
+ */
+export const BOARD_EXCLUDED_CATEGORIES: readonly string[] = ['Featured Beer']
+
+/**
  * Rough height weight for a category: its rows, plus a constant for the
  * header and its margin. Only used to pick the emptiest column, so an
  * approximation is fine.
@@ -45,14 +62,19 @@ export function buildColumns(
 ): string[][] {
   const columns: string[][] = Array.from({ length: COLUMN_MAP.length }, () => [])
   const mapped = new Set(COLUMN_MAP.flat())
+  const excluded = new Set(BOARD_EXCLUDED_CATEGORIES)
 
   COLUMN_MAP.forEach((categories, i) => {
     for (const category of categories) {
+      if (excluded.has(category)) continue
       if (drinks[category]?.length) columns[i].push(category)
     }
   })
 
   for (const category of ordered) {
+    // Checked BEFORE the lightest-column fallback: otherwise an excluded
+    // category would be treated as unmapped and placed back on the board.
+    if (excluded.has(category)) continue
     if (mapped.has(category)) continue
     const weights = columns.map(col =>
       col.reduce((total, c) => total + weigh(drinks, c), 0)

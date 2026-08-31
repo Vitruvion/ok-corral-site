@@ -225,12 +225,15 @@
   padding-top: 1.2vh;
 }
 
+/* Same display face and ember as a category header, at half the size (1.1vw
+   against the headers' 2.2vw) — it should read as this panel's label, not as
+   a fourth section heading. Smaller than the drink names above it, too. */
 .qrLead {
-  font-family: var(--ff-sans);
-  font-weight: 300;
-  font-size: 0.9vw;
-  line-height: 1.2;
-  color: var(--bone-mute);
+  font-family: var(--ff-display);
+  font-size: 1.1vw;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--ember);
   text-align: center;
 }
 
