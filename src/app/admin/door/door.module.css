@@ -184,7 +184,7 @@
 
 .barName {
   font-family: var(--ff-display);
-  font-size: 15px;
+  font-size: 17px;
   text-transform: uppercase;
   line-height: 1.15;
   overflow: hidden;
@@ -193,10 +193,10 @@
 }
 
 /*
- * One line, always. The larger buttons leave this cell narrower, and
- * left to wrap it ran to three lines and dragged the whole bar down --
- * height the camera should have. The tap target is the full-width line
- * either way, so an ellipsis costs nothing.
+ * Full text, no ellipsis. It was clamped to one line while the buttons
+ * shared this row and squeezed it to three wrapped lines; with them
+ * moved to the dock the bar has the width again, so the whole
+ * "Loaded 4 min ago - tap to refresh" reads out.
  */
 .age,
 .ageStale {
@@ -208,13 +208,10 @@
   border: none;
   text-align: left;
   font-family: var(--ff-mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   color: var(--bone-mute);
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .ageStale {
@@ -222,51 +219,53 @@
   color: var(--ember);
 }
 
-/*
- * The two primary controls of this screen, sized for a thumb rather
- * than a cursor: 56px, comfortably past the 44px minimum, because this
- * is used one-handed in the dark with a line waiting. The extra height
- * comes out of the camera, which flexes and has it to spare.
- *
- * Tracking is tightened slightly against the larger type so both labels
- * still fit beside the event name on a 375px phone.
- */
-.modeBtn {
+/* ── The dock ─────────────────────────────────────────────────────
+   The screen's two controls, pinned to the bottom.
+
+   A thumb rests at the bottom of a phone held one-handed, and unlike
+   the top bar the target lands in the same place every time -- it does
+   not move with the length of the event name.
+
+   The dock is a normal flex child, not position: fixed. That is what
+   keeps it clear of the home indicator (the scanner's padding-bottom
+   carries the safe-area inset) and what lets the camera absorb its
+   height without anything overlapping. */
+.dock {
   flex: 0 0 auto;
-  min-height: 56px;
-  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--ink-4);
+  background: var(--ink-2);
+}
+
+.dockLookUp,
+.dockSell {
+  min-height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  font-family: var(--ff-mono);
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dockLookUp {
   background: rgba(217, 119, 66, 0.12);
   border: 1px solid var(--ember);
-  border-radius: 5px;
   color: var(--ember);
-  font-family: var(--ff-mono);
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
 }
 
-/*
- * Sell sits beside the scan/lookup toggle, visually distinct from it so
- * the two are never confused mid-shift. Green rather than ember: it is
- * a different KIND of action, not another view of the same one.
- */
-.sellBtn {
-  flex: 0 0 auto;
-  min-height: 56px;
-  padding: 0 16px;
+.dockSell {
   background: rgba(22, 128, 60, 0.18);
   border: 1px solid #16803c;
-  border-radius: 5px;
   color: #6fd17a;
-  font-family: var(--ff-mono);
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
 }
 
-.sellBtn:disabled {
+.dockSell:disabled {
   color: var(--bone-mute);
   border-color: var(--ink-4);
   background: none;
@@ -695,8 +694,13 @@
 .tagVoid { color: var(--bone-mute); }
 
 /* ── Queue conflicts ──────────────────────────────────────────── */
+/* Capped: in a column that is exactly one viewport tall, an unbounded
+   list is an overflow waiting to happen. It scrolls itself instead. */
 .conflicts {
-  margin: 0 16px 20px;
+  flex: 0 0 auto;
+  max-height: 22dvh;
+  overflow-y: auto;
+  margin: 0 16px 12px;
   padding: 12px 14px;
   border: 1px solid var(--ink-4);
   border-radius: 5px;

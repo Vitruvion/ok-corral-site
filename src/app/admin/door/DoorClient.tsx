@@ -769,23 +769,6 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
                 : 'Not loaded · tap to refresh'}
           </button>
         </div>
-        {/* Two separate controls, neither of them a mode you can get
-            stuck in. Scanning is the common action and stays put;
-            "Sell" opens a sheet that closes itself. */}
-        <button
-          className={styles.modeBtn}
-          onClick={() => setMode(m => (m === 'scan' ? 'search' : 'scan'))}
-        >
-          {mode === 'scan' ? 'Look up' : 'Scan'}
-        </button>
-        <button
-          className={styles.sellBtn}
-          onClick={() => setSale({ qty: 1, busy: false })}
-          disabled={event.ticketPrice === null}
-          title={event.ticketPrice === null ? 'This event has no ticket price set' : undefined}
-        >
-          Sell
-        </button>
       </header>
 
       {stale && (
@@ -841,6 +824,35 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
           </ul>
         </div>
       )}
+
+      {/*
+        The two controls, pinned to the bottom.
+        A thumb rests there on a phone held one-handed, and unlike the
+        top bar the target lands in the same place every time -- it does
+        not shift with the length of the event name. Neither is a mode
+        that can be got stuck in: Look up toggles back, Sell opens a
+        sheet that closes itself.
+
+        It sits INSIDE the flex column rather than being position:fixed,
+        so the scanner's own padding-bottom keeps it clear of the home
+        indicator and the camera absorbs its height automatically.
+      */}
+      <nav className={styles.dock}>
+        <button
+          className={styles.dockLookUp}
+          onClick={() => setMode(m => (m === 'scan' ? 'search' : 'scan'))}
+        >
+          {mode === 'scan' ? 'Look up' : 'Scan'}
+        </button>
+        <button
+          className={styles.dockSell}
+          onClick={() => setSale({ qty: 1, busy: false })}
+          disabled={event.ticketPrice === null}
+          title={event.ticketPrice === null ? 'This event has no ticket price set' : undefined}
+        >
+          Sell
+        </button>
+      </nav>
 
       {sale && event.ticketPrice !== null && (
         <SaleSheet
