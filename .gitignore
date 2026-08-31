@@ -39,6 +39,9 @@ next-env.d.ts
 .vscode/
 .idea/
 
+# Claude Code local state (agent worktrees and their build caches)
+.claude/
+
 # verification artifacts
 .playwright-mcp/
 verify-*.png
