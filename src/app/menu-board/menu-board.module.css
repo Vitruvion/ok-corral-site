@@ -34,7 +34,16 @@
      (baseline-aligned, 0.6vw apart) is untouched. The header itself still
      spans the full board width, so the rule beneath it stays full width. */
   justify-content: center;
-  gap: 0.6vw;
+  /* One knob for the whole lockup. "The" and the gap are derived from it, so
+     resizing the wordmark can't drift their relationship — at any value the
+     prefix stays a third of the wordmark and the gap a fifth of it, exactly
+     as when this was 3vw / 1vw / 0.6vw. */
+  /* 10vw, not the 4.5vw first tried: 4.5 only reached 33% of board content
+     width. 10vw lands the wordmark at ~74% — inside the 70-80% target — with
+     the THE+wordmark lockup at ~87%, leaving real margin either side. Width
+     here comes purely from type size; see .markName. */
+  --mark-size: 10vw;
+  gap: calc(var(--mark-size) * 0.2);
   flex: 0 0 auto;
   border-bottom: 0.15vh solid var(--ink-4);
   padding-bottom: 1.4vh;
@@ -42,7 +51,7 @@
 
 .markThe {
   font-family: var(--ff-mono);
-  font-size: 1vw;
+  font-size: calc(var(--mark-size) / 3);
   letter-spacing: 0.42em;
   text-transform: uppercase;
   color: var(--ember);
@@ -50,8 +59,12 @@
 
 .markName {
   font-family: var(--ff-display);
-  font-size: 3vw;
+  font-size: var(--mark-size);
   line-height: 1;
+  /* No letter-spacing, deliberately. This is a heavy slab face whose
+     character comes from tight fitting; opening it up to fill width reads as
+     stretched. Width comes from the type size alone — never from tracking or
+     a horizontal transform. */
   text-transform: uppercase;
   color: var(--bone);
 }
