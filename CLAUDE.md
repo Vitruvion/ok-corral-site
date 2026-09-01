@@ -299,52 +299,30 @@ Real posts from `@okcorralsaloon` render on the homepage in InstagramStrip. Toke
 - All "Doors" references removed from public copy, but `doors` is still a real field: the ticket confirmation email and the door manifest both read it
 - Only one event may be `featured` at a time, enforced by a partial unique index. Featuring is a **swap**, done atomically by `set_featured_event(uuid)` — not a toggle, and not two UPDATEs
 
-### 6. Dustin Gaspard event poster system (deployed)
+### 6. Event posters + export pipeline (deployed)
 
-Standalone print + social poster route at `/poster/dustin-gaspard`. Vintage broadside design (paper grain, foxing, vignette, frame, corner diamonds) ported from a Claude Design HTML prototype.
+A show can get a standalone poster route: `/poster/<slug>` renders a 1080x1800
+print broadside, `/poster/<slug>/instagram` the same content reflowed to
+1080x1350 for a 4:5 post. `PosterScaler.tsx` / `InstagramPosterScaler.tsx`
+letterbox the fixed-pixel design into the viewport and re-fit on
+`visualViewport.resize` (see the iOS `100vh` note under Notes / gotchas).
+`/poster/dustin-gaspard` is the one built so far and the template to copy.
 
-**Two routes:**
-- `/poster/dustin-gaspard` — **1080×1800 print poster** (the canonical version)
-- `/poster/dustin-gaspard/instagram` — **1080×1350 Instagram 4:5 variant** (same content, reflowed: no footer ribbon, photo 360→290, Tanner credits 2 lines, address omitted)
+**`npm run export-poster`** turns those routes into print-ready artifacts.
+`scripts/export-poster.ts` spawns its own Next dev server on port 4099, waits
+for fonts and images, pins the poster to native 1:1 (overriding the scaler's
+transform), and writes two PNGs — a 2160x3600 print master and the 1080x1350
+IG image — to `public/poster-exports/<slug>/`, alongside a README explaining
+what to do with each. No PDF; the print shops take the PNG.
 
-**Visual letterboxing:** `PosterScaler.tsx` / `InstagramPosterScaler.tsx` apply `transform: scale(s)` to fit the fixed-pixel design into the viewport. **iOS-aware:**
-- `.stage { height: 100vh; height: 100svh; }` (100svh excludes the address bar on iOS Safari 15.4+)
-- Scale denominator = `Math.min(stage.clientHeight, window.innerHeight) - 48`
-- Re-fits on both `resize` AND `visualViewport.resize` (the latter fires on iOS when the address bar collapses)
+- The slug is hardcoded in constants at the top of the script (`OUT_DIR`,
+  `PRINT_ROUTE`, `IG_ROUTE`). A second poster means editing those three.
+- Deps are devDependencies: `playwright` + `tsx`. Chromium is a one-time
+  `npx playwright install chromium`.
+- **Windows:** `spawn('npx', ...)` needs `shell: true` for the `.cmd` shim to
+  resolve. Already wired in the script.
 
-**Critical layout gotchas:**
-- The bottom row's content height drives the row height; cells stretch to match. The venue column was made taller by the address; date frame stretches to match. Don't try to "fix" the asymmetry — the date frame is supposed to stretch.
-- "An evening of Cajun soul & Appalachian song" line uses 36px font (was 40px); reducing prevented "song" orphan wrap. Don't push back to 40.
-- Date frame internal contents are at the user's max scale-up that fits horizontally (DOW 21 / Month 32 / Day 72 / Year 17). Going further requires growing the frame or shrinking text below.
-- Footer ribbon (print only) uses 3-cell grid (`1fr auto 1fr`): IG handle left, "LIVE MUSIC" center, "21 & UP" right; leading/trailing ★ glyphs. IG handle uses an inline SVG of the camera-square logo in `#902C1A`.
-- The print poster's bottom region was tight against the footer divider; **the structural fix was growing the poster height** (1680 → 1750 → 1800) rather than shrinking content. Don't undo this.
-
-**Files:**
-- `src/app/poster/dustin-gaspard/page.tsx` + `PosterScaler.tsx` + `poster.module.css`
-- `src/app/poster/dustin-gaspard/instagram/page.tsx` + `InstagramPosterScaler.tsx` + `poster-instagram.module.css`
-- `public/assets/posters/dustin-gaspard.jpg` — hero photo
-- `public/assets/posters/dustin-gaspard-qr.svg` — share QR (cream plate, `#902C1A` modules)
-
-### 7. Poster export pipeline (deployed, devDep)
-
-Headless-browser export script generates print-ready PDF + raster PNGs from both poster routes.
-
-**Usage:** `npm run export-poster`
-
-**Files:**
-- `scripts/export-poster.ts` — Playwright-driven. Spawns its own Next dev server on port 4099, waits for fonts + images, pins poster to native 1:1 size (overrides PosterScaler's transform), exports to `/public/poster-exports/dustin-gaspard/`
-- `public/poster-exports/dustin-gaspard/README.md` — what each file is, when to use each
-- `public/poster-exports/dustin-gaspard/dustin-gaspard-print.pdf` — 1080×1800 print PDF
-- `public/poster-exports/dustin-gaspard/dustin-gaspard-print-2x.png` — 2160×3600 high-DPI raster
-- `public/poster-exports/dustin-gaspard/dustin-gaspard-instagram.png` — 1080×1350 IG 4:5
-
-**Deps:** `playwright` + `tsx` (devDependencies). Chromium installed via `npx playwright install chromium` once.
-
-**Windows quirk:** `spawn('npx', ...)` requires `shell: true` on Windows for the `.cmd` shim to resolve. Already wired in the script.
-
-Re-run anytime poster JSX/CSS changes to refresh the artifacts.
-
-### 8. Brand assets (committed)
+### 7. Brand assets (committed)
 
 Master brand files in `/brand/`:
 
@@ -355,36 +333,36 @@ Master brand files in `/brand/`:
 
 **Brand red is `#902C1A`** (oxblood, matches the printed flyer). The poster CSS uses `#8e2a18` for some legacy "tobacco red" elements — both are very close visually; treat them as effectively the same hue.
 
-### 9. Drinks (deployed)
+### 8. Drinks (deployed)
 
 - Hucklebeer featured beer card (replaced old Scorpion Shot)
 - Tabs: `Saloon Cocktails` / `Shots & Bombs` / `Featured Beer`
 - **Supabase is the only source.** The old `data.ts` fallback is gone — `fetchDrinks()` throws rather than quietly serving stale hardcoded prices to the bar
-- Edited at `/admin/menu`; a subset is excluded from the TV board (see §13)
+- Edited at `/admin/menu`; a subset is excluded from the TV board (see §12)
 - Mobile fix: Hucklebeer meta grid `white-space: normal; word-break: break-word; line-height: 1.15` at ≤760px
 
-### 10. Stripe + Resend (deployed, test mode)
+### 9. Stripe + Resend (deployed, test mode)
 
 - `/api/checkout` — Stripe Checkout Sessions with discriminated union `kind: 'gift_card' | 'merch'`. No explicit `apiVersion` on the client.
 - `/api/booking-notify` — Resend transactional email; no-ops gracefully when `RESEND_API_KEY` missing
 - `StripeReturnHandler.tsx` — reads `?stripe=success&kind=...&session_id=...` on mount, shows confirmation modal, clears cart for merch, strips params via `history.replaceState`
 - **Cart-clearing race fix in `src/lib/cart.tsx`:** `clear()` sets `clearedRef.current = true` + sync `localStorage.removeItem` + `setLines([])` + `setOpen(false)`. Hydration and persist effects honor `clearedRef`. `addItem` resets the ref.
 
-### 11. Mojibake defense (multi-layer)
+### 10. Mojibake defense (multi-layer)
 
 - **Layer 1 — source:** `scripts/ascii-seed.py` produces pure 7-bit ASCII `supabase/seed.sql` (idempotent).
 - **Layer 2 — runtime:** `unmojibake()` in `src/lib/queries.ts` self-heals UTF-8-as-Latin-1 round-trips via `TextDecoder` round-trip detection. Applied to all string fields read from Supabase.
 - **Layer 3 — write hygiene:** All seed/data file edits use BOM-less UTF-8.
 
-### 12. Other status
+### 11. Other status
 
 - Square POS already connected to IG account
-- Drinks, events and merch live in Supabase; drinks and events are edited in-app (§16)
+- Drinks, events and merch live in Supabase; drinks and events are edited in-app (§15)
 - GoDaddy DNS pointing to Vercel
 - `SHOW_MERCH = false` and `SHOW_GIFT_CARDS = false` — flip a single bool to launch each section
 - **Mobile pass flip + ladder rungs:** both formerly broken on iOS; fixed in commits `89dc740` (filter removed) + `7e490d9` (local fade-up keyframes). Don't reintroduce filter on `.card`.
 
-### 13. Menu board — the TV behind the bar (deployed)
+### 12. Menu board — the TV behind the bar (deployed)
 
 `/menu-board` renders drinks as a fixed 3-column board for a wall-mounted TV.
 No nav, no age gate, no login. ISR `revalidate = 300` plus a client refresh, so
@@ -398,7 +376,7 @@ a price edited at `/admin/menu` reaches the screen without anyone touching it.
   `console.warn`s; in dev it also draws a visible marker. It never throws — a
   guard that breaks the board is worse than the overflow it detects.
 
-### 14. Ticketing (deployed — Stripe test mode)
+### 13. Ticketing (deployed — Stripe test mode)
 
 Tickets are sold on our own site. Replaces Eventbrite entirely.
 
@@ -425,7 +403,7 @@ and the success URL is guessable.
   arrives via Stripe and door money via the bar's own till, so a combined figure
   would be one nobody can reconcile.
 
-### 15. Door scanner + door sales (deployed)
+### 14. Door scanner + door sales (deployed)
 
 `/admin/door` is one phone, one person, at the door. Installable to the home
 screen and **works with no signal** — the venue's connectivity is unreliable and
@@ -446,7 +424,7 @@ a scanner that needs the network is a scanner that fails at 8pm.
 - Sales queue in IndexedDB when offline and sync later. The scan screen shows the
   queued count and does not scroll (`dvh`, fixed bottom dock for LOOK UP / SELL).
 
-### 16. Admin editors (deployed)
+### 15. Admin editors (deployed)
 
 `/admin/menu` (drinks) and `/admin/events` (shows). Both are phone-first — the
 owners edit from behind the bar — with per-row saves rather than one big form.
@@ -511,7 +489,7 @@ C:\Projects\ok-corral-site\
 ├── public\
 │   ├── favicon.ico + icon.png + apple-icon.png + icon-192.png + icon-512.png
 │   ├── manifest.json
-│   ├── poster-exports\dustin-gaspard\  # PDF + 2x PNG + IG PNG + README
+│   ├── poster-exports\dustin-gaspard\  # 2x print PNG + IG PNG + README
 │   └── assets\
 │       ├── wallet\                   # OK monogram for .pkpass (icon + logo, 1x/2x/3x)
 │       ├── posters\                  # dustin-gaspard.jpg + dustin-gaspard-qr.svg
