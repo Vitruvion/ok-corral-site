@@ -60,6 +60,9 @@ export default function EventsEditor({ initial }: Props) {
   const [errors, setErrors] = useState<Record<string, string | null>>({})
   const [creating, setCreating] = useState(false)
   const [showPast, setShowPast] = useState(false)
+  /** Why a given row was hidden rather than deleted. Set at the moment
+      it happens, so the outcome is explained where it occurred. */
+  const [deactivated, setDeactivated] = useState<Record<string, string>>({})
 
   const refresh = useCallback(async () => {
     const res = await fetch('/api/admin/events', { cache: 'no-store' })
@@ -150,6 +153,21 @@ export default function EventsEditor({ initial }: Props) {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) return setRow(ev.id, 'error', data.error || 'Could not remove the show.')
+
+      // A show with orders is hidden, not deleted. Say so here rather
+      // than leaving the row sitting there looking like a failed delete.
+      if (data.mode === 'deactivated') {
+        const n = data.orders ?? 0
+        setDeactivated(prev => ({
+          ...prev,
+          // The verb has to agree too: "1 ticket order point at it" is
+          // what happens when only the noun is pluralised.
+          [ev.id]: 'Hidden from the site rather than deleted, because ' +
+            (n === 1 ? '1 ticket order points' : n + ' ticket orders point') +
+            ' at it. Those tickets still have to scan at the door, which ' +
+            'needs this show to exist. Restore it any time.',
+        }))
+      }
       await refresh()
     },
     [refresh]
@@ -210,6 +228,8 @@ export default function EventsEditor({ initial }: Props) {
           onRemove={() => remove(ev)}
           onRefresh={refresh}
           setRow={setRow}
+          deactivatedNote={deactivated[ev.id] ?? null}
+          onRestore={() => patch(ev.id, { active: true })}
         />
       ))}
 
@@ -232,6 +252,8 @@ export default function EventsEditor({ initial }: Props) {
                 onRemove={() => remove(ev)}
                 onRefresh={refresh}
                 setRow={setRow}
+                deactivatedNote={deactivated[ev.id] ?? null}
+                onRestore={() => patch(ev.id, { active: true })}
               />
             ))}
         </>
@@ -389,6 +411,7 @@ function Field({
 // ── One event ─────────────────────────────────────────────────────
 function EventRow({
   ev, open, state, error, onToggle, onPatch, onFeature, onRemove, onRefresh, setRow,
+  deactivatedNote, onRestore,
 }: {
   ev: AdminEvent
   open: boolean
@@ -400,6 +423,8 @@ function EventRow({
   onRemove: () => void
   onRefresh: () => Promise<void>
   setRow: (id: string, s: RowState, err?: string | null) => void
+  deactivatedNote: string | null
+  onRestore: () => void
 }) {
   const [d, setD] = useState({
     name: ev.name, date: ev.date, time: ev.time,
@@ -416,12 +441,25 @@ function EventRow({
 
   return (
     <section className={ev.active ? styles.row : styles.rowOff}>
+      {/* An inactive show is off the site entirely. Without a strip
+          saying so it looks like any other row -- and after a soft
+          delete it reads as though the delete simply failed. */}
+      {!ev.active && (
+        <div className={styles.hiddenStrip}>
+          <span className={styles.hiddenLabel}>Hidden from the site</span>
+          <button className={styles.restoreBtn} onClick={onRestore}>
+            Restore
+          </button>
+        </div>
+      )}
+
+      {deactivatedNote && <p className={styles.hiddenWhy}>{deactivatedNote}</p>}
+
       <button className={styles.rowHead} onClick={onToggle} aria-expanded={open}>
         <span className={styles.rowMain}>
           <span className={styles.rowName}>{ev.name}</span>
           <span className={styles.rowMeta}>
             {prettyDate(ev.date)} · {ev.time}
-            {!ev.active && <span className={styles.tag}>hidden</span>}
             {ev.featured && <span className={styles.tagFeatured}>featured</span>}
           </span>
         </span>

@@ -276,10 +276,74 @@
   overflow: hidden;
 }
 
-/* Hidden from the site, so it reads as set aside rather than broken. */
+/*
+ * Hidden from the site.
+ *
+ * Opacity alone was not enough -- a slightly dimmer card among a dozen
+ * dark cards is not a signal, and after a soft delete the row read as
+ * though the delete had failed. So the card is desaturated AND carries
+ * a labelled strip along its top edge. It should be impossible to
+ * mistake for a live show at a glance.
+ */
 .rowOff {
   composes: row;
-  opacity: 0.62;
+  border-color: var(--ink-3, #1c1917);
+  background: transparent;
+}
+
+.rowOff .rowName,
+.rowOff .rowMeta,
+.rowOff .sold {
+  color: var(--bone-mute);
+}
+
+.hiddenStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(235, 228, 212, 0.06);
+  border-bottom: 1px solid var(--ink-4);
+}
+
+.hiddenLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+/* One tap, without having to open the row to find it. */
+.restoreBtn {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  background: rgba(217, 119, 66, 0.12);
+  border: 1px solid var(--ember);
+  border-radius: 4px;
+  color: var(--ember);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/*
+ * Why this row is still here after a delete. Shown at the moment it
+ * happens, because "the delete did nothing" is the natural reading
+ * otherwise.
+ */
+.hiddenWhy {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ink-4);
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bone-dim);
 }
 
 .rowHead {
