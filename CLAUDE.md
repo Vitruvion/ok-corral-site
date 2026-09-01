@@ -1,11 +1,14 @@
 # OK Corral Website — Handoff Doc
 
-**Last updated:** May 19, 2026
+**Last updated:** August 31, 2026
 **Owner:** Brady Olsen (25% co-owner, SIX SHOT LLC)
 **Live site:** https://www.okcorralsaloon.com
 **Repo:** https://github.com/Vitruvion/ok-corral-site
 **Project root:** `C:\Projects\ok-corral-site`
-**Latest deployed commit:** `4844192` (feat(poster): print-ready export pipeline + Instagram 4:5 variant)
+
+> There is deliberately no "latest deployed commit" line. It was wrong for
+> months, and a wrong line is worse than no line — `git log -1` is always
+> right. `main` auto-deploys to Vercel, so HEAD on `main` *is* production.
 
 ---
 
@@ -73,6 +76,78 @@ checked.
   any flag that was moved (`featured`, `active`) shown back where it started.
 - If the read disagrees with what was expected, say so plainly rather than
   describing the intent.
+
+---
+
+## Routes
+
+**Public**
+
+| Route | What it is |
+|---|---|
+| `/` | The site. Hero, events, drinks, gallery, Instagram strip. ISR, `revalidate = 60`. |
+| `/card` | Corral Rewards — Apple Wallet pass landing + enrollment. |
+| `/tickets/success` | Where Stripe returns a ticket buyer. Shows no codes; those go by email. |
+| `/menu-board` | The TV behind the bar. Fixed 3-column board, self-refreshing every 5 min. No chrome, no login. |
+| `/poster/dustin-gaspard` + `/instagram` | Print and 4:5 social poster for one show. |
+
+**Admin** — all behind the `corral_admin` cookie via `src/middleware.ts`. One
+shared passcode, 30-day cookie, no per-user accounts. Every route re-checks the
+cookie itself rather than trusting middleware.
+
+| Route | What it is |
+|---|---|
+| `/admin/login` | The only ungated admin route. |
+| `/admin/menu` | Drinks editor. Phone-first, per-row saves. |
+| `/admin/events` | Events editor: create/edit/delete shows, ticket sales, poster upload. |
+| `/admin/tickets` | Sales + will-call sheet. Revenue split by payment method, never summed. |
+| `/admin/door` | The door scanner. Installable PWA, works offline. |
+
+**API** — `/api/checkout` (merch + gift cards), `/api/tickets/checkout`,
+`/api/tickets/availability`, `/api/stripe/webhook` (merch AND tickets, branched
+on `metadata.kind`), `/api/order-summary`, `/api/card/pass`,
+`/api/booking-notify`, `/api/cron/refresh-instagram-token`, and under
+`/api/admin/`: `drinks`, `events`, `events/sales`, `events/poster`,
+`door/manifest`, `door/scan`, `door/sale`, `login`, `logout`.
+
+---
+
+## Source of truth — read before editing seed.sql
+
+**Drinks and events are authoritative in Supabase.** They are edited at
+`/admin/menu` and `/admin/events`, so re-running `supabase/seed.sql` used to
+silently throw away every price, date and description the owners had entered.
+
+Both blocks are now wrapped in `if not exists (select 1 from <table>)`, so on
+any seeded database they are a **no-op**. They exist only to bootstrap a
+completely empty database. To deliberately reset, empty the table first.
+
+Anything else in seed.sql (recurring events, merch, settings) is still
+authoritative in the file.
+
+**Eventbrite is retired.** Nothing reads `events.eventbrite_url` and nothing
+renders from it. The column and its values are kept as a record of past shows —
+do not drop it, and do not add a UI that writes to it. A show either sells
+tickets directly (`tickets_on_sale` + `ticket_price`) or shows the
+"Free Admission" badge. There is deliberately no third path.
+
+---
+
+## Migrations
+
+Brady applies these by hand in the Supabase SQL Editor, immediately, the moment
+he is handed the file. **Never infer whether one has been applied — ask.**
+
+`0001_init` · `0002_events_eventbrite_url` · `0003_orders_and_gift_cards` ·
+`0004_events_featured_and_related` · `0005_events_youtube_url` ·
+`0006_events_signup_url` · `0007_merch_orders_fulfillment` ·
+`0008_recurring_events_poster` · `0009_drinks_editor` · `0010_drinks_cigars` ·
+`0011_cigars_price_order` · `0012_ticketing` · `0013_tickets_seq` ·
+`0014_door_sales` · `0015_events_editor`
+
+Run every new migration through `python scripts/ascii-seed.py <file>` before
+handing it over — the Supabase SQL editor has mojibake'd UTF-8 in the past, so
+migration and seed files are kept pure 7-bit ASCII.
 
 ---
 
@@ -219,9 +294,10 @@ Real posts from `@okcorralsaloon` render on the homepage in InstagramStrip. Toke
 - YouTube embed in expanded right column. Uses `padding-bottom: 45%` aspect trick (NOT `aspect-ratio` — iframe intrinsic 300×150 size breaks it)
 - "Add to Calendar" → `downloadIcs(ev)` from `src/lib/ics.ts` (RFC 5545: CRLF, VTIMEZONE for America/Los_Angeles, line folding past 75 chars)
 - "Share" → `shareOrCopy()` from `src/lib/share.ts`
-- "Get Tickets" button when `eventbrite_url` set, "Free Admission" badge otherwise
-- All "Doors" references removed across copy
-- **Headline event — Dustin Dale Gaspard, June 25 2026:** Cajun alt-folk singer-songwriter, $15 tickets, w/ Tanner Bingaman 8:30 PM, eventbrite_url + youtube_url + poster_url set, featured=true.
+- "Get Tickets" when `tickets_on_sale` is true, "Free Admission" badge otherwise. Eventbrite is gone — see **Source of truth** above
+- Past shows drop off the homepage by **venue calendar day** (America/Los_Angeles), not by UTC and not by the browser's clock. `filterUpcomingEvents` / `isEventUpcoming` / `venueTodayParts` in `src/lib/events.ts` are the only correct comparison — import them, never re-derive one
+- All "Doors" references removed from public copy, but `doors` is still a real field: the ticket confirmation email and the door manifest both read it
+- Only one event may be `featured` at a time, enforced by a partial unique index. Featuring is a **swap**, done atomically by `set_featured_event(uuid)` — not a toggle, and not two UPDATEs
 
 ### 6. Dustin Gaspard event poster system (deployed)
 
@@ -283,7 +359,8 @@ Master brand files in `/brand/`:
 
 - Hucklebeer featured beer card (replaced old Scorpion Shot)
 - Tabs: `Saloon Cocktails` / `Shots & Bombs` / `Featured Beer`
-- `fetchDrinks()` has schema-mismatch guard — falls back to `data.ts` when Supabase categories don't overlap with `DRINK_TABS`
+- **Supabase is the only source.** The old `data.ts` fallback is gone — `fetchDrinks()` throws rather than quietly serving stale hardcoded prices to the bar
+- Edited at `/admin/menu`; a subset is excluded from the TV board (see §13)
 - Mobile fix: Hucklebeer meta grid `white-space: normal; word-break: break-word; line-height: 1.15` at ≤760px
 
 ### 10. Stripe + Resend (deployed, test mode)
@@ -302,10 +379,94 @@ Master brand files in `/brand/`:
 ### 12. Other status
 
 - Square POS already connected to IG account
-- Drinks/events/merch CMS in Supabase
+- Drinks, events and merch live in Supabase; drinks and events are edited in-app (§16)
 - GoDaddy DNS pointing to Vercel
 - `SHOW_MERCH = false` and `SHOW_GIFT_CARDS = false` — flip a single bool to launch each section
 - **Mobile pass flip + ladder rungs:** both formerly broken on iOS; fixed in commits `89dc740` (filter removed) + `7e490d9` (local fade-up keyframes). Don't reintroduce filter on `.card`.
+
+### 13. Menu board — the TV behind the bar (deployed)
+
+`/menu-board` renders drinks as a fixed 3-column board for a wall-mounted TV.
+No nav, no age gate, no login. ISR `revalidate = 300` plus a client refresh, so
+a price edited at `/admin/menu` reaches the screen without anyone touching it.
+
+- `BOARD_EXCLUDED_CATEGORIES` keeps some categories off the board. `/admin/menu`
+  labels those rows **website only** by importing that same list — do not
+  re-declare it.
+- The board cannot scroll, so extra drinks silently fall off the bottom. An
+  overflow guard measures each column against the content floor after mount and
+  `console.warn`s; in dev it also draws a visible marker. It never throws — a
+  guard that breaks the board is worse than the overflow it detects.
+
+### 14. Ticketing (deployed — Stripe test mode)
+
+Tickets are sold on our own site. Replaces Eventbrite entirely.
+
+**Buy → pay → issue.** `/api/tickets/checkout` creates a Stripe Checkout Session
+against a pending `ticket_orders` row; `/api/stripe/webhook` (branching on
+`metadata.kind`) marks it paid and issues the `tickets`; Resend sends the codes.
+`/tickets/success` deliberately shows no codes — email is the delivery channel,
+and the success URL is guessable.
+
+- **Issuance is safe under concurrent webhook delivery, and the guarantee is in
+  the schema, not in JS.** Stripe retries and can deliver the same event twice
+  in parallel; a count-then-insert cannot be made safe by checking first.
+  `tickets` has `UNIQUE (order_id, seq)` and issuance is `ON CONFLICT DO
+  NOTHING`, so a second delivery inserts nothing. Claiming an order is a single
+  conditional UPDATE (`where status = 'pending'`), so exactly one delivery wins.
+  Keep both properties if you touch `src/lib/tickets/complete.ts`.
+- **`src/lib/tickets/occupancy.ts` is THE count.** Sold = non-void `tickets`
+  rows + `sum(quantity)` of paid door orders. Six call sites read it. Do not
+  count tickets anywhere else.
+- Ticket codes are signed with `TICKET_SIGNING_SECRET`. **Server-only — it must
+  never appear in a `NEXT_PUBLIC_` var or reach a browser.**
+- `/admin/tickets` is the sales + will-call sheet. Online, door-card and
+  door-cash revenue are shown **separately and never summed** — card money
+  arrives via Stripe and door money via the bar's own till, so a combined figure
+  would be one nobody can reconcile.
+
+### 15. Door scanner + door sales (deployed)
+
+`/admin/door` is one phone, one person, at the door. Installable to the home
+screen and **works with no signal** — the venue's connectivity is unreliable and
+a scanner that needs the network is a scanner that fails at 8pm.
+
+- Downloads a manifest of the night's tickets up front, then validates scans
+  locally against it. Four outcomes: valid, already used, wrong event, unknown.
+- The service worker is scoped to `/admin/door` **only** — it must never cache
+  the public site. Scope is a URL-prefix string compare, so the default scope
+  `/admin/door/` would exclude the page itself; the route sends
+  `Service-Worker-Allowed: /admin/door` to widen it. If you change the SW,
+  re-verify offline behaviour **on the installed PWA on a device**, not in a
+  harness. The iOS install tags live on this route, not in the root layout.
+- **Door sales are a tally, not a payment.** Cash, or Square rung at the bar, is
+  recorded so the headcount is right. This code processes no money — no Stripe
+  Terminal, no Square API. Do not add one. A door sale issues no ticket, no QR
+  and no email, so nothing in the UI should call a door row's quantity "tickets".
+- Sales queue in IndexedDB when offline and sync later. The scan screen shows the
+  queued count and does not scroll (`dvh`, fixed bottom dock for LOOK UP / SELL).
+
+### 16. Admin editors (deployed)
+
+`/admin/menu` (drinks) and `/admin/events` (shows). Both are phone-first — the
+owners edit from behind the bar — with per-row saves rather than one big form.
+
+- Auth is the existing `corral_admin` cookie and middleware: one shared passcode,
+  no per-user accounts. Every admin route re-checks the cookie itself.
+- **Creating a show is three fields** (name, date, time); everything else hides
+  behind "More details". Adding a show on a phone should take three taps and a save.
+- Poster upload resizes **in the browser** before upload (quality ladder, then
+  edge ladder, until under 500KB). The endpoint re-checks the cookie, sniffs
+  magic bytes rather than trusting the client's content-type, and caps size
+  server-side. Bucket: `event-posters`, public read.
+- Changes with money or attendance consequences — moving a date, changing price,
+  cutting capacity below tickets sold, stopping sales — return **409 until
+  explicitly confirmed**, decided server-side so the client cannot skip it.
+- **Delete is a soft delete only when it has to be:** any issued ticket or any
+  paid order → deactivate (row kept, poster kept). Otherwise the event is really
+  deleted, along with its pending orders and its poster in Storage.
+- Featuring a past show is allowed but does nothing visible; the UI says so
+  rather than blocking it.
 
 ---
 
@@ -318,9 +479,12 @@ Master brand files in `/brand/`:
 - `SUPABASE_SERVICE_ROLE_KEY` (length 219, starts `eyJh`)
 - `STRIPE_SECRET_KEY` (test mode)
 - `STRIPE_WEBHOOK_SECRET` (test mode)
-- `RESEND_API_KEY`
+- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`
 - `INSTAGRAM_USER_ID` = `17841403015684418`
 - `CRON_SECRET`
+- `NEXT_PUBLIC_SITE_URL` — used to build absolute URLs in emails and Stripe redirects
+- `ADMIN_PASSCODE` + `ADMIN_COOKIE_SECRET` — the shared admin login and the cookie signing key
+- `TICKET_SIGNING_SECRET` — signs ticket codes. **Server-only. Never prefix it `NEXT_PUBLIC_`, never send it to a browser.** Rotating it invalidates every issued ticket
 - Apple Wallet vars: `APPLE_TEAM_ID`, `APPLE_PASS_TYPE_ID`, `APPLE_PASS_CERT_PEM_B64`, `APPLE_PASS_KEY_PEM_B64`, `APPLE_PASS_KEY_PASSPHRASE`, `APPLE_WWDR_PEM_B64`
 - **NOT** `INSTAGRAM_ACCESS_TOKEN` (removed — comes from Supabase now)
 
@@ -343,12 +507,7 @@ C:\Projects\ok-corral-site\
 │   └── export-poster.ts              # Playwright PDF/PNG export pipeline
 ├── supabase\
 │   ├── seed.sql                      # pure 7-bit ASCII
-│   └── migrations\
-│       ├── 0001_init.sql
-│       ├── 0002_events_eventbrite_url.sql
-│       ├── 0003_orders_and_gift_cards.sql
-│       ├── 0004_events_featured_and_related.sql
-│       └── 0005_events_youtube_url.sql
+│   └── migrations\                  # 0001..0015, listed under Migrations above
 ├── public\
 │   ├── favicon.ico + icon.png + apple-icon.png + icon-192.png + icon-512.png
 │   ├── manifest.json
@@ -358,9 +517,20 @@ C:\Projects\ok-corral-site\
 │       ├── posters\                  # dustin-gaspard.jpg + dustin-gaspard-qr.svg
 │       └── gallery\                  # site photos + event poster thumbs
 └── src\
+    ├── middleware.ts                 # gates /admin/* on the corral_admin cookie
     ├── app\
     │   ├── layout.tsx                # Metadata: icons + manifest wiring
     │   ├── page.tsx                  # home → fetchAll() → ClientShell
+    │   ├── menu-board\               # the TV board + its overflow guard
+    │   ├── tickets\success\          # Stripe return page (shows no codes)
+    │   ├── admin\
+    │   │   ├── login\
+    │   │   ├── menu\                 # drinks editor
+    │   │   ├── events\               # events editor + poster upload
+    │   │   ├── tickets\              # sales + will-call sheet
+    │   │   └── door\                 # scanner PWA: page + DoorClient + DoorPwa
+    │   │       ├── manifest.webmanifest\route.ts
+    │   │       └── sw.js\route.ts    # Service-Worker-Allowed: /admin/door
     │   ├── card\                     # Corral Rewards landing + .pkpass API
     │   │   ├── page.tsx
     │   │   ├── CardClient.tsx        # CartProvider wrapper + inner content
@@ -371,7 +541,10 @@ C:\Projects\ok-corral-site\
     │   │       └── page.tsx + InstagramPosterScaler.tsx + poster-instagram.module.css  (1080×1350)
     │   └── api\
     │       ├── card\pass\route.ts    # wallet pass generator (force-dynamic, nodejs runtime)
-    │       ├── checkout\route.ts     # Stripe Checkout Sessions
+    │       ├── checkout\route.ts     # Stripe Checkout Sessions (merch + gift cards)
+    │       ├── stripe\webhook\       # merch AND tickets, branched on metadata.kind
+    │       ├── tickets\              # checkout + availability
+    │       ├── admin\                # drinks, events(+sales,poster), door(manifest,scan,sale), login, logout
     │       ├── booking-notify\route.ts
     │       └── cron\refresh-instagram-token\route.ts
     ├── components\
@@ -386,7 +559,10 @@ C:\Projects\ok-corral-site\
     │   ├── ImageOrPlaceholder.tsx
     │   └── ClientShell.tsx
     └── lib\
-        ├── data.ts                   # BRAND, feature flags (SHOW_MERCH, SHOW_GIFT_CARDS)
+        ├── data.ts                   # BRAND, feature flags. NO drinks/events arrays — those live in Supabase
+        ├── events.ts                 # venue-day rules: filterUpcomingEvents, isEventUpcoming
+        ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
+        ├── admin\                    # drinks-repo, events-repo, session/guard, image-resize, rate-limit
         ├── supabase.ts               # getSupabase() + getServiceSupabase()
         ├── queries.ts                # fetchAll() + unmojibake()
         ├── instagram.ts              # token reader + media fetcher
@@ -409,8 +585,8 @@ All generated passes hardcode `points: 0`. Phase 2 wires Square Loyalty API → 
 ### 📡 Phase 3 Corral Rewards: pass push updates
 `webServiceURL` is placeholder. Phase 3 implements Apple's push API so passes update when points change without re-downloading.
 
-### 🍻 Stripe live mode
-Currently test mode. Activate when bank account is ready. Once live, enable `SHOW_MERCH = true` after product photos and build the Stripe webhook for order status. Flip `SHOW_GIFT_CARDS = true` to relaunch gift cards.
+### 🍻 Stripe live mode — now the blocker for selling tickets
+Still test mode, which means **no real ticket can be sold yet**. Activate when the bank account is ready, then re-verify the webhook against the live endpoint secret before announcing a show. Once live: flip `SHOW_MERCH = true` after product photos, `SHOW_GIFT_CARDS = true` to relaunch gift cards.
 
 ### 🖼️ Apple Wallet strip image
 `pass-signer.ts` is wired to pick up `strip.png` + `@2x` + `@3x` from `public/assets/wallet/` if they exist. Currently no strip — would meaningfully upgrade the pass visual but needs designer attention (a bad strip looks cheap, a good one is the highest-leverage pass upgrade Wallet allows).
@@ -435,6 +611,8 @@ Vestaboard-style animated marquee hero with flip cards. Branch `hero-vestaboard`
 
 ## Notes / gotchas
 
+- **A Next route module may only export handlers and a fixed config set.** Exporting a plain const or helper from `route.ts` fails the build with a confusing type error. Hit three times — put shared values in a `lib/` module instead.
+- **CSS Modules resolve a missing class to `undefined`.** Deleting a rule that JSX still references does NOT fail the build; the element just loses its styling silently. After removing CSS, grep for every class the file used to define.
 - **PowerShell quirks:** No `-SkipHttpErrorCheck` flag (5.1 limitation). Long sessions sometimes suppress earlier `Write-Output` lines and only echo the last one — use `Out-File` + `notepad` for reliable multi-line output. `System.Net.Http` assembly drops out of session after time/restarts; reload with `Add-Type -AssemblyName System.Net.Http`.
 - **Git line endings:** Windows shows `LF will be replaced by CRLF` warnings on commit — harmless.
 - **Next.js ISR cache:** Hard refresh (Ctrl+Shift+R) + DevTools "Disable cache" needed to bust caching during dev. `Remove-Item -Recurse -Force .next` for full purge.
