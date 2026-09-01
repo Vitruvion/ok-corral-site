@@ -218,38 +218,103 @@ export async function setFeatured(id: string | null): Promise<void> {
 }
 
 // ── Deletion ──────────────────────────────────────────────────────
-export type DeleteOutcome = { mode: 'removed' } | { mode: 'deactivated'; orders: number }
+export type DeleteOutcome =
+  | {
+      mode: 'removed'
+      /** Abandoned checkouts deleted along with the show. */
+      pendingOrdersRemoved: number
+      /** The Storage key that was cleaned up, if there was a poster. */
+      posterRemoved: string | null
+    }
+  | {
+      mode: 'deactivated'
+      /** Ticket rows issued for this show. */
+      tickets: number
+      /** Orders that are not abandoned checkouts: paid or refunded. */
+      settledOrders: number
+    }
 
 /**
- * Removes a show, or retires it if anyone has bought a ticket.
+ * Removes a show, or retires it if anyone actually holds something.
  *
- * A show with orders is NEVER hard-deleted: ticket_orders references
- * events with ON DELETE RESTRICT, so the database would refuse anyway,
- * but more importantly someone holding a ticket needs that row to
- * exist for the door to scan them in. It goes inactive instead, which
- * removes it from the site while keeping every order intact.
+ * WHAT COUNTS AS "SOMEONE HOLDS SOMETHING" -- and it is NOT simply the
+ * existence of a ticket_orders row. An abandoned checkout leaves a
+ * 'pending' order with no tickets: the Stripe session expires in 30
+ * minutes and nobody paid. Treating that as a reason to keep the show
+ * forever means a stranger who changed their mind can make a show
+ * undeletable, which is what happened.
+ *
+ * So the test is:
+ *   any row in `tickets`      -> a code exists that may be scanned
+ *   any order NOT 'pending'   -> money moved: 'paid', or 'refunded',
+ *                                which is financial history worth
+ *                                keeping even though the money came back
+ * Either of those means soft delete. Otherwise the show goes, and the
+ * abandoned pending orders go with it -- they have to, because
+ * ticket_orders references events ON DELETE RESTRICT.
  */
 export async function deleteEvent(id: string): Promise<DeleteOutcome> {
   const sb = serviceClient()
 
-  const { count, error: cErr } = await sb
-    .from('ticket_orders')
+  const { count: ticketCount, error: tErr } = await sb
+    .from('tickets')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', id)
+  if (tErr) throw new Error(`ticket check failed: ${tErr.message}`)
 
-  if (cErr) throw new Error(`order check failed: ${cErr.message}`)
+  const { data: orders, error: oErr } = await sb
+    .from('ticket_orders')
+    .select('id, status')
+    .eq('event_id', id)
+  if (oErr) throw new Error(`order check failed: ${oErr.message}`)
 
-  const orders = count ?? 0
-  if (orders > 0) {
+  const tickets = ticketCount ?? 0
+  const settled = (orders ?? []).filter(o => o.status !== 'pending')
+  const pending = (orders ?? []).filter(o => o.status === 'pending')
+
+  // ── Soft delete ──────────────────────────────────────────────
+  if (tickets > 0 || settled.length > 0) {
     const { error } = await sb
       .from('events')
       .update({ active: false, featured: false, tickets_on_sale: false })
       .eq('id', id)
     if (error) throw new Error(`deactivate failed: ${error.message}`)
-    return { mode: 'deactivated', orders }
+    // The poster is deliberately left in Storage: the show can be
+    // restored, and it would come back with a broken image.
+    return { mode: 'deactivated', tickets, settledOrders: settled.length }
+  }
+
+  // ── Hard delete ──────────────────────────────────────────────
+  // Read the poster before the row goes; afterwards there is nothing
+  // left to read the URL from.
+  const { data: event, error: evErr } = await sb
+    .from('events')
+    .select('poster_url')
+    .eq('id', id)
+    .maybeSingle()
+  if (evErr) throw new Error(`event lookup failed: ${evErr.message}`)
+  const posterKey = storageKeyFromUrl(event?.poster_url)
+
+  if (pending.length > 0) {
+    const { error } = await sb
+      .from('ticket_orders')
+      .delete()
+      .eq('event_id', id)
+      .eq('status', 'pending')
+    if (error) throw new Error(`could not clear abandoned checkouts: ${error.message}`)
   }
 
   const { error } = await sb.from('events').delete().eq('id', id)
   if (error) throw new Error(`delete failed: ${error.message}`)
-  return { mode: 'removed' }
+
+  // Only now, and only on a hard delete. An orphaned object costs a few
+  // KB; deleting one the row still points at would show a broken image.
+  let posterRemoved: string | null = null
+  if (posterKey) {
+    const { error: rmErr } = await sb.storage.from(POSTER_BUCKET).remove([posterKey])
+    if (rmErr) console.warn('[events-repo] could not remove poster', posterKey, rmErr.message)
+    else posterRemoved = posterKey
+  }
+
+  return { mode: 'removed', pendingOrdersRemoved: pending.length, posterRemoved }
 }

@@ -139,10 +139,14 @@ export default function EventsEditor({ initial }: Props) {
 
   const remove = useCallback(
     async (ev: AdminEvent) => {
+      // ev.sold counts admissions, which is what decides the outcome for
+      // the common case. An abandoned checkout contributes nothing to it,
+      // so a show with only one of those reads as an outright delete --
+      // which is now what happens.
       const warning =
         ev.sold > 0
           ? ev.name + ' has ' + ev.sold + ' admitted. It will be hidden from the site, not deleted, so those tickets still scan. Continue?'
-          : 'Delete ' + ev.name + '? This cannot be undone.'
+          : 'Delete ' + ev.name + '? The poster is deleted too. This cannot be undone.'
       if (!window.confirm(warning)) return
 
       setRow(ev.id, 'saving')
@@ -154,18 +158,24 @@ export default function EventsEditor({ initial }: Props) {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) return setRow(ev.id, 'error', data.error || 'Could not remove the show.')
 
-      // A show with orders is hidden, not deleted. Say so here rather
-      // than leaving the row sitting there looking like a failed delete.
+      // A show someone actually holds something for is hidden, not
+      // deleted. Say so here rather than leaving the row sitting there
+      // looking like a failed delete -- and name the REAL reason, which
+      // is issued tickets or settled money, not the mere existence of an
+      // order row.
       if (data.mode === 'deactivated') {
-        const n = data.orders ?? 0
+        const tickets = data.tickets ?? 0
+        const settled = data.settledOrders ?? 0
+        const reason =
+          tickets > 0
+            ? (tickets === 1 ? '1 ticket has' : tickets + ' tickets have') + ' been issued for it'
+            : (settled === 1 ? '1 paid order points' : settled + ' paid orders point') + ' at it'
         setDeactivated(prev => ({
           ...prev,
-          // The verb has to agree too: "1 ticket order point at it" is
-          // what happens when only the noun is pluralised.
-          [ev.id]: 'Hidden from the site rather than deleted, because ' +
-            (n === 1 ? '1 ticket order points' : n + ' ticket orders point') +
-            ' at it. Those tickets still have to scan at the door, which ' +
-            'needs this show to exist. Restore it any time.',
+          [ev.id]:
+            'Hidden from the site rather than deleted, because ' + reason +
+            '. Those still have to scan at the door, which needs this show to ' +
+            'exist. Restore it any time.',
         }))
       }
       await refresh()
