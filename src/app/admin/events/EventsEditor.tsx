@@ -26,6 +26,16 @@ type RowState = 'idle' | 'saving' | 'saved' | 'error'
 
 const money = (n: number) => '$' + n.toFixed(n % 1 === 0 ? 0 : 2)
 
+/**
+ * Shown wherever a past show is or could be featured.
+ *
+ * Not a warning and not a block -- featuring a past show is harmless,
+ * it simply has no effect, because the homepage filters past shows out
+ * before it renders. Without this line the badge moves, the site looks
+ * unchanged, and someone goes looking for a bug that is not there.
+ */
+const PAST_FEATURE_NOTE = 'Past shows don’t appear on the site, so featuring this has no effect.'
+
 /** Mirrors events-repo.weekdayFor so the form can show it as you type. */
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 function weekdayFor(date: string): string {
@@ -174,6 +184,11 @@ export default function EventsEditor({ initial }: Props) {
             <button className={styles.linkBtn} onClick={() => feature(null)}>
               clear
             </button>
+            {/* The homepage drops past shows before it renders, so a
+                featured past show does nothing at all. Said here rather
+                than left to be discovered by checking the site and
+                finding no change. */}
+            {!featured.upcoming && <span className={styles.noEffect}>{PAST_FEATURE_NOTE}</span>}
           </>
         ) : (
           <>No featured show. One show can be featured; it auto-opens on the site.</>
@@ -504,6 +519,11 @@ function EventRow({
               {ev.sold > 0 ? 'Retire' : 'Delete'}
             </button>
           </div>
+
+          {/* Same fact, next to the control it applies to. Shown on any
+              past show, so it heads the mistake off rather than only
+              explaining it afterwards. */}
+          {!ev.upcoming && <p className={styles.noEffectRow}>{PAST_FEATURE_NOTE}</p>}
 
           {error && <div className={styles.error}>{error}</div>}
         </div>

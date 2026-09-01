@@ -1,6 +1,11 @@
 import { getServiceSupabase } from '@/lib/supabase'
 import { countAdmissions } from '@/lib/tickets/occupancy'
-import { eventDateParts, venueTodayParts } from '@/lib/events'
+// The SAME upcoming/past rule the homepage uses. Imported rather than
+// reimplemented so the editor and filterUpcomingEvents can never
+// disagree about what counts as past -- both resolve it against the
+// venue's calendar day in America/Los_Angeles.
+import { isEventUpcoming, venueTodayParts } from '@/lib/events'
+import type { EventData } from '@/lib/data'
 
 /**
  * Admin-side events access.
@@ -108,12 +113,9 @@ export async function listEvents(): Promise<AdminEvent[]> {
 
   return rows.map((r: any) => {
     const date = asDate(r.date)
-    const parts = eventDateParts(date)
-    const upcoming =
-      !parts ||
-      parts.y > today.y ||
-      (parts.y === today.y && parts.m > today.m) ||
-      (parts.y === today.y && parts.m === today.m && parts.d >= today.d)
+    // isEventUpcoming reads nothing but `date`; `today` is hoisted out
+    // of the loop so every row is judged against one instant.
+    const upcoming = isEventUpcoming({ date } as EventData, today)
 
     return {
       ...r,

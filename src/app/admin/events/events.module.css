@@ -81,6 +81,26 @@
 
 .featuredLine strong { color: var(--bone); }
 
+/*
+ * "This has no effect." Informational, so it is muted rather than
+ * amber or red -- featuring a past show is not a mistake to correct,
+ * it just does nothing, and an alarm would send someone looking for a
+ * problem instead of away from one.
+ */
+.noEffect {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--bone-mute);
+}
+
+.noEffectRow {
+  composes: noEffect;
+  margin: 10px 0 0;
+  font-family: var(--ff-sans);
+}
+
 .linkBtn {
   margin-left: 8px;
   padding: 0;
