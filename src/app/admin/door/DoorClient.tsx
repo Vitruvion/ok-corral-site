@@ -145,6 +145,18 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
   /** Door-sale sheet. Null when closed -- it is never a mode. */
   const [sale, setSale] = useState<{ qty: number; busy: boolean } | null>(null)
   const [pendingSales, setPendingSales] = useState<Record<string, number>>({})
+  /**
+   * Sign-out, which is a small state machine rather than a button.
+   *
+   * Null is closed. 'asking' is the first confirmation. 'warned' is the
+   * SECOND one, reached only when this device is holding scans or sales
+   * the server has not seen -- signing out abandons the screen those
+   * are flushed from, so it must take two deliberate taps to get there.
+   */
+  const [signOut, setSignOut] = useState<
+    | null
+    | { stage: 'asking' | 'warned' | 'busy'; scans: number; salePeople: number }
+  >(null)
   const [, forceTick] = useState(0)
 
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -424,6 +436,87 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
     // which is every poll.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event])
+
+  // ── Signing out ───────────────────────────────────────────────
+  /**
+   * Counts what would be stranded, read at the moment of asking.
+   *
+   * Not taken from pendingByEvent: that map is refreshed on a 30s poll
+   * and covers the picker's own list, and this question is worth the
+   * freshest possible answer over every event, including one that has
+   * since come off sale. Two IndexedDB reads, once, on a tap.
+   */
+  const openSignOut = useCallback(async () => {
+    let scans = 0
+    let salePeople = 0
+    try {
+      const [queued, sales] = await Promise.all([listQueue(), listSales()])
+      scans = queued.length
+      salePeople = sales.reduce((n, s) => n + s.quantity, 0)
+    } catch (err) {
+      // A failed read must not silently claim there is nothing queued.
+      // Fall back to the picker's figures, which are never higher than
+      // the truth by construction.
+      console.warn('[door] could not read the queue before sign-out', err)
+      scans = Object.values(pendingByEvent).reduce((a, b) => a + b, 0)
+      salePeople = Object.values(pendingSales).reduce((a, b) => a + b, 0)
+    }
+    setSignOut({ stage: 'asking', scans, salePeople })
+  }, [pendingByEvent, pendingSales])
+
+  const confirmSignOut = useCallback(async () => {
+    setSignOut(cur => (cur ? { ...cur, stage: 'busy' } : cur))
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+    } catch (err) {
+      // Offline, most likely. The cookie is httpOnly so it cannot be
+      // cleared from here; say so rather than pretending it worked.
+      console.warn('[door] sign-out request failed', err)
+      setSignOut(null)
+      alert('Could not sign out -- no connection. Try again once you have signal.')
+      return
+    }
+    /*
+     * DROP THE CACHED SHELL, or signing out does not appear to work.
+     *
+     * The service worker precaches the /admin/door DOCUMENT and serves
+     * navigations cache-first, which is the whole reason the app opens
+     * with no signal. It also means that after the cookie is cleared,
+     * going back to /admin/door is answered from the cache with the
+     * signed-in shell -- a 200 and a scanner, when the server would
+     * have redirected to the login page. Caught in verification: the
+     * cookie really was gone and the page really did still load.
+     *
+     * Only the document entry is removed. The JS, CSS and icons stay
+     * cached, so the install is not gutted and the next person to sign
+     * in re-caches the document on their first online navigation
+     * (staleWhileRevalidate writes it back on the way through).
+     */
+    try {
+      const names = await caches.keys()
+      await Promise.all(
+        names
+          .filter(n => n.startsWith('okcorral-door'))
+          .map(async n => {
+            const cache = await caches.open(n)
+            await cache.delete('/admin/door')
+          })
+      )
+    } catch (err) {
+      // Best effort. A browser without the Cache API still signs out.
+      console.warn('[door] could not drop the cached shell', err)
+    }
+
+    /*
+     * A full page load, not router.replace: this page is controlled by
+     * a service worker and the next screen must come from the server
+     * with the cookie gone. Nothing in IndexedDB is deleted -- not the
+     * queue, not the manifests. Signing back in flushes the queue;
+     * throwing away a night's takings to tidy up would be a far worse
+     * failure than leaving them on the device.
+     */
+    window.location.href = '/admin/login'
+  }, [])
 
   // ── Admitting a ticket ────────────────────────────────────────
   const admit = useCallback(
@@ -738,6 +831,24 @@ export default function DoorClient({ events }: { events: DoorEvent[] }) {
           )
         })}
       </div>
+
+      {/*
+        Sign-out lives HERE and only here -- on the picker, where whoever
+        is on the door is between tasks. It is deliberately not in scan
+        mode: that screen is a camera, a result and two buttons with a
+        line waiting, and a control that ends the shift has no business
+        on it.
+
+        Small, quiet, and below everything else. Nothing about it should
+        compete with an event card.
+      */}
+      <SignOutFooter
+        state={signOut}
+        onOpen={openSignOut}
+        onCancel={() => setSignOut(null)}
+        onAdvance={() => setSignOut(cur => (cur ? { ...cur, stage: 'warned' } : cur))}
+        onConfirm={confirmSignOut}
+      />
       </>
     )
   }
@@ -1130,4 +1241,98 @@ function Lookup({
       ))}
     </div>
   )
+}
+
+/**
+ * The sign-out control on the event picker.
+ *
+ * DELIBERATE BY CONSTRUCTION, not by warning text:
+ *
+ *  - It is small and low-contrast, at the bottom, well clear of the
+ *    event cards. Nothing about it invites a tap.
+ *  - Opening it does not sign anyone out. It asks.
+ *  - CANCEL SITS WHERE THE BUTTON WAS. A second stray tap in the same
+ *    spot as the first one therefore cancels; the destructive action is
+ *    somewhere the thumb has to travel to. This is the actual defence
+ *    against a fumbled double-tap -- the copy is not.
+ *  - Unsent work adds a whole second confirmation, with the count in
+ *    it, because signing out abandons the only screen that flushes it.
+ */
+function SignOutFooter({
+  state,
+  onOpen,
+  onCancel,
+  onAdvance,
+  onConfirm,
+}: {
+  state: null | { stage: 'asking' | 'warned' | 'busy'; scans: number; salePeople: number }
+  onOpen: () => void
+  onCancel: () => void
+  onAdvance: () => void
+  onConfirm: () => void
+}) {
+  if (!state) {
+    return (
+      <footer className={styles.signOutBar}>
+        <button className={styles.signOutLink} onClick={onOpen}>
+          Sign out
+        </button>
+      </footer>
+    )
+  }
+
+  const unsent = state.scans + state.salePeople
+  const busy = state.stage === 'busy'
+
+  // The first screen when nothing is queued, and the second one when
+  // something is: either way this is the last tap before it happens.
+  const final = state.stage === 'warned' || (state.stage !== 'busy' && unsent === 0) || busy
+
+  return (
+    <footer className={styles.signOutBar}>
+      <div className={styles.signOutPanel} role="group" aria-label="Sign out">
+        {unsent > 0 && (
+          <p className={styles.signOutWarn}>
+            {describeUnsent(state.scans, state.salePeople)} still {unsent === 1 ? 'waits' : 'wait'}{' '}
+            to reach the server. Signing out now strands {unsent === 1 ? 'it' : 'them'} on this
+            phone.
+          </p>
+        )}
+
+        <p className={styles.signOutAsk}>
+          {state.stage === 'warned'
+            ? 'Sign out anyway?'
+            : unsent > 0
+              ? 'Sign out with unsent work?'
+              : 'Sign out of this device?'}
+        </p>
+
+        {/* Cancel first, and in the footer position the sign-out button
+            occupied -- so the careless second tap is the harmless one. */}
+        <button className={styles.signOutCancel} onClick={onCancel} disabled={busy}>
+          Stay signed in
+        </button>
+
+        <button
+          className={styles.signOutGo}
+          onClick={final ? onConfirm : onAdvance}
+          disabled={busy}
+        >
+          {busy ? 'Signing out…' : final ? 'Sign out' : 'Continue'}
+        </button>
+      </div>
+    </footer>
+  )
+}
+
+/** "3 scans and 2 door sales", with the halves dropped when they are zero. */
+function describeUnsent(scans: number, salePeople: number): string {
+  const parts: string[] = []
+  if (scans > 0) parts.push(`${scans} scan${scans === 1 ? '' : 's'}`)
+  // People, not rows: a sale of four is four admissions, and that is the
+  // number that matters to whoever is counting the room.
+  if (salePeople > 0) {
+    parts.push(`${salePeople} door admission${salePeople === 1 ? '' : 's'}`)
+  }
+  return parts.join(' and ')
 }

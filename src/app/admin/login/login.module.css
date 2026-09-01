@@ -91,3 +91,38 @@
   color: var(--live-red);
   margin: 2px 0 0;
 }
+
+/* ── Already-signed-in escape hatch ───────────────────────────────
+   Only rendered when the request already carried a valid cookie. The
+   case it exists for is a DOOR session: every other admin URL redirects
+   that role back to /admin/door, so this is the one screen it can reach
+   to get out. Quiet -- the form above is still the point of the page. */
+
+.signedIn {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--ink-4);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--bone-mute);
+  text-align: center;
+}
+
+.signedInBtn {
+  padding: 8px 4px;
+  min-height: 32px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ember);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--ember-deep);
+  cursor: pointer;
+}
+
+.signedInBtn:disabled {
+  opacity: 0.6;
+}
