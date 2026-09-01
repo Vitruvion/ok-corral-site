@@ -23,6 +23,59 @@ For normal feature work, bug fixes, content updates, brand assets, and data chan
 
 ---
 
+## WORKFLOW: NEVER MUTATE PRODUCTION DATA WHILE TESTING
+
+There is one Supabase database and it is production. Nothing done to *verify*
+work may change data Brady created. These three rules exist because each was
+broken, with a real consequence:
+
+### 1. No side-effectful probes. Ask instead.
+
+Never call a function to find out whether it exists, and never infer whether a
+migration has been applied — Brady applies migrations by hand the moment he is
+given them, and his database state is not observable from here.
+
+- **What went wrong:** probing for migration 0015 by invoking
+  `set_featured_event(null)` and reading the error. That function's entire
+  purpose is to clear the featured flag. Detecting applied state is not worth a
+  write.
+- **Instead:** ask, or say the applied state can't be determined. If a probe is
+  genuinely unavoidable it must be provably inert — e.g. re-featuring the row
+  that is already featured, which is a no-op by construction.
+
+### 2. Scope every test selector to rows the test created.
+
+Never `.first()` on a list that also contains real rows, in Playwright or in a
+query.
+
+- **What went wrong:** `page.locator('button', { hasText: /^Restore$/ }).first()`
+  clicked Brady's "The ducks" instead of the scratch row, because it sorted
+  ahead of the 2099-dated test data. It silently un-hid an event he had
+  deliberately hidden.
+- **Instead:** filter to the row by name or id first, then act inside it:
+  `page.locator('section').filter({ hasText: 'ZZ Test' }).locator('button', ...)`.
+- **Better still:** use PGlite or the in-memory PostgREST fake unless the test
+  specifically needs production. Most don't.
+
+### 3. Verify cleanup with an independent read, and paste its output.
+
+A `console.log` inside the script that performed the mutation is **not**
+verification. It can run before the write commits, report what the code
+intended rather than what landed, or sit downstream of an error that was never
+checked.
+
+- **What went wrong:** twice reported "featured restored to Dustin Dale
+  Gaspard" when a scratch row still held the flag. Brady found it by querying
+  directly and fixed it by hand, both times. In Brady's words: *"I restored it"
+  is not evidence.*
+- **Instead:** check the `error` field on every mutation, then run a SEPARATE
+  query afterwards and paste its result — zero rows for anything created, and
+  any flag that was moved (`featured`, `active`) shown back where it started.
+- If the read disagrees with what was expected, say so plainly rather than
+  describing the intent.
+
+---
+
 ## Stack
 
 - **Frontend:** Next.js 14.2.x App Router, TypeScript, CSS Modules
