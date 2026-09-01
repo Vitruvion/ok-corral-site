@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { canAccess, isRole } from '@/lib/admin/roles'
 import styles from './login.module.css'
 
 export default function LoginForm() {
@@ -25,11 +26,21 @@ export default function LoginForm() {
       const json = await res.json().catch(() => null)
       if (!res.ok) throw new Error(json?.error || 'Could not sign in.')
 
+      // Where this role lands with no ?next=: the dashboard for an
+      // admin, the scanner for the door. The server decides it, because
+      // the server is what knows which passcode was typed.
+      const home: string = typeof json?.home === 'string' ? json.home : '/admin'
+
       // Only ever follow a same-site path, so ?next= can't be used to bounce
-      // someone off to another host after a successful login.
+      // someone off to another host after a successful login -- and only one
+      // this role may actually open, so a door person who tapped a link to
+      // the menu editor lands on the scanner rather than on a redirect.
       const next = params.get('next')
-      const dest = next && next.startsWith('/') && !next.startsWith('//') ? next : '/admin/menu'
-      router.replace(dest)
+      const sameSite = !!next && next.startsWith('/') && !next.startsWith('//')
+      const allowed =
+        sameSite && isRole(json?.role) && canAccess(json.role, next!.split('?')[0])
+
+      router.replace(allowed ? next! : home)
       router.refresh()
     } catch (err: any) {
       setError(err?.message || 'Could not sign in.')

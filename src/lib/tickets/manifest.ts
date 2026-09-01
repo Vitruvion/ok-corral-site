@@ -79,13 +79,35 @@ export type EventTickets = {
  * silently offering no way to buy -- which, with Eventbrite retired, is
  * a failure nobody would notice until a customer said so.
  */
+export type UnconfiguredReason = 'no price set' | 'sales not switched on'
+
 export type UnconfiguredEvent = {
   id: string
   name: string
   date: string
   dateLabel: string
   /** Why it is not ticket-ready, in the words the sheet shows. */
-  reason: 'no price set' | 'sales not switched on'
+  reason: UnconfiguredReason
+}
+
+/**
+ * Why an event is not ticket-ready, or null when it is.
+ *
+ * THE one definition of ready: sales switched on AND a price set. The
+ * /admin dashboard counts these and this sheet lists them, and the two
+ * numbers have to be the same number -- a dashboard saying "2 shows
+ * need attention" over a page listing three is worse than no dashboard.
+ * So both call this, and neither re-derives it.
+ */
+export function unconfiguredReason(e: {
+  tickets_on_sale?: boolean | null
+  ticket_price?: number | null
+}): UnconfiguredReason | null {
+  if (e.tickets_on_sale !== true) return 'sales not switched on'
+  // On-sale-but-priceless is the genuinely odd one: someone meant to
+  // sell and stopped half way. Called out differently for that reason.
+  if (e.ticket_price === null || e.ticket_price === undefined) return 'no price set'
+  return null
 }
 
 /**
@@ -111,16 +133,14 @@ export async function loadUnconfiguredEvents(): Promise<UnconfiguredEvent[]> {
       date: typeof e.date === 'string' ? e.date : new Date(e.date).toISOString().slice(0, 10),
     }))
     .filter(e => isEventUpcoming({ date: e.date } as any))
-    .filter(e => e.tickets_on_sale !== true || e.ticket_price === null || e.ticket_price === undefined)
     .map(e => ({
       id: e.id,
       name: e.name,
       date: e.date,
       dateLabel: displayEventDate(e.date, e.weekday ?? null),
-      // On-sale-but-priceless is the genuinely odd one: someone meant to
-      // sell and stopped half way. Called out differently for that reason.
-      reason: e.tickets_on_sale === true ? 'no price set' : 'sales not switched on',
+      reason: unconfiguredReason(e),
     }))
+    .filter((e): e is UnconfiguredEvent => e.reason !== null)
 }
 
 export async function loadTicketEvents(): Promise<EventTickets[]> {

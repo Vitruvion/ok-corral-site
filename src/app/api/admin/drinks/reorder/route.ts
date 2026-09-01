@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { isAuthorized } from '@/lib/admin/guard'
+import { isAdmin } from '@/lib/admin/guard'
 import { serviceClient } from '@/lib/admin/drinks-repo'
 
 export const runtime = 'nodejs'
@@ -21,7 +21,7 @@ const Body = z.object({
 })
 
 export async function POST(req: Request) {
-  if (!isAuthorized()) {
+  if (!isAdmin()) {
     return NextResponse.json({ error: 'Not authorized.' }, { status: 401 })
   }
 

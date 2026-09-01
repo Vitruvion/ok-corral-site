@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { isAuthorized } from '@/lib/admin/guard'
+import { isAdmin } from '@/lib/admin/guard'
 import { getEvent, serviceClient } from '@/lib/admin/events-repo'
 
 /**
@@ -56,7 +56,7 @@ const Off = z.object({
 const Body = z.discriminatedUnion('on', [On, Off])
 
 export async function POST(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let parsed
   try {

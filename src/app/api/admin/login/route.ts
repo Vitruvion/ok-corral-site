@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { ADMIN_COOKIE, cookieOptions, issueSession, passcodeMatches } from '@/lib/admin/session'
+import { ADMIN_COOKIE, cookieOptions, issueSession, passcodeRole } from '@/lib/admin/session'
+import { homeFor } from '@/lib/admin/roles'
 import { checkRateLimit, clearRateLimit, clientIp } from '@/lib/admin/rate-limit'
 
 export const runtime = 'nodejs'
@@ -28,6 +29,9 @@ const FAILED_LOGIN_DELAY_MS = 500
 const penalize = () => new Promise(resolve => setTimeout(resolve, FAILED_LOGIN_DELAY_MS))
 
 export async function POST(req: Request) {
+  // DOOR_PASSCODE is deliberately NOT required. It is the optional half:
+  // with it unset there is simply no door role, which is the state this
+  // site ran in until now and must keep working in.
   if (!process.env.ADMIN_PASSCODE || !process.env.ADMIN_COOKIE_SECRET) {
     console.error('[admin/login] ADMIN_PASSCODE or ADMIN_COOKIE_SECRET not set')
     return NextResponse.json({ error: 'Admin login is not configured.' }, { status: 503 })
@@ -53,7 +57,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Enter the passcode.' }, { status: 400 })
   }
 
-  if (!passcodeMatches(parsed.data.passcode)) {
+  // The passcode picks the role; the person signing in does not. One
+  // field, two possible answers, and the error below says nothing about
+  // which of the two was closer.
+  const role = passcodeRole(parsed.data.passcode)
+  if (!role) {
     // Deliberately vague, it costs an attempt, and it costs wall-clock time.
     await penalize()
     return NextResponse.json(
@@ -63,7 +71,10 @@ export async function POST(req: Request) {
   }
 
   clearRateLimit(ip)
-  const res = NextResponse.json({ ok: true })
-  res.cookies.set(ADMIN_COOKIE, issueSession(), cookieOptions)
+  // `home` is where this role belongs: the dashboard for an admin, the
+  // scanner for the door. The client may still honour a ?next= it was
+  // sent with, but only one this role is allowed to open.
+  const res = NextResponse.json({ ok: true, role, home: homeFor(role) })
+  res.cookies.set(ADMIN_COOKIE, issueSession(role), cookieOptions)
   return res
 }

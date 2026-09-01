@@ -225,11 +225,12 @@ export default function TicketsView({
  * Deliberately NO toggle. Switching sales on is a decision made with a
  * price in hand, not a tap from a list.
  */
+/** The /admin dashboard deep-links to #not-selling, so that id is load-bearing. */
 function NotSelling({ events }: { events: UnconfiguredEvent[] }) {
   if (events.length === 0) return null
 
   return (
-    <section className={styles.notSelling}>
+    <section id="not-selling" className={styles.notSelling}>
       <h2 className={styles.notSellingHead}>Not selling tickets</h2>
       <ul className={styles.notSellingList}>
         {events.map(e => (

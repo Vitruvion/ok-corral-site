@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { isAuthorized } from '@/lib/admin/guard'
+import { requireAdminPage } from '@/lib/admin/guard'
 import {
   loadTicketEvents,
   loadUnconfiguredEvents,
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
 export default async function AdminTicketsPage() {
   // Middleware already gates this; the page checks too, same reasoning
   // as the API routes.
-  if (!isAuthorized()) redirect('/admin/login?next=/admin/tickets')
+  requireAdminPage('/admin/tickets')
 
   let events: EventTickets[] = []
   let unconfigured: UnconfiguredEvent[] = []

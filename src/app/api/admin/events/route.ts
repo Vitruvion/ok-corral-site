@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { isAuthorized } from '@/lib/admin/guard'
+import { isAdmin } from '@/lib/admin/guard'
 import {
   deleteEvent,
   getEvent,
@@ -105,7 +105,7 @@ const UpdateBody = CreateBody.partial().extend({
 })
 
 export async function GET() {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
   try {
     return NextResponse.json(
       { events: await listEvents() },
@@ -117,7 +117,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let parsed
   try {
@@ -187,7 +187,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let parsed
   try {
@@ -290,7 +290,7 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let id: string
   try {
@@ -318,7 +318,7 @@ export async function DELETE(req: Request) {
  * move together. Passing id: null clears it.
  */
 export async function PUT(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let id: string | null
   try {

@@ -1,0 +1,210 @@
+/* /admin — the dashboard. Phone first, same shape as /admin/menu and
+   /admin/events: 720px cap on desktop, 16px gutters, nothing below a
+   44px tap target.
+
+   THE WHOLE THING FITS ON ONE PHONE SCREEN. At 390x844 (iPhone 12/13/14)
+   the header, the summary, four cards and the sign-out button come to
+   roughly 700px, so it does not scroll. That is a real constraint, not
+   an aspiration -- if a fifth card is ever added, something else has to
+   give. */
+
+.page {
+  min-height: 100dvh;
+  background: var(--ink);
+  color: var(--bone);
+  padding: 20px 16px 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink-4);
+  margin-bottom: 16px;
+}
+
+.kicker {
+  display: block;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: var(--ff-display);
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.loadError {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  color: var(--live-red);
+  border: 1px solid var(--live-red);
+  border-radius: 4px;
+  padding: 12px;
+  margin: 0 0 16px;
+}
+
+/* ── At a glance ──────────────────────────────────────────────── */
+
+.summary {
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink-2);
+  padding: 14px 14px 12px;
+  margin-bottom: 18px;
+}
+
+.summaryKicker {
+  display: block;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  margin-bottom: 8px;
+}
+
+.summaryName {
+  font-family: var(--ff-serif);
+  font-size: 22px;
+  line-height: 1.15;
+  margin: 0 0 2px;
+}
+
+.summaryNone {
+  font-family: var(--ff-serif);
+  font-size: 20px;
+  line-height: 1.15;
+  color: var(--bone-dim);
+  margin: 0 0 2px;
+}
+
+.summaryDate {
+  font-family: var(--ff-sans);
+  font-size: 14px;
+  color: var(--bone-dim);
+  margin: 0 0 8px;
+}
+
+.summaryLine {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--bone-mute);
+  margin: 0;
+}
+
+.summaryLink {
+  color: var(--ember);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ember-deep);
+}
+
+/* Not an error state: plenty of shows are free or door-only. Ember,
+   not red -- it is a nudge, and the page must not cry wolf. */
+.nag {
+  display: block;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ink-4);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ember);
+  text-decoration: none;
+  min-height: 24px;
+}
+
+/* ── The four cards ───────────────────────────────────────────── */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  position: relative;
+  display: block;
+  /* The whole card is the tap target, not the label inside it. */
+  min-height: 68px;
+  padding: 14px 40px 14px 16px;
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  background: var(--ink-2);
+  text-decoration: none;
+  color: var(--bone);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card:active {
+  background: var(--ink-3);
+  border-color: var(--ember-deep);
+}
+
+.cardLabel {
+  display: block;
+  font-family: var(--ff-display);
+  font-size: 20px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cardHint {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--bone-mute);
+}
+
+.cardChevron {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--bone-mute);
+}
+
+/* ── Out ──────────────────────────────────────────────────────── */
+
+.signOut {
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+  min-height: 52px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  background: none;
+  border: 1px solid var(--ink-4);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.signOut:disabled {
+  opacity: 0.6;
+}
+
+@media (min-width: 720px) {
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}

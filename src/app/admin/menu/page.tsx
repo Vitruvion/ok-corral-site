@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { listDrinks, type AdminDrink } from '@/lib/admin/drinks-repo'
-import { isAuthorized } from '@/lib/admin/guard'
-import { redirect } from 'next/navigation'
+import { requireAdminPage } from '@/lib/admin/guard'
 import MenuEditor from './MenuEditor'
 import styles from './menu.module.css'
 
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
 export default async function AdminMenuPage() {
   // Middleware already gates this, but the page checks too — same reasoning
   // as the API routes.
-  if (!isAuthorized()) redirect('/admin/login?next=/admin/menu')
+  requireAdminPage('/admin/menu')
 
   let drinks: AdminDrink[]
   let loadError: string | null = null

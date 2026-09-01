@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { isAuthorized } from '@/lib/admin/guard'
+import { isAdmin } from '@/lib/admin/guard'
 import { getEvent, POSTER_BUCKET, serviceClient, storageKeyFromUrl } from '@/lib/admin/events-repo'
 
 /**
@@ -79,7 +79,7 @@ async function removeObject(key: string | null): Promise<boolean> {
 }
 
 export async function POST(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let form: FormData
   try {
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   let eventId: string
   try {

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { isAuthorized } from '@/lib/admin/guard'
+import { requireAdminPage } from '@/lib/admin/guard'
 import { listEvents, type AdminEvent } from '@/lib/admin/events-repo'
 import EventsEditor from './EventsEditor'
 import styles from './events.module.css'
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 export default async function AdminEventsPage() {
   // Middleware already gates this; the page checks too, same reasoning
   // as the API routes.
-  if (!isAuthorized()) redirect('/admin/login?next=/admin/events')
+  requireAdminPage('/admin/events')
 
   let events: AdminEvent[] = []
   let loadError: string | null = null

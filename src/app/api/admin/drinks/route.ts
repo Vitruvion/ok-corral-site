@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { isAuthorized } from '@/lib/admin/guard'
+import { isAdmin } from '@/lib/admin/guard'
 import { DRINK_COLUMNS, listDrinks, nextSortOrder, serviceClient } from '@/lib/admin/drinks-repo'
 
 export const runtime = 'nodejs'
@@ -88,7 +88,7 @@ const INVALID = Symbol('invalid-json')
 
 // ── GET: every drink, active or not ───────────────────────────────
 export async function GET() {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
   try {
     const drinks = await listDrinks()
     return NextResponse.json({ drinks }, { headers: { 'Cache-Control': 'no-store' } })
@@ -99,7 +99,7 @@ export async function GET() {
 
 // ── POST: add a drink ─────────────────────────────────────────────
 export async function POST(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   const body = await readJson(req)
   if (body === INVALID) {
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
 
 // ── PATCH: edit one drink ─────────────────────────────────────────
 export async function PATCH(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   const body = await readJson(req)
   if (body === INVALID) {
@@ -174,7 +174,7 @@ export async function PATCH(req: Request) {
 
 // ── DELETE: soft delete only ──────────────────────────────────────
 export async function DELETE(req: Request) {
-  if (!isAuthorized()) return unauthorized()
+  if (!isAdmin()) return unauthorized()
 
   const body = await readJson(req)
   if (body === INVALID) {
