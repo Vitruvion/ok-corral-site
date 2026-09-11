@@ -53,3 +53,9 @@ card-page*.png
 
 # product mockup pipeline: generated images
 scripts/mockup/out/
+
+# Root-level screenshots from verification sessions. Anchored with a leading
+# slash so it matches ONLY the repo root -- never /public, /brand, /docs or
+# /scripts. The 47 that were committed live outside the repo now, in
+# ../ok-corral-original-assets/screenshots/.
+/*.png
