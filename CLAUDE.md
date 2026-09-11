@@ -1,6 +1,6 @@
 # OK Corral Website — Handoff Doc
 
-**Last updated:** August 31, 2026
+**Last updated:** September 10, 2026
 **Owner:** Brady Olsen (25% co-owner, SIX SHOT LLC)
 **Live site:** https://www.okcorralsaloon.com
 **Repo:** https://github.com/Vitruvion/ok-corral-site
@@ -148,6 +148,48 @@ he is handed the file. **Never infer whether one has been applied — ask.**
 Run every new migration through `python scripts/ascii-seed.py <file>` before
 handing it over — the Supabase SQL editor has mojibake'd UTF-8 in the past, so
 migration and seed files are kept pure 7-bit ASCII.
+
+---
+
+## Images — originals, resizing, and the backup folder
+
+**`../ok-corral-original-assets/`** — a sibling of the repo root, outside the
+repo and outside git. It holds:
+
+- `assets/` — a byte-for-byte copy of `public/assets/` taken *before* the
+  September 2026 resize: 37 files, 270 MB, including the 5 gallery photos since
+  deleted as unused. The rest of `/public` (icons, `manifest.json`,
+  `poster-exports/`) was never resized, so the repo copy is the original.
+- `screenshots/` — the 47 verification screenshots once committed at the repo root.
+
+**Nothing backs this folder up.** Today git history still holds the same files
+(`git show ce2a8f6:public/assets/gallery/patio-cigars.jpg > patio-cigars.jpg`),
+so it is the convenient copy, not yet the only one. If history is ever rewritten
+to shrink `.git`, it becomes the **only** copy of every full-resolution photo —
+back it up before doing that.
+
+**`scripts/resize-assets.mjs`** — shrinks photos to the size they are displayed
+at, **in place**: same path, same name, same extension, so every URL in code and
+every image path in Supabase stays valid. It never converts formats.
+
+- Long-edge targets: gallery **2400px**, hero (`storefront.jpg`) **2560px**,
+  posters and art **1600px**. Never upscales.
+- JPEG: mozjpeg, quality 82. PNG: lossless, compression level 9. EXIF
+  orientation is applied to the pixels, ICC profiles are converted to sRGB, then
+  all metadata is stripped.
+- Works from an explicit list (`TARGETS`), not a folder scan. The two PNG event
+  posters are deliberately held back (`HELD`).
+- Safe to re-run: a file already within its target is skipped, never
+  recompressed. `--from ../ok-corral-original-assets` re-derives every file from
+  its original; `--dry-run` measures without writing.
+- **Adding a large image to `/public`:** copy the original into the backup folder
+  at the same path, add it to `TARGETS`, then run the script. `/public` ships in
+  every Vercel deployment — it was 274 MB of camera originals, and is 20 MB now.
+
+Root-level PNGs are gitignored (`/*.png`, repo root only), so screenshots cannot
+be committed again.
+
+**Known broken image paths, not caused by the resize:** the 5 `merch` rows (also in `data.ts` and `seed.sql`) point at `sticker-{coaster,hucklebeer,sign}.png` and `tee-{black,white}-back.png`, which do not exist and will show as broken images the day `SHOW_MERCH` is flipped to `true`; the inactive `cigar-night-2026-06-01` event row points at the deleted `cigar-night.png`.
 
 ---
 
@@ -321,6 +363,15 @@ what to do with each. No PDF; the print shops take the PNG.
   `npx playwright install chromium`.
 - **Windows:** `spawn('npx', ...)` needs `shell: true` for the `.cmd` shim to
   resolve. Already wired in the script.
+- **It exports from the full-resolution original, not the site's copy.** The
+  `/public` photo is web-sized (1067px wide) and the 2x print needs ~1160px, so
+  the script intercepts the page's request inside Playwright and answers with the
+  original from `../ok-corral-original-assets/` — the site's own loading is
+  untouched. The list is `ORIGINAL_SOURCES`. If the backup folder is missing it
+  **warns loudly** and falls back to the resized copy, which will upscale; if the
+  swap never fires, it **refuses to write** rather than produce an upscaled print.
+- Set `POSTER_OUT_DIR` to write somewhere other than the committed
+  `public/poster-exports/` — use it for test runs.
 
 ### 7. Brand assets (committed)
 
@@ -482,7 +533,8 @@ C:\Projects\ok-corral-site\
 ├── brand\                            # master brand assets (PDF + red monogram variants + README)
 ├── scripts\
 │   ├── ascii-seed.py                 # idempotent seed.sql ASCII-ifier
-│   └── export-poster.ts              # Playwright PDF/PNG export pipeline
+│   ├── export-poster.ts              # Playwright PNG export pipeline
+│   └── resize-assets.mjs             # in-place photo resizer (see Images)
 ├── supabase\
 │   ├── seed.sql                      # pure 7-bit ASCII
 │   └── migrations\                  # 0001..0015, listed under Migrations above
