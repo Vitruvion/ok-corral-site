@@ -3,37 +3,48 @@
    /admin/door. See BackToDashboard.tsx. */
 
 .back {
-  /* inline-flex so the arrow and the word share one baseline and the
-     whole thing is one tap target. */
+  /* inline-flex, not block: a full-width bar would read as the page's
+     primary action and fight the heading for attention. It is as wide as
+     its own words and no wider. */
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 
-  /* Same mono-uppercase vocabulary as the kicker it sits above, one step
-     quieter: bone-mute rather than ember, and slightly tighter tracking
-     so it reads as a label rather than competing with the section name. */
-  font-family: var(--ff-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--bone-mute);
+  /* Outlined in the brand ember over a transparent fill -- a real button,
+     not a text link. Solid border and no tint deliberately: the DASHED
+     ember border plus rgba tint is the "+ Add a show" create affordance
+     (.addBtn), and this must not be mistaken for it. 5px matches the
+     dashboard cards and .addBtn. Both colours are the existing brand
+     tokens; no new orange. */
+  border: 1px solid var(--ember-deep);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ember);
   text-decoration: none;
 
-  /* 44px of touch target from padding, pulled back out on the left with
-     a negative margin so the TEXT sits flush with the page gutter (the
-     box starts 12px before it). Measured cost at 390px: the header below
-     moves down 38px, and none of the three pages gains a scrollbar. */
-  padding: 12px;
-  margin: -12px 0 2px -12px;
+  /* Same mono-uppercase vocabulary as the kicker below it. 12px sits
+     between the kicker's 11 and the row buttons' 13, and is a third of
+     the 30px display heading -- present, clearly not the headline. */
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  /* 44px minimum tap target. No negative margins now that the border is
+     visible: the BOX aligns with the page gutter, as a button should. */
   min-height: 44px;
+  padding: 0 14px;
+  margin: 0 0 14px;
   -webkit-tap-highlight-color: transparent;
 }
 
 .back:hover,
 .back:focus-visible {
-  color: var(--bone);
+  border-color: var(--ember);
 }
 
+/* Only on press, and only the same ember at low alpha that .addBtn
+   already uses -- a confirmation of the tap, not a second colour. */
 .back:active {
-  color: var(--ember);
+  background: rgba(217, 119, 66, 0.12);
 }
