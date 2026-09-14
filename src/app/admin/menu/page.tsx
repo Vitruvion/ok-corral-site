@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { listDrinks, type AdminDrink } from '@/lib/admin/drinks-repo'
 import { requireAdminPage } from '@/lib/admin/guard'
+import BackToDashboard from '../BackToDashboard'
 import MenuEditor from './MenuEditor'
 import styles from './menu.module.css'
 
@@ -27,6 +28,8 @@ export default async function AdminMenuPage() {
 
   return (
     <main className={styles.page}>
+      <BackToDashboard />
+
       <header className={styles.head}>
         <div>
           <span className={styles.kicker}>◆ Menu Editor</span>

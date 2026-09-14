@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { requireAdminPage } from '@/lib/admin/guard'
 import { listEvents, type AdminEvent } from '@/lib/admin/events-repo'
+import BackToDashboard from '../BackToDashboard'
 import EventsEditor from './EventsEditor'
 import styles from './events.module.css'
 
@@ -34,6 +35,8 @@ export default async function AdminEventsPage() {
 
   return (
     <main className={styles.page}>
+      <BackToDashboard />
+
       <header className={styles.head}>
         <div>
           <span className={styles.kicker}>◆ Shows &amp; Events</span>

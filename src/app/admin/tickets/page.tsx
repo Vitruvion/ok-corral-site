@@ -6,6 +6,7 @@ import {
   type EventTickets,
   type UnconfiguredEvent,
 } from '@/lib/tickets/manifest'
+import BackToDashboard from '../BackToDashboard'
 import TicketsView from './TicketsView'
 import styles from './tickets.module.css'
 
@@ -46,6 +47,8 @@ export default async function AdminTicketsPage() {
 
   return (
     <main className={styles.page}>
+      <BackToDashboard />
+
       <header className={styles.head}>
         <div>
           <span className={styles.kicker}>◆ Tickets</span>
