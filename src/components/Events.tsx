@@ -120,10 +120,9 @@ export default function Events({ events = [], recurring = RECURRING }: Props = {
                           src={ev.poster_url}
                           alt={`${ev.name} poster`}
                           label={`${ev.name} · Poster`}
-                          cover
+                          natural
                           loading="eager"
                           className={styles.poster}
-                          style={{ aspectRatio: '3/4', borderRadius: 4 }}
                         />
                       ) : (
                         <div className="placeholder" style={{ aspectRatio: '3/4', borderRadius: 4 }}>
@@ -303,8 +302,9 @@ export default function Events({ events = [], recurring = RECURRING }: Props = {
                       src={r.poster_url}
                       alt={`${r.name} poster`}
                       label={r.name}
-                      cover
+                      natural
                       loading="lazy"
+                      className={styles.weeklyPosterImg}
                     />
                     <span className={styles.weeklyPosterZoom} aria-hidden="true">⤢</span>
                   </button>

@@ -124,11 +124,30 @@
 
 .expandRight {}
 
-/* Poster image — same 3/4 aspect as the placeholder it replaces.
-   ImageOrPlaceholder's wrapper handles aspect-ratio via the style prop. */
+/* Poster image.
+   NO FIXED ASPECT RATIO, and nothing is cropped. Posters arrive in
+   whatever shape the band sent -- a tall flyer, a square, a landscape
+   banner -- and a fixed box plus object-fit: cover ate the left and
+   right edges of a wide one ("Oktoberfest" rendered as "ktoberfes").
+   Width fills the column, height follows the image, and max-height only
+   binds on something extremely tall, at which point the browser narrows
+   the width to match and the poster stays centred and whole.
+   80vh keeps a 2:3 portrait large on a phone rather than a stamp. */
 .poster {
-  width: 100%;
   display: block;
+  /* width AUTO, not 100%. A definite width is not adjusted when
+     max-height clamps the height -- the box stays full-width and the
+     image letterboxes inside it, leaving dead space beside a tall
+     poster. With both axes auto the browser scales them together and
+     the box ends up exactly the size of the image. */
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 80vh;
+  /* Only relevant if a height is ever imposed here again -- contain
+     shows the whole image where cover would crop it. */
+  object-fit: contain;
+  margin-inline: auto;
   border-radius: 4px;
 }
 
@@ -449,10 +468,13 @@
   align-items: center;
 }
 
+/* Flyer thumbnail on a recurring-event card. Sized by the image, not by
+   a 2/3 box it used to be cropped into: max-width and max-height cap it,
+   and whichever one binds, the other follows the poster's own ratio.
+   Tapping it opens the lightbox, which shows the full thing either way. */
 .weeklyPoster {
   position: relative;
-  width: 104px;
-  aspect-ratio: 2 / 3;
+  width: fit-content;
   padding: 0;
   border: 1px solid rgba(235, 228, 212, 0.18);
   border-radius: 3px;
@@ -469,11 +491,12 @@
   transform: translateY(-2px);
 }
 
-.weeklyPoster img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.weeklyPosterImg {
   display: block;
+  width: auto;
+  height: auto;
+  max-width: 104px;
+  max-height: 168px;
 }
 
 .weeklyPosterZoom {
@@ -637,7 +660,13 @@
   .weeklyCardFeatured .weeklyPoster {
     grid-column: 1 / -1;
     justify-self: start;
-    width: 128px;
     margin-top: 4px;
+  }
+  /* A little larger with a whole row to itself. Still capped in BOTH
+     directions, so a landscape flyer widens and a tall one does not run
+     down the page. */
+  .weeklyCardFeatured .weeklyPosterImg {
+    max-width: 128px;
+    max-height: 200px;
   }
 }
