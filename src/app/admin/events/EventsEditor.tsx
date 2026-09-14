@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import type { AdminEvent } from '@/lib/admin/events-repo'
-import PosterField from './PosterField'
+import PosterField, { uploadPoster } from './PosterField'
 import styles from './events.module.css'
 
 /**
@@ -59,6 +59,14 @@ export default function EventsEditor({ initial }: Props) {
   const [state, setState] = useState<Record<string, RowState>>({})
   const [errors, setErrors] = useState<Record<string, string | null>>({})
   const [creating, setCreating] = useState(false)
+  /**
+   * Set when a show was created but its poster upload failed.
+   *
+   * Not an error on the create form: the show is saved and the form has
+   * already closed. It belongs on the page, next to the list the new row
+   * is now in.
+   */
+  const [posterWarning, setPosterWarning] = useState<string | null>(null)
   const [showPast, setShowPast] = useState(false)
   /** Why a given row was hidden rather than deleted. Set at the moment
       it happens, so the outcome is explained where it occurred. */
@@ -187,8 +195,9 @@ export default function EventsEditor({ initial }: Props) {
     <div className={styles.editor}>
       <CreateForm
         busy={creating}
-        onCreate={async body => {
+        onCreate={async (body, posterFile) => {
           setCreating(true)
+          setPosterWarning(null)
           try {
             const res = await fetch('/api/admin/events', {
               method: 'POST',
@@ -197,6 +206,32 @@ export default function EventsEditor({ initial }: Props) {
             })
             const data = await res.json().catch(() => ({}))
             if (!res.ok) return data.error || 'Could not create the show.'
+
+            /*
+             * The poster goes up only now, with the id the insert just
+             * returned. Deliberately in this order: the upload endpoint
+             * writes the Storage object AND sets poster_url in one step,
+             * so there is no moment at which an object exists for a show
+             * that does not. If the create above had failed, nothing was
+             * ever sent to Storage.
+             *
+             * A failure here does NOT fail the create -- the show is
+             * saved and real. It is reported as a warning against the
+             * list, and the poster can be added from the row.
+             */
+            if (posterFile) {
+              try {
+                await uploadPoster(data.id, posterFile)
+              } catch (err: any) {
+                setPosterWarning(
+                  String(body.name) +
+                    ' was added, but the poster did not upload: ' +
+                    (err?.message || 'unknown error') +
+                    ' Open the show to add it.'
+                )
+              }
+            }
+
             await refresh()
             return null
           } finally {
@@ -204,6 +239,15 @@ export default function EventsEditor({ initial }: Props) {
           }
         }}
       />
+
+      {posterWarning && (
+        <div className={styles.createWarn}>
+          {posterWarning}
+          <button className={styles.linkBtn} onClick={() => setPosterWarning(null)}>
+            dismiss
+          </button>
+        </div>
+      )}
 
       <div className={styles.featuredLine}>
         {featured ? (
@@ -286,11 +330,16 @@ function CreateForm({
   onCreate,
 }: {
   busy: boolean
-  onCreate: (body: Record<string, unknown>) => Promise<string | null>
+  onCreate: (body: Record<string, unknown>, posterFile: File | null) => Promise<string | null>
 }) {
   const [openForm, setOpenForm] = useState(false)
   const [more, setMore] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  /**
+   * Chosen and resized, but not sent: there is no row to attach it to
+   * until the save below succeeds.
+   */
+  const [posterFile, setPosterFile] = useState<File | null>(null)
   const [f, setF] = useState({
     name: '', date: '', time: '',
     support: '', doors: '', genre: '', tickets: '', description: '', tags: '',
@@ -360,6 +409,16 @@ function CreateForm({
             <span className={styles.label}>Description</span>
             <textarea className={styles.textarea} rows={4} value={f.description} onChange={set('description')} />
           </label>
+          {/*
+            eventId null -- the show does not exist yet, so this stages the
+            file rather than uploading it. See PosterField.
+          */}
+          <PosterField
+            eventId={null}
+            posterUrl={null}
+            onChange={() => {}}
+            onStage={setPosterFile}
+          />
         </div>
       )}
 
@@ -383,16 +442,23 @@ function CreateForm({
               youtube_url: f.youtube_url || undefined,
               signup_url: f.signup_url || undefined,
               tags: f.tags ? f.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
-            })
+            }, posterFile)
             if (message) return setErr(message)
             setF({ name: '', date: '', time: '', support: '', doors: '', genre: '', tickets: '', description: '', tags: '', youtube_url: '', signup_url: '' })
+            setPosterFile(null)
             setMore(false)
             setOpenForm(false)
           }}
         >
           {busy ? 'Saving…' : 'Add show'}
         </button>
-        <button className={styles.cancelBtn} onClick={() => setOpenForm(false)}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => {
+            setPosterFile(null)
+            setOpenForm(false)
+          }}
+        >
           Cancel
         </button>
       </div>

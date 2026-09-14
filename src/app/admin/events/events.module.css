@@ -579,3 +579,21 @@
   letter-spacing: 0.06em;
   color: var(--bone-mute);
 }
+
+/* A show saved, but its poster did not. Ember rather than red: nothing
+   was lost and nothing needs undoing -- the poster just has to be added
+   from the row. */
+.createWarn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--ember-deep);
+  border-radius: 5px;
+  font-family: var(--ff-sans);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ember);
+}

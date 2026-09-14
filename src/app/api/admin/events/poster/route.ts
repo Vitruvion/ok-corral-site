@@ -150,7 +150,13 @@ export async function POST(req: Request) {
       .from('events')
       .update({ poster_url: publicUrl })
       .eq('id', eventId)
-    if (error) throw new Error(error.message)
+    if (error) {
+      // The object is in the bucket but nothing points at it. Take it
+      // back out: an orphan in a public bucket is unreachable from any
+      // UI and would sit there for good.
+      await removeObject(key)
+      throw new Error(error.message)
+    }
 
     // Only once the row points at the new object -- otherwise a failure
     // here would leave the show with a URL to something deleted.
