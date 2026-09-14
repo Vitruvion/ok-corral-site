@@ -15,7 +15,7 @@ import styles from './events.module.css'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Shows — OK Corral',
+  title: 'Shows & Events — OK Corral',
   robots: { index: false, follow: false },
 }
 
@@ -36,7 +36,7 @@ export default async function AdminEventsPage() {
     <main className={styles.page}>
       <header className={styles.head}>
         <div>
-          <span className={styles.kicker}>◆ Shows</span>
+          <span className={styles.kicker}>◆ Shows &amp; Events</span>
           <h1 className={styles.title}>What&rsquo;s On</h1>
         </div>
       </header>

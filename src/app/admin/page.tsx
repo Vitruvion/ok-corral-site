@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const CARDS = [
   { href: '/admin/menu', label: 'Menu', hint: 'Drinks and prices' },
-  { href: '/admin/events', label: 'Shows', hint: 'Dates, posters, tickets' },
+  { href: '/admin/events', label: 'Shows & Events', hint: 'Dates, posters, tickets' },
   { href: '/admin/tickets', label: 'Tickets', hint: 'Sales and will-call' },
   { href: '/admin/door', label: 'Door', hint: 'Scan and sell at the door' },
 ] as const
