@@ -51,7 +51,7 @@ export default function Location() {
               <a href={BRAND.mapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 Get Directions →
               </a>
-              <a href="#bookings" className="btn btn-ghost">Private Bookings</a>
+              <a href="#bookings" className="btn btn-ghost">Bookings</a>
             </div>
           </div>
 

@@ -143,7 +143,7 @@ he is handed the file. **Never infer whether one has been applied — ask.**
 `0006_events_signup_url` · `0007_merch_orders_fulfillment` ·
 `0008_recurring_events_poster` · `0009_drinks_editor` · `0010_drinks_cigars` ·
 `0011_cigars_price_order` · `0012_ticketing` · `0013_tickets_seq` ·
-`0014_door_sales` · `0015_events_editor`
+`0014_door_sales` · `0015_events_editor` · `0016_booking_reason`
 
 Run every new migration through `python scripts/ascii-seed.py <file>` before
 handing it over — the Supabase SQL editor has mojibake'd UTF-8 in the past, so
@@ -537,7 +537,7 @@ C:\Projects\ok-corral-site\
 │   └── resize-assets.mjs             # in-place photo resizer (see Images)
 ├── supabase\
 │   ├── seed.sql                      # pure 7-bit ASCII
-│   └── migrations\                  # 0001..0015, listed under Migrations above
+│   └── migrations\                  # 0001..0016, listed under Migrations above
 ├── public\
 │   ├── favicon.ico + icon.png + apple-icon.png + icon-192.png + icon-512.png
 │   ├── manifest.json

@@ -25,7 +25,7 @@ export default function Footer() {
             <li><a href="#events">Events</a></li>
             {SHOW_MERCH && <li><a href="#merch">Merch</a></li>}
             <li><a href="#gallery">Gallery</a></li>
-            <li><a href="#bookings">Private Bookings</a></li>
+            <li><a href="#bookings">Bookings</a></li>
             <li><a href="#visit">Visit</a></li>
           </ul>
         </div>

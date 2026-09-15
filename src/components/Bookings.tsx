@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { BRAND } from '@/lib/data'
+import { CONTACT_REASONS } from '@/lib/email/booking-inquiry'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Bookings.module.css'
 
@@ -12,6 +13,12 @@ export default function Bookings() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  /**
+   * Why they are writing. Required, and no default: a pre-selected
+   * "booking" would be answered by silence and put us back where we
+   * started, with every message in the inbox claiming to be a booking.
+   */
+  const [reason, setReason] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
   const [notes, setNotes] = useState('')
 
@@ -22,7 +29,7 @@ export default function Bookings() {
     try {
       const sb = getSupabaseBrowser()
       if (sb) {
-        const { error: insertErr } = await sb.from('booking_inquiries').insert({
+        const record = {
           name,
           email,
           phone: phone || null,
@@ -30,8 +37,34 @@ export default function Bookings() {
           party_size: null,
           preferred_date: preferredDate || null,
           notes: notes || null,
-        })
-        if (insertErr) throw insertErr
+        }
+        const { error: insertErr } = await sb
+          .from('booking_inquiries')
+          .insert({ ...record, reason: reason || null })
+
+        if (insertErr) {
+          /*
+           * `reason` arrives with migration 0016, which Brady applies by
+           * hand -- and this code deploys the moment it is pushed. In the
+           * window between the two, an insert naming a column the table
+           * does not have fails, and the only contact form on the site
+           * would break for real visitors.
+           *
+           * So a missing-column error (PostgREST 'PGRST204' / Postgres
+           * '42703') retries without it: the message still reaches us,
+           * and the email still carries the reason because that goes
+           * over the API, not through this table. Any other error is a
+           * real failure and is thrown.
+           */
+          const missingColumn =
+            insertErr.code === 'PGRST204' ||
+            insertErr.code === '42703' ||
+            /reason/i.test(insertErr.message || '')
+          if (!missingColumn) throw insertErr
+          console.warn('[bookings] reason column not present yet; saving without it')
+          const retry = await sb.from('booking_inquiries').insert(record)
+          if (retry.error) throw retry.error
+        }
       }
       // Fire-and-forget email notification. Failure here doesn't block the
       // user — the inquiry was already saved to Supabase.
@@ -43,6 +76,7 @@ export default function Bookings() {
             name,
             email,
             phone: phone || undefined,
+            reason: reason || undefined,
             preferred_date: preferredDate || undefined,
             notes: notes || undefined,
           }),
@@ -115,12 +149,30 @@ export default function Bookings() {
                     </div>
                   </div>
                   <div>
+                    {/* Optional for every reason: a question about a lost
+                        jacket has no date, and demanding one would be a
+                        wall in front of the only way to reach us. */}
                     <label className="form-label">When are you thinking?</label>
                     <input className="input" type="date" value={preferredDate} onChange={e => setPreferredDate(e.target.value)} />
                   </div>
                   <div>
-                    <label className="form-label">What&apos;s the occasion?</label>
-                    <textarea className="textarea" rows={4} placeholder="Birthday, work crew, road trip stopover, just a big group… anything we should know? How many of you?" value={notes} onChange={e => setNotes(e.target.value)} />
+                    <label className="form-label" htmlFor="contact-reason">What&apos;s this about?</label>
+                    <select
+                      id="contact-reason"
+                      className="input"
+                      value={reason}
+                      onChange={e => setReason(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Pick one…</option>
+                      {CONTACT_REASONS.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Tell us more</label>
+                    <textarea className="textarea" rows={4} placeholder="Birthday, work crew, road trip stopover, a question, anything we should know — and how many of you, if that applies." value={notes} onChange={e => setNotes(e.target.value)} />
                   </div>
                   {error && <p className={styles.errorMsg}><em>{error}</em></p>}
                   <button type="submit" className="btn btn-primary" disabled={submitting} style={{ width: '100%', justifyContent: 'center', marginTop: 8 }}>
