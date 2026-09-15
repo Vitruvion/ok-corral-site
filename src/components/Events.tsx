@@ -116,14 +116,21 @@ export default function Events({ events = [], recurring = RECURRING }: Props = {
                   <div className={styles.expand}>
                     <div className={styles.expandLeft}>
                       {ev.poster_url ? (
-                        <ImageOrPlaceholder
-                          src={ev.poster_url}
-                          alt={`${ev.name} poster`}
-                          label={`${ev.name} · Poster`}
-                          natural
-                          loading="eager"
-                          className={styles.poster}
-                        />
+                        // The FRAME holds the space; the poster sits inside
+                        // it whole. A poster's own size is unknown until it
+                        // loads, so without a frame the page grows underneath
+                        // an anchor jump and the visitor lands in the wrong
+                        // section.
+                        <div className={styles.posterFrame}>
+                          <ImageOrPlaceholder
+                            src={ev.poster_url}
+                            alt={`${ev.name} poster`}
+                            label={`${ev.name} · Poster`}
+                            natural
+                            loading="eager"
+                            className={styles.poster}
+                          />
+                        </div>
                       ) : (
                         <div className="placeholder" style={{ aspectRatio: '3/4', borderRadius: 4 }}>
                           <span className="placeholder-label">{ev.name} · Poster 3:4</span>

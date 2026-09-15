@@ -69,10 +69,21 @@ export default function DrinkMenu({ drinks = {} }: Props = {}) {
               </a>
             </div>
             <div className={styles.featRight}>
+              {/*
+                width/height are the FILE's real pixel size, not a display
+                size: with `height: auto` the browser derives the ratio
+                from them and reserves the right box before a byte of the
+                image arrives. Without it this grew from 0 to ~530px on
+                load, shoving every section below it down the page --
+                which is what made a nav click land in the wrong place.
+                Update these two numbers if the artwork is ever replaced.
+              */}
               <img
                 className={styles.featArt}
                 src="/assets/merch/hucklebeer-art.png"
                 alt="I'm Your Hucklebeer — cowboy on horseback illustration"
+                width={1143}
+                height={1600}
                 loading="eager"
                 decoding="async"
               />
