@@ -111,21 +111,24 @@ must not assume they are done. If one is missing, say which and stop.
   - `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` --
     Playwright's browser downloads.
   - `*.vercel.app` -- to open preview deploys from the session.
-- **Environment variables** -- these three, copied from `.env.local`:
-  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-  `SUPABASE_SERVICE_ROLE_KEY`. That is the measured minimum for a full build.
+- **Environment variables** -- these two, copied from `.env.local`:
+  `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. That is
+  enough for `npm run build` to pass (verified October 18, 2026).
   Every command the session runs can read these, so leave Stripe, Resend, Apple
   and `TICKET_SIGNING_SECRET` out unless a task needs one -- and never a live
   Stripe key. The full list is under **Env vars**.
-- **Setup script** (runs as root; the result is cached between sessions):
-  ```bash
-  npx --yes playwright@1.60.0 install --with-deps chromium
-  ```
-  Keep that version equal to `playwright` in `package.json`, or the browser it
-  fetches is not the one the project's Playwright looks for. Append `webkit`
-  for Safari checks.
+  - **`SUPABASE_SERVICE_ROLE_KEY` is intentionally not in the cloud
+    environment.** It is full write access to the production database, and
+    cloud sessions do not need it to build or verify public pages. Do not ask
+    for it to be added. Without it, `getServiceSupabase()` returns `null`, so in
+    a VM build the homepage Instagram strip shows its fallback CTA and admin
+    routes cannot read or write. That is expected, not a bug. Vercel previews
+    use Vercel's own env vars and are unaffected.
+- **Setup script -- empty on purpose.** Setup scripts run from `/home/user`,
+  not the repo directory, so `npm install` there fails with ENOENT. If a task
+  needs Playwright's browser, install it from inside the session as well.
 
-At the start of each session, run `npm ci` yourself.
+At the start of each session, run `npm install` yourself, inside the repo.
 
 ### 3. What still happens outside the session
 
@@ -139,9 +142,9 @@ Brady does these in a browser. A session can only hand them over:
   `../ok-corral-original-assets/`, which exists only on Brady's PC. In the VM it
   warns and falls back to the web-sized photo -- don't commit those exports.
 
-The production-data rules apply unchanged: a cloud session holds the same
-service-role key as a local one. See **WORKFLOW: NEVER MUTATE PRODUCTION DATA
-WHILE TESTING**.
+The production-data rules apply unchanged: a cloud session has no service-role
+key, but the anon key still reaches the same production database. See
+**WORKFLOW: NEVER MUTATE PRODUCTION DATA WHILE TESTING**.
 
 ---
 
