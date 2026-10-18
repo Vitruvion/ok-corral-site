@@ -1,6 +1,6 @@
 # OK Corral Website — Handoff Doc
 
-**Last updated:** September 10, 2026
+**Last updated:** October 18, 2026
 **Owner:** Brady Olsen (25% co-owner, SIX SHOT LLC)
 **Live site:** https://www.okcorralsaloon.com
 **Repo:** https://github.com/Vitruvion/ok-corral-site
@@ -21,6 +21,7 @@ After making any commit, immediately run `git push origin main` without asking f
 1. **Not on `main`.** If the commit is to a branch other than `main` (e.g., a feature branch for review), do NOT auto-push — wait for instruction.
 2. **Controversial or destructive.** If the commit deletes large amounts of code, rewrites git history, or would require a force push, STOP and ask before pushing.
 3. **Failed verification.** If the commit fails verification (visual check, test, build), roll it back locally rather than pushing broken code.
+4. **Cloud session** (`CLAUDE_CODE_REMOTE=true`). Never push `main` -- push a branch for a preview instead. See **WORKFLOW: CLOUD SESSIONS**.
 
 For normal feature work, bug fixes, content updates, brand assets, and data changes: commit + push in one motion. After pushing, remind Brady of any manual deploy steps (e.g., running `supabase/seed.sql` in the Supabase SQL Editor, refreshing an Instagram token, re-running `npm run export-poster`).
 
@@ -76,6 +77,71 @@ checked.
   any flag that was moved (`featured`, `active`) shown back where it started.
 - If the read disagrees with what was expected, say so plainly rather than
   describing the intent.
+
+---
+
+## WORKFLOW: CLOUD SESSIONS
+
+A session started at claude.ai/code -- including from the phone -- runs in a
+fresh Ubuntu VM holding a clone of this repo. `CLAUDE_CODE_REMOTE=true` means
+you are in one. Three things differ from Brady's PC.
+
+### 1. Never push `main` from a cloud session
+
+`main` auto-deploys to production. Work on a branch and push the branch: Vercel
+builds a preview of each pushed branch, using its own copy of the env vars.
+Give Brady the preview URL; he checks it on his phone and merges. **This
+overrides the auto-push rule above, for cloud sessions only.**
+
+Screenshots and links for Brady come from the preview. You can still
+`next start` inside the VM and drive it with Playwright for your own
+measurements -- only nobody else can open that localhost. (If previews sit
+behind Vercel's login, Brady can open them and the session can't.)
+
+### 2. One-time environment setup -- Brady's, at claude.ai/code
+
+These live in the cloud environment's settings (environment selector, then the
+settings icon on its row), not in the repo. A session cannot change them and
+must not assume they are done. If one is missing, say which and stop.
+
+- **Network access -> Custom**, with *Also include default list* ticked, plus:
+  - `*.supabase.co` -- **required.** `npm run build` prerenders pages from
+    Supabase and fails without it: *drinks unavailable: Supabase is not
+    configured*. The default list does not include it.
+  - `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` --
+    Playwright's browser downloads.
+  - `*.vercel.app` -- to open preview deploys from the session.
+- **Environment variables** -- these three, copied from `.env.local`:
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+  `SUPABASE_SERVICE_ROLE_KEY`. That is the measured minimum for a full build.
+  Every command the session runs can read these, so leave Stripe, Resend, Apple
+  and `TICKET_SIGNING_SECRET` out unless a task needs one -- and never a live
+  Stripe key. The full list is under **Env vars**.
+- **Setup script** (runs as root; the result is cached between sessions):
+  ```bash
+  npx --yes playwright@1.60.0 install --with-deps chromium
+  ```
+  Keep that version equal to `playwright` in `package.json`, or the browser it
+  fetches is not the one the project's Playwright looks for. Append `webkit`
+  for Safari checks.
+
+At the start of each session, run `npm ci` yourself.
+
+### 3. What still happens outside the session
+
+Brady does these in a browser. A session can only hand them over:
+
+- **Migrations** -- pasted into the Supabase SQL Editor. Never infer that one is
+  applied; see **Migrations**.
+- **Vercel environment variables** -- the Vercel dashboard.
+- **The cloud environment settings** in section 2.
+- **Print-quality poster exports.** `npm run export-poster` reads originals from
+  `../ok-corral-original-assets/`, which exists only on Brady's PC. In the VM it
+  warns and falls back to the web-sized photo -- don't commit those exports.
+
+The production-data rules apply unchanged: a cloud session holds the same
+service-role key as a local one. See **WORKFLOW: NEVER MUTATE PRODUCTION DATA
+WHILE TESTING**.
 
 ---
 
