@@ -1,17 +1,51 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { MARQUEE_ITEMS } from '@/lib/data'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { MARQUEE_ITEMS, type RecurringEvent } from '@/lib/data'
+import { dayName } from '@/lib/recurring'
 import styles from './Marquee.module.css'
 
 const SCROLL_SPEED_PX_PER_SEC = 50
 
-export default function Marquee() {
+type Props = {
+  /**
+   * Active weekly specials, already Monday-first -- the same array the
+   * "Every Week" section renders (see fetchRecurring), so the two can
+   * never disagree about what runs when, or in what order.
+   */
+  weekly?: RecurringEvent[]
+}
+
+export default function Marquee({ weekly = [] }: Props) {
+  // Weekly specials first, then the fixed items (hours etc.) unchanged.
+  // Each item carries its own trailing diamond, so dropping every weekly
+  // row leaves no gap and no stray separator -- just fewer items.
+  const items = useMemo(
+    () => [
+      ...weekly.map(r => ({
+        text: dayName(r.day),
+        accent: [r.name, r.time].filter(Boolean).join(' · '),
+      })),
+      ...MARQUEE_ITEMS,
+    ],
+    [weekly]
+  )
+
   const [hovered, setHovered] = useState(false)
   const [statusMsg, setStatusMsg] = useState('')
   const trackRef = useRef<HTMLDivElement>(null)
   const offsetRef = useRef(0)
-  const halfWidthRef = useRef(0)
+  /** Width of ONE copy of the items, gap included: the loop length. */
+  const periodRef = useRef(0)
+  const itemCountRef = useRef(items.length)
+  itemCountRef.current = items.length
+  /**
+   * How many copies of the items the track holds. At least two, and
+   * enough that the track always covers the viewport plus one period --
+   * otherwise a short list (say, only the hours line) would leave an
+   * empty stretch on a wide screen before the loop came round.
+   */
+  const [copies, setCopies] = useState(2)
   const draggingRef = useRef(false)
   const hoveredRef = useRef(false)
   const dragStartXRef = useRef(0)
@@ -45,18 +79,34 @@ export default function Marquee() {
   // Keep refs in sync with state (refs are needed inside the rAF loop)
   useEffect(() => { hoveredRef.current = hovered }, [hovered])
 
+  // The loop length is measured, not derived: the distance from the first
+  // item to the first item of the second copy. (scrollWidth / 2 is half a
+  // gap short of that, which showed as a small jump on every wrap.)
+  const measure = useCallback(() => {
+    const track = trackRef.current
+    if (!track) return
+    const first = track.children[0] as HTMLElement | undefined
+    const nextCopy = track.children[itemCountRef.current] as HTMLElement | undefined
+    if (!first || !nextCopy) return
+    const period = nextCopy.offsetLeft - first.offsetLeft
+    if (period <= 0) return
+    periodRef.current = period
+    const needed = Math.max(2, Math.ceil(window.innerWidth / period) + 1)
+    setCopies(c => (c === needed ? c : needed))
+  }, [])
+
+  // Re-measure whenever the items change (an edit at /admin/events) or
+  // the copy count does.
+  useEffect(() => { measure() }, [items, copies, measure])
+
   // Animation loop: advances offset over time unless paused (hover) or
   // suspended (drag). Reads from refs so it never restarts on rerender.
   useEffect(() => {
     if (!trackRef.current) return
 
-    // Half-width: the track contains two copies of MARQUEE_ITEMS, so
-    // scrolling exactly half the track length lands on a visually
-    // identical frame. Loop the offset using modulo of half-width.
-    const measure = () => {
-      if (!trackRef.current) return
-      halfWidthRef.current = trackRef.current.scrollWidth / 2
-    }
+    // The track holds `copies` identical copies of the items, so scrolling
+    // exactly one period lands on a visually identical frame. Loop the
+    // offset modulo the period.
     measure()
     // Re-measure on resize and after fonts load (font metrics change widths)
     window.addEventListener('resize', measure)
@@ -69,10 +119,10 @@ export default function Marquee() {
       lastTime = now
       if (!draggingRef.current && !hoveredRef.current) {
         offsetRef.current -= SCROLL_SPEED_PX_PER_SEC * dt
-        // Wrap so offset stays in (-halfWidth, 0]
-        if (halfWidthRef.current > 0) {
-          while (offsetRef.current <= -halfWidthRef.current) {
-            offsetRef.current += halfWidthRef.current
+        // Wrap so offset stays in (-period, 0]
+        if (periodRef.current > 0) {
+          while (offsetRef.current <= -periodRef.current) {
+            offsetRef.current += periodRef.current
           }
         }
       }
@@ -87,7 +137,7 @@ export default function Marquee() {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', measure)
     }
-  }, [])
+  }, [measure])
 
   // Drag handlers: while dragging, the rAF loop sees draggingRef=true
   // and stops advancing the offset; we set the offset directly from the
@@ -105,12 +155,12 @@ export default function Marquee() {
     const delta = e.clientX - dragStartXRef.current
     offsetRef.current = dragStartOffsetRef.current + delta
     // Keep offset wrapped so the user can drag in either direction infinitely
-    if (halfWidthRef.current > 0) {
-      while (offsetRef.current <= -halfWidthRef.current) {
-        offsetRef.current += halfWidthRef.current
+    if (periodRef.current > 0) {
+      while (offsetRef.current <= -periodRef.current) {
+        offsetRef.current += periodRef.current
       }
       while (offsetRef.current > 0) {
-        offsetRef.current -= halfWidthRef.current
+        offsetRef.current -= periodRef.current
       }
     }
   }
@@ -121,8 +171,9 @@ export default function Marquee() {
     trackRef.current.releasePointerCapture(e.pointerId)
   }
 
-  const items = MARQUEE_ITEMS
-  const repeated = [...items, ...items]
+  const repeated = Array.from({ length: copies }, () => items).flat()
+
+  if (items.length === 0) return null
 
   return (
     <div

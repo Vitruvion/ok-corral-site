@@ -196,13 +196,13 @@ export type RecurringEvent = {
  * inserts them into a completely empty table (first-run bootstrap).
  */
 
+/**
+ * The marquee's FIXED items -- shown after the weekly specials, which the
+ * Marquee builds from recurring_events (the same rows as "Every Week"), so
+ * an edit at /admin/events reaches both. Add a weekly special there, not
+ * here.
+ */
 export const MARQUEE_ITEMS = [
-  // Hardcoded, NOT read from recurring_events: editing a weekly special
-  // at /admin/events does not change this strip.
-  // Taco Tuesday removed 2026-06-30 — restore to bring it back:
-  // { text: 'Tuesday', accent: '$4 Tacos' },
-  { text: 'Wednesday', accent: 'Free Pool All Night' },
-  { text: 'Sunday', accent: 'Karaoke Til Close' },
   { text: 'Daily', accent: '8 AM · Til 2 AM' },
 ]
 

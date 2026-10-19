@@ -35,7 +35,7 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts 
       <AgeGate />
       <Topbar />
       <Hero events={events} />
-      <Marquee />
+      <Marquee weekly={recurring} />
       <Events events={events} recurring={recurring} />
       <DrinkMenu drinks={drinks} />
       {SHOW_MERCH && <MerchSection merch={merch} />}

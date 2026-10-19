@@ -360,7 +360,7 @@ be committed again.
 - Tagline: "NorCal's favorite western bar."
 - Established year: 1954 (Hero.tsx and `BRAND.since` in `src/lib/data.ts`)
 - Hero: parallax storefront photo + dust particles + animated wordmark + NEXT UP badge + tagline + What's On button
-- Marquee: rAF-driven scroll (50 px/s), drag-to-pan with smooth resume, mobile 16px font + 40px gap below 760px. **`@keyframes marqueeScroll` MUST live inside `Marquee.module.css`** (don't move back to globals — CSS Modules can't resolve external keyframe references; same trap re-hit on card.module.css, see Card section)
+- Marquee: weekly items come from `recurring_events` (active, Monday-first -- the same array as "Every Week", passed down from `ClientShell`), followed by the fixed `MARQUEE_ITEMS` in `data.ts` (the hours line). rAF-driven scroll (50 px/s), drag-to-pan with smooth resume, mobile 16px font + 40px gap below 760px. The loop length is measured (first item to first item of the next copy) and the track renders as many copies as it takes to cover the screen, so a short list never shows an empty stretch. **`@keyframes marqueeScroll` MUST live inside `Marquee.module.css`** (don't move back to globals — CSS Modules can't resolve external keyframe references; same trap re-hit on card.module.css, see Card section)
 - Gallery (16 items): photos render in a 12-col masonry grid with per-item `cols`/`rows` spans from `GALLERY` in `src/lib/data.ts`. No captions (removed); each tile keeps its hover zoom glyph and click-to-lightbox behavior.
 - Social links (Topbar, MobileMenu, Footer): IG + Facebook + TikTok wired via `SocialIcons` component
 - AgeGate: bare `position: fixed; inset: 0; display: grid; place-items: center` after 4 centering iterations — don't refactor this layout
@@ -642,11 +642,11 @@ the two.
   `kind: 'recurring'`; objects go under `weekly/<id>/` in `event-posters`.
 - Delete is always a hard delete (row + Storage object): nothing can point at
   a weekly special. Hiding is the separate "Hide from site".
-- Every write revalidates `/`, the only page that renders them.
-- **Not wired to the editor:** `MARQUEE_ITEMS` in `data.ts` still hardcodes
-  "Wednesday · Free Pool" and "Sunday · Karaoke Til Close". "View Full
-  Calendar" on the homepage is a button with no handler. Weekly specials have
-  no "Add to Calendar".
+- Every write revalidates `/`, the only page that renders them -- the "Every
+  Week" strip **and the marquee**, which both take the same array from
+  `fetchRecurring()`.
+- Weekly specials have no "Add to Calendar", and there is no full-calendar
+  page (the dead "View Full Calendar" button was removed).
 
 ---
 

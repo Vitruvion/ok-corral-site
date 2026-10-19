@@ -324,10 +324,6 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
             </div>
           </div>
         )}
-
-        <div className={styles.foot}>
-          <button className="btn btn-ghost">View Full Calendar →</button>
-        </div>
       </div>
 
       {poster && (
