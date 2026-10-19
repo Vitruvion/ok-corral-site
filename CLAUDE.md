@@ -14,14 +14,14 @@
 
 ## WORKFLOW: AUTO-PUSH AFTER EVERY COMMIT
 
-After making any commit, immediately run `git push origin main` without asking for confirmation. Brady prefers continuous deployment over per-commit review.
+After making any commit, immediately run `git push origin main` without asking for confirmation. Brady prefers continuous deployment over per-commit review. **This applies to cloud sessions exactly as it does on Brady's PC** -- see **WORKFLOW: CLOUD SESSIONS**.
 
 **Exceptions:**
 
-1. **Not on `main`.** If the commit is to a branch other than `main` (e.g., a feature branch for review), do NOT auto-push — wait for instruction.
+1. **Not on `main`.** If the commit is to a branch other than `main` (e.g., a feature branch for review), do NOT auto-push — wait for instruction. (A cloud session's clone starts on a `claude/...` branch. That is the harness, not a request for review: commit to `main` and push `main`.)
 2. **Controversial or destructive.** If the commit deletes large amounts of code, rewrites git history, or would require a force push, STOP and ask before pushing.
 3. **Failed verification.** If the commit fails verification (visual check, test, build), roll it back locally rather than pushing broken code.
-4. **Cloud session** (`CLAUDE_CODE_REMOTE=true`). Never push `main` -- push a branch for a preview instead. See **WORKFLOW: CLOUD SESSIONS**.
+4. **A migration that needs Brady.** If the code depends on a migration that has not been applied -- because it is non-additive, or because the session cannot apply it -- push to a branch instead and stop. `main` must never be ahead of the database. See **Migrations**.
 
 For normal feature work, bug fixes, content updates, brand assets, and data changes: commit + push in one motion. After pushing, remind Brady of any manual deploy steps (e.g., running `supabase/seed.sql` in the Supabase SQL Editor, refreshing an Instagram token, re-running `npm run export-poster`).
 
@@ -36,8 +36,11 @@ broken, with a real consequence:
 ### 1. No side-effectful probes. Ask instead.
 
 Never call a function to find out whether it exists, and never infer whether a
-migration has been applied — Brady applies migrations by hand the moment he is
-given them, and his database state is not observable from here.
+migration has been applied. Without `SUPABASE_DB_URL`, Brady applies migrations
+by hand the moment he is given them, and his database state is not observable
+from here -- ask. With a working `SUPABASE_DB_URL`, read the schema directly with
+a read-only query (`information_schema`, `pg_proc`, `pg_indexes`) -- that is
+observation, not inference. See **Migrations**.
 
 - **What went wrong:** probing for migration 0015 by invoking
   `set_featured_event(null)` and reading the error. That function's entire
@@ -86,15 +89,20 @@ A session started at claude.ai/code -- including from the phone -- runs in a
 fresh Ubuntu VM holding a clone of this repo. `CLAUDE_CODE_REMOTE=true` means
 you are in one. Three things differ from Brady's PC.
 
-### 1. Never push `main` from a cloud session
+### 1. Push `main`, same as on the PC
 
-`main` auto-deploys to production. Work on a branch and push the branch: Vercel
-builds a preview of each pushed branch, using its own copy of the env vars.
-Give Brady the preview URL; he checks it on his phone and merges. **This
-overrides the auto-push rule above, for cloud sessions only.**
+Cloud sessions commit to `main` and push `main`, under the same auto-push rule
+and the same exceptions as a local session. The harness checks the clone out on
+a `claude/...` branch; move the work onto `main` and push that. `main`
+auto-deploys to production, so the build and the verification happen **before**
+the push, not after.
 
-Screenshots and links for Brady come from the preview. You can still
-`next start` inside the VM and drive it with Playwright for your own
+The one cloud-specific exception: code that depends on a migration the session
+did not apply (non-additive, or no working `SUPABASE_DB_URL`) goes to a branch
+and waits -- see **Migrations**. Vercel builds a preview of each pushed branch,
+using its own copy of the env vars, so that branch still gets a preview URL.
+
+You can `next start` inside the VM and drive it with Playwright for your own
 measurements -- only nobody else can open that localhost. (If previews sit
 behind Vercel's login, Brady can open them and the session can't.)
 
@@ -111,6 +119,7 @@ must not assume they are done. If one is missing, say which and stop.
   - `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` --
     Playwright's browser downloads.
   - `*.vercel.app` -- to open preview deploys from the session.
+  - `*.pooler.supabase.com` -- for `SUPABASE_DB_URL` below.
 - **Environment variables** -- these two, copied from `.env.local`:
   `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. That is
   enough for `npm run build` to pass (verified October 18, 2026).
@@ -124,6 +133,23 @@ must not assume they are done. If one is missing, say which and stop.
     a VM build the homepage Instagram strip shows its fallback CTA and admin
     routes cannot read or write. That is expected, not a bug. Vercel previews
     use Vercel's own env vars and are unaffected.
+  - **`SUPABASE_DB_URL`** -- optional. The Supabase **session-pooler** connection
+    string (Supabase dashboard -> Connect -> Session pooler, port 5432). With it
+    set and reachable, the session applies additive migrations itself under the
+    rules in **Migrations**. It needs `*.pooler.supabase.com` in the allowed
+    domains.
+    **It is stronger than the service-role key: it is the database owner.** It
+    can drop tables, rewrite RLS and read every row. The production-data rules
+    apply to it with full force -- no test data in production, no probes with
+    side effects, and verification runs on PGlite or the in-memory fake, never
+    on production. Against production it is used for exactly two things:
+    read-only schema queries, and applying a committed migration file.
+    Open read-only connections with
+    `PGOPTIONS='-c default_transaction_read_only=on' psql "$SUPABASE_DB_URL"`.
+    (October 18, 2026: the variable was set, but a connection to
+    `aws-1-us-west-2.pooler.supabase.com:5432` timed out from the VM, so the
+    session fell back to handing migrations over. Check that the domain is
+    allowed before assuming the variable works.)
 - **Setup script -- empty on purpose.** Setup scripts run from `/home/user`,
   not the repo directory, so `npm install` there fails with ENOENT. If a task
   needs Playwright's browser, install it from inside the session as well.
@@ -134,8 +160,9 @@ At the start of each session, run `npm install` yourself, inside the repo.
 
 Brady does these in a browser. A session can only hand them over:
 
-- **Migrations** -- pasted into the Supabase SQL Editor. Never infer that one is
-  applied; see **Migrations**.
+- **Migrations, when the session can't apply them** -- no working
+  `SUPABASE_DB_URL`, or anything non-additive. Pasted into the Supabase SQL
+  Editor. See **Migrations**.
 - **Vercel environment variables** -- the Vercel dashboard.
 - **The cloud environment settings** in section 2.
 - **Print-quality poster exports.** `npm run export-poster` reads originals from
@@ -143,7 +170,8 @@ Brady does these in a browser. A session can only hand them over:
   warns and falls back to the web-sized photo -- don't commit those exports.
 
 The production-data rules apply unchanged: a cloud session has no service-role
-key, but the anon key still reaches the same production database. See
+key, but the anon key still reaches the same production database, and
+`SUPABASE_DB_URL`, when set, reaches all of it. See
 **WORKFLOW: NEVER MUTATE PRODUCTION DATA WHILE TESTING**.
 
 ---
@@ -168,7 +196,7 @@ cookie itself rather than trusting middleware.
 |---|---|
 | `/admin/login` | The only ungated admin route. |
 | `/admin/menu` | Drinks editor. Phone-first, per-row saves. |
-| `/admin/events` | Events editor: create/edit/delete shows, ticket sales, poster upload. |
+| `/admin/events` | Events editor: create/edit/delete shows, ticket sales, poster upload, and the weekly specials ("Every week"). |
 | `/admin/tickets` | Sales + will-call sheet. Revenue split by payment method, never summed. |
 | `/admin/door` | The door scanner. Installable PWA, works offline. |
 
@@ -176,7 +204,7 @@ cookie itself rather than trusting middleware.
 `/api/tickets/availability`, `/api/stripe/webhook` (merch AND tickets, branched
 on `metadata.kind`), `/api/order-summary`, `/api/card/pass`,
 `/api/booking-notify`, `/api/cron/refresh-instagram-token`, and under
-`/api/admin/`: `drinks`, `events`, `events/sales`, `events/poster`,
+`/api/admin/`: `drinks`, `events`, `events/sales`, `events/poster`, `recurring`,
 `door/manifest`, `door/scan`, `door/sale`, `login`, `logout`.
 
 ---
@@ -187,12 +215,13 @@ on `metadata.kind`), `/api/order-summary`, `/api/card/pass`,
 `/admin/menu` and `/admin/events`, so re-running `supabase/seed.sql` used to
 silently throw away every price, date and description the owners had entered.
 
-Both blocks are now wrapped in `if not exists (select 1 from <table>)`, so on
+**So are recurring events** (the weekly specials), edited at `/admin/events`.
+
+All three blocks are wrapped in `if not exists (select 1 from <table>)`, so on
 any seeded database they are a **no-op**. They exist only to bootstrap a
 completely empty database. To deliberately reset, empty the table first.
 
-Anything else in seed.sql (recurring events, merch, settings) is still
-authoritative in the file.
+Anything else in seed.sql (merch, settings) is still authoritative in the file.
 
 **Eventbrite is retired.** Nothing reads `events.eventbrite_url` and nothing
 renders from it. The column and its values are kept as a record of past shows —
@@ -204,8 +233,36 @@ tickets directly (`tickets_on_sale` + `ticket_price`) or shows the
 
 ## Migrations
 
-Brady applies these by hand in the Supabase SQL Editor, immediately, the moment
-he is handed the file. **Never infer whether one has been applied — ask.**
+Two paths, chosen by one question: **is `SUPABASE_DB_URL` set, and does a
+read-only connection with it succeed?**
+
+**No -- Brady applies them.** He pastes the file into the Supabase SQL Editor,
+immediately, the moment he is handed it. **Never infer whether one has been
+applied — ask.** Give him the file path, push the code that depends on it to a
+branch (not `main`), and wait.
+
+**Yes -- the session applies them itself**, under these rules and no others:
+
+- **Only committed migration files.** Apply only a file that exists in
+  `supabase/migrations/` and is committed in this change. Never run ad-hoc SQL
+  against production -- not a quick fix, not a one-line UPDATE.
+- **Additive only, automatically:** `CREATE TABLE`, `ADD COLUMN`,
+  `CREATE INDEX`, new functions, new policies, and seeding rows into an
+  **empty** table.
+- **Anything else, STOP and do not run it:** `DROP`, `DELETE`, `TRUNCATE`,
+  `ALTER COLUMN ... TYPE`, `RENAME`, any `UPDATE` of existing rows, any data
+  backfill. Push the code to a branch, give Brady the file path, and wait.
+- **Read the schema first** with a read-only query to see whether it is
+  already applied. Reading the schema directly replaces "never infer applied
+  state" -- that rule still holds whenever `SUPABASE_DB_URL` is not set.
+- **Idempotent** (`IF NOT EXISTS`, `CREATE OR REPLACE FUNCTION`, a new policy
+  wrapped in `if not exists (select 1 from pg_policies where ...)`), so a
+  re-run is a no-op. Not `DROP POLICY IF EXISTS` + `CREATE POLICY`: that is a
+  DROP, and DROP is on the stop list.
+- **Database first.** Apply the migration BEFORE pushing code that depends on
+  it, so the live site is never ahead of the database.
+- **Verify with a separate read-only query** after applying, and paste its
+  result.
 
 `0001_init` · `0002_events_eventbrite_url` · `0003_orders_and_gift_cards` ·
 `0004_events_featured_and_related` · `0005_events_youtube_url` ·
@@ -477,7 +534,7 @@ Master brand files in `/brand/`:
 ### 11. Other status
 
 - Square POS already connected to IG account
-- Drinks, events and merch live in Supabase; drinks and events are edited in-app (§15)
+- Drinks, events, weekly specials and merch live in Supabase; drinks, events and weekly specials are edited in-app (§15)
 - GoDaddy DNS pointing to Vercel
 - `SHOW_MERCH = false` and `SHOW_GIFT_CARDS = false` — flip a single bool to launch each section
 - **Mobile pass flip + ladder rungs:** both formerly broken on iOS; fixed in commits `89dc740` (filter removed) + `7e490d9` (local fade-up keyframes). Don't reintroduce filter on `.card`.
@@ -565,6 +622,31 @@ owners edit from behind the bar — with per-row saves rather than one big form.
   deleted, along with its pending orders and its poster in Storage.
 - Featuring a past show is allowed but does nothing visible; the UI says so
   rather than blocking it.
+
+**Weekly specials** ("Every week" on `/admin/events`, the homepage "Every Week"
+strip) live in `recurring_events`, **not** in `events`, through
+`/api/admin/recurring` and `src/lib/admin/recurring-repo.ts`. They have a day of
+the week instead of a date, and no tickets, no featuring and no "past" -- so
+none of the ticketing, occupancy or door code reads that table. Do not merge
+the two.
+
+- The create form's first choice is **One-time show** (default) / **Every
+  week**. Weekly needs name, day and start time; the rest is under "More details".
+- `recurring_events.time` is the display string, built by the API from real
+  inputs in one grammar ("7 PM", "7:30 PM", "6–11 PM", "6 PM til late",
+  "All Day"). `src/lib/recurring.ts` formats and parses it, and owns the order
+  (day Monday-first, then start time, then `sort_order`). The homepage and the
+  editor both sort with it -- never order weekly specials anywhere else.
+- No `data.ts` fallback: an empty table shows no "Every Week" strip at all.
+- Posters use the same `PosterField` and `/api/admin/events/poster` route with
+  `kind: 'recurring'`; objects go under `weekly/<id>/` in `event-posters`.
+- Delete is always a hard delete (row + Storage object): nothing can point at
+  a weekly special. Hiding is the separate "Hide from site".
+- Every write revalidates `/`, the only page that renders them.
+- **Not wired to the editor:** `MARQUEE_ITEMS` in `data.ts` still hardcodes
+  "Wednesday · Free Pool" and "Sunday · Karaoke Til Close". "View Full
+  Calendar" on the homepage is a button with no handler. Weekly specials have
+  no "Add to Calendar".
 
 ---
 
@@ -658,10 +740,11 @@ C:\Projects\ok-corral-site\
     │   ├── ImageOrPlaceholder.tsx
     │   └── ClientShell.tsx
     └── lib\
-        ├── data.ts                   # BRAND, feature flags. NO drinks/events arrays — those live in Supabase
+        ├── data.ts                   # BRAND, feature flags. NO drinks/events/recurring arrays — those live in Supabase
         ├── events.ts                 # venue-day rules: filterUpcomingEvents, isEventUpcoming
+        ├── recurring.ts              # weekly specials: days, time format/parse, THE order
         ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
-        ├── admin\                    # drinks-repo, events-repo, session/guard, image-resize, rate-limit
+        ├── admin\                    # drinks-repo, events-repo, recurring-repo, session/guard, image-resize, rate-limit
         ├── supabase.ts               # getSupabase() + getServiceSupabase()
         ├── queries.ts                # fetchAll() + unmojibake()
         ├── instagram.ts              # token reader + media fetcher

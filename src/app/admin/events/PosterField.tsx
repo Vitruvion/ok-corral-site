@@ -21,11 +21,19 @@ import styles from './events.module.css'
  * exists. That ordering is the point: the upload endpoint writes the
  * Storage object AND sets poster_url in one step, so an object can never
  * exist for a show that was never created.
+ *
+ * Shows and weekly specials share it. `kind` says which table the poster
+ * belongs to; everything else -- the resize, the staging, the order --
+ * is identical for both.
  */
+
+export type PosterKind = 'event' | 'recurring'
 
 type Props = {
   /** Null while the show does not exist yet -- stage the file, don't send it. */
   eventId: string | null
+  /** Whose poster this is. Defaults to a show. */
+  kind?: PosterKind
   posterUrl: string | null
   onChange: (url: string | null) => void
   /** Required in staging mode. Gets the resized file, or null when cleared. */
@@ -41,10 +49,12 @@ type Props = {
 export function uploadPoster(
   eventId: string,
   file: File,
-  onProgress?: (pct: number) => void
+  onProgress?: (pct: number) => void,
+  kind: PosterKind = 'event'
 ): Promise<string> {
   const body = new FormData()
   body.append('event_id', eventId)
+  body.append('kind', kind)
   body.append('file', file)
 
   return new Promise((resolve, reject) => {
@@ -67,7 +77,7 @@ export function uploadPoster(
   })
 }
 
-export default function PosterField({ eventId, posterUrl, onChange, onStage }: Props) {
+export default function PosterField({ eventId, kind = 'event', posterUrl, onChange, onStage }: Props) {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [note, setNote] = useState<string | null>(null)
@@ -77,6 +87,9 @@ export default function PosterField({ eventId, posterUrl, onChange, onStage }: P
   const inputRef = useRef<HTMLInputElement>(null)
 
   const staging = eventId === null
+  // Per kind, so a staged show poster and a staged weekly one can never
+  // share a label target.
+  const inputId = 'poster-' + kind + '-' + (eventId ?? 'new')
 
   // Revokes the PREVIOUS url when preview changes, and the current one on
   // unmount. Without it, every replaced pick leaks a blob for the life of
@@ -103,12 +116,12 @@ export default function PosterField({ eventId, posterUrl, onChange, onStage }: P
         // the row exists, which is what keeps Storage free of orphans.
         setPreview(URL.createObjectURL(shrunk.file))
         onStage?.(shrunk.file)
-        setNote(size + ' · uploads when you add the show')
+        setNote(size + (kind === 'recurring' ? ' · uploads when you add it' : ' · uploads when you add the show'))
         return
       }
 
       setNote(size + ', uploading…')
-      const url = await uploadPoster(eventId, shrunk.file, setProgress)
+      const url = await uploadPoster(eventId, shrunk.file, setProgress, kind)
       onChange(url)
       setNote('Uploaded · ' + size)
     } catch (err: any) {
@@ -135,7 +148,7 @@ export default function PosterField({ eventId, posterUrl, onChange, onStage }: P
       const res = await fetch('/api/admin/events/poster', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event_id: eventId }),
+        body: JSON.stringify({ event_id: eventId, kind }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not remove the poster.')
@@ -173,7 +186,7 @@ export default function PosterField({ eventId, posterUrl, onChange, onStage }: P
         */}
         <input
           ref={inputRef}
-          id={'poster-' + (eventId ?? 'new')}
+          id={inputId}
           className={styles.fileInput}
           type="file"
           accept="image/*"
@@ -183,7 +196,7 @@ export default function PosterField({ eventId, posterUrl, onChange, onStage }: P
             if (f) void choose(f)
           }}
         />
-        <label htmlFor={'poster-' + (eventId ?? 'new')} className={styles.fileButton} aria-disabled={busy}>
+        <label htmlFor={inputId} className={styles.fileButton} aria-disabled={busy}>
           {busy ? 'Working…' : shown ? 'Replace' : 'Add poster'}
         </label>
 

@@ -163,10 +163,12 @@ export type EventData = {
 
 
 export type RecurringEvent = {
-  /** Three-letter day badge, e.g. 'MON'. */
+  id: string
+  /** Three-letter day badge, e.g. 'MON'. See src/lib/recurring.ts. */
   day: string
   name: string
   support: string
+  /** Display string in the editor's grammar, e.g. '7 PM', '6–11 PM'. */
   time: string
   tickets: string
   /**
@@ -176,36 +178,27 @@ export type RecurringEvent = {
   poster_url?: string | null
 }
 
-export const RECURRING: RecurringEvent[] = [
-  {
-    day: 'MON',
-    name: "Madi's Madness Pool Tournament",
-    support: "Rack 'em up · anyone can play",
-    time: '7:30 PM',
-    tickets: '$5 Buy-In',
-    poster_url: '/assets/events/madis-madness-pool.jpg',
-  },
-  // Taco Tuesday removed 2026-06-30 — restore this entry (and the matching
-  // recurring_events row in supabase/seed.sql + the MARQUEE_ITEMS entry below)
-  // to bring it back:
-  // { day: 'TUE', name: 'Taco Tuesday', support: '$4 tacos every Tuesday night', time: 'All Day', tickets: 'No Cover' },
-  {
-    day: 'WED',
-    name: 'Free Pool Wednesday',
-    support: 'Tables on the house, all night long',
-    time: 'All Day',
-    tickets: 'No Cover',
-  },
-  {
-    day: 'SUN',
-    name: 'Karaoke Night',
-    support: 'Grab the mic · 6 PM til late',
-    time: '6 PM',
-    tickets: 'No Cover',
-  },
-]
+/*
+ * RECURRING moved to Supabase (2026-10).
+ *
+ * Weekly specials are edited at /admin/events ("Every week"), so the
+ * recurring_events table is the only source of truth. The hardcoded
+ * array that used to live here was a live fallback: an empty table or a
+ * failed query served it instead — which meant hiding every special in
+ * the editor would quietly bring back the old ones. fetchRecurring() now
+ * returns an empty list, and the "Every Week" strip renders nothing.
+ *
+ * What stays, because other files import it:
+ *   - RecurringEvent : the display shape, imported by queries.ts,
+ *                      ClientShell and Events.tsx
+ *
+ * The original rows live on in supabase/seed.sql, which now only
+ * inserts them into a completely empty table (first-run bootstrap).
+ */
 
 export const MARQUEE_ITEMS = [
+  // Hardcoded, NOT read from recurring_events: editing a weekly special
+  // at /admin/events does not change this strip.
   // Taco Tuesday removed 2026-06-30 — restore to bring it back:
   // { text: 'Tuesday', accent: '$4 Tacos' },
   { text: 'Wednesday', accent: 'Free Pool All Night' },

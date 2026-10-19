@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { isAdmin } from '@/lib/admin/guard'
 import { getEvent, POSTER_BUCKET, serviceClient, storageKeyFromUrl } from '@/lib/admin/events-repo'
+import { getRecurring } from '@/lib/admin/recurring-repo'
 
 /**
  * /api/admin/events/poster — event poster upload and removal.
@@ -18,6 +19,12 @@ import { getEvent, POSTER_BUCKET, serviceClient, storageKeyFromUrl } from '@/lib
  * PosterField), so a 4MB camera photo arrives as a WebP well under
  * 500KB. The ceiling below is the backstop for a client that did not,
  * not the expected size.
+ *
+ * TWO KINDS OF OWNER, ONE PIPELINE. `kind` is 'event' (a show; the
+ * default, so older clients are unaffected) or 'recurring' (a weekly
+ * special). Only the table and the key prefix differ -- the sniffing,
+ * the size cap, the write-then-point order and the orphan cleanup are
+ * the same code for both.
  */
 
 export const runtime = 'nodejs'
@@ -65,6 +72,31 @@ function sniff(bytes: Uint8Array): Sniffed | null {
   return null
 }
 
+type Owner = {
+  table: 'events' | 'recurring_events'
+  /** Storage folder: the show's slug, or weekly/<id> for a weekly special. */
+  prefix: string
+  poster_url: string | null
+}
+
+const Kind = z.enum(['event', 'recurring']).catch('event')
+
+/** The row a poster belongs to, or null when there is no such row. */
+async function findOwner(kind: 'event' | 'recurring', id: string): Promise<Owner | null> {
+  if (kind === 'recurring') {
+    const r = await getRecurring(id)
+    return r ? { table: 'recurring_events', prefix: 'weekly/' + r.id, poster_url: r.poster_url } : null
+  }
+  const ev = await getEvent(id)
+  return ev ? { table: 'events', prefix: ev.slug, poster_url: ev.poster_url } : null
+}
+
+const notFound = (kind: 'event' | 'recurring') =>
+  NextResponse.json(
+    { error: kind === 'recurring' ? 'Weekly event not found.' : 'Show not found.' },
+    { status: 404 }
+  )
+
 async function removeObject(key: string | null): Promise<boolean> {
   if (!key) return false
   const sb = serviceClient()
@@ -89,6 +121,7 @@ export async function POST(req: Request) {
   }
 
   const eventId = String(form.get('event_id') ?? '')
+  const kind = Kind.parse(form.get('kind') ?? undefined)
   if (!z.string().uuid().safeParse(eventId).success) {
     return NextResponse.json({ error: 'Missing event id.' }, { status: 400 })
   }
@@ -115,8 +148,8 @@ export async function POST(req: Request) {
   }
 
   const bytes = new Uint8Array(await file.arrayBuffer())
-  const kind = sniff(bytes)
-  if (!kind) {
+  const sniffed = sniff(bytes)
+  if (!sniffed) {
     return NextResponse.json(
       { error: 'That file is not a JPEG, PNG or WebP image.' },
       { status: 415 }
@@ -124,18 +157,18 @@ export async function POST(req: Request) {
   }
 
   try {
-    const event = await getEvent(eventId)
-    if (!event) return NextResponse.json({ error: 'Show not found.' }, { status: 404 })
+    const owner = await findOwner(kind, eventId)
+    if (!owner) return notFound(kind)
 
     const sb = serviceClient()
-    // Keyed by event and a random suffix, so replacing a poster writes a
+    // Keyed by owner and a random suffix, so replacing a poster writes a
     // NEW object rather than overwriting -- a CDN holding the old bytes
     // at the old URL cannot then serve them as the new poster.
     const suffix = Math.random().toString(36).slice(2, 10)
-    const key = event.slug + '/' + Date.now().toString(36) + '-' + suffix + '.' + kind.ext
+    const key = owner.prefix + '/' + Date.now().toString(36) + '-' + suffix + '.' + sniffed.ext
 
     const up = await sb.storage.from(BUCKET).upload(key, bytes, {
-      contentType: kind.mime,
+      contentType: sniffed.mime,
       cacheControl: '31536000',
       upsert: false,
     })
@@ -144,10 +177,10 @@ export async function POST(req: Request) {
     const { data } = sb.storage.from(BUCKET).getPublicUrl(key)
     const publicUrl = data.publicUrl
 
-    const previousKey = storageKeyFromUrl(event.poster_url)
+    const previousKey = storageKeyFromUrl(owner.poster_url)
 
     const { error } = await sb
-      .from('events')
+      .from(owner.table)
       .update({ poster_url: publicUrl })
       .eq('id', eventId)
     if (error) {
@@ -166,7 +199,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       poster_url: publicUrl,
       bytes: bytes.length,
-      type: kind.mime,
+      type: sniffed.mime,
       replaced: previousKey,
       removed_old: removedOld,
     })
@@ -180,21 +213,23 @@ export async function DELETE(req: Request) {
   if (!isAdmin()) return unauthorized()
 
   let eventId: string
+  let kind: 'event' | 'recurring'
   try {
     const body = await req.json()
     eventId = z.string().uuid().parse(body?.event_id)
+    kind = Kind.parse(body?.kind)
   } catch {
     return NextResponse.json({ error: 'Missing event id.' }, { status: 400 })
   }
 
   try {
-    const event = await getEvent(eventId)
-    if (!event) return NextResponse.json({ error: 'Show not found.' }, { status: 404 })
+    const owner = await findOwner(kind, eventId)
+    if (!owner) return notFound(kind)
 
-    const key = storageKeyFromUrl(event.poster_url)
+    const key = storageKeyFromUrl(owner.poster_url)
 
     const sb = serviceClient()
-    const { error } = await sb.from('events').update({ poster_url: null }).eq('id', eventId)
+    const { error } = await sb.from(owner.table).update({ poster_url: null }).eq('id', eventId)
     if (error) throw new Error(error.message)
 
     const removed = await removeObject(key)

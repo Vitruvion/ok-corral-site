@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, type ReactNode } from 'react'
-import { RECURRING, type EventData, type RelatedLink, type RecurringEvent } from '@/lib/data'
+import { type EventData, type RelatedLink, type RecurringEvent } from '@/lib/data'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
 import { downloadIcs } from '@/lib/ics'
 import { shareOrCopy } from '@/lib/share'
@@ -14,10 +14,11 @@ type Props = {
   recurring?: RecurringEvent[]
 }
 
-// Events always come from the caller now; there is no hardcoded
-// fallback lineup to fall back TO. An empty list renders an empty
-// section, which is honest, where a stale one would not be.
-export default function Events({ events = [], recurring = RECURRING }: Props = {}) {
+// Events and weekly specials always come from the caller now; there is
+// no hardcoded fallback lineup to fall back TO. An empty list renders an
+// empty section, which is honest, where a stale one would not be.
+// `recurring` arrives already in order -- see fetchRecurring().
+export default function Events({ events = [], recurring = [] }: Props = {}) {
   // Pick which row should be open on first render: an event explicitly
   // flagged featured, otherwise the soonest upcoming event so the list never
   // loads fully collapsed once a featured show ages out of the filtered set.
@@ -275,51 +276,54 @@ export default function Events({ events = [], recurring = RECURRING }: Props = {
           )}
         </div>
 
-        {/* Weekly Strip */}
-        <div className={styles.weekly}>
-          <div className={styles.weeklyHead}>
-            <span className="section-label">Every Week</span>
-            <span className={styles.weeklyLine} />
-          </div>
-          <div className={styles.weeklyGrid}>
-            {recurring.map(r => (
-              <div
-                key={r.day}
-                /* A card with a flyer spans the whole row — the 3-up grid is
-                   far too narrow to sit a poster next to the text. */
-                className={`${styles.weeklyCard} ${r.poster_url ? styles.weeklyCardFeatured : ''}`}
-              >
-                <div className={styles.weeklyCardLeft}>
-                  <span className={styles.weeklyEvery}>Every</span>
-                  <span className={styles.weeklyDay}>{r.day}</span>
+        {/* Weekly Strip. Absent rather than an empty heading when the bar
+            has hidden every weekly special. */}
+        {recurring.length > 0 && (
+          <div className={styles.weekly}>
+            <div className={styles.weeklyHead}>
+              <span className="section-label">Every Week</span>
+              <span className={styles.weeklyLine} />
+            </div>
+            <div className={styles.weeklyGrid}>
+              {recurring.map(r => (
+                <div
+                  key={r.id}
+                  /* A card with a flyer spans the whole row — the 3-up grid is
+                     far too narrow to sit a poster next to the text. */
+                  className={`${styles.weeklyCard} ${r.poster_url ? styles.weeklyCardFeatured : ''}`}
+                >
+                  <div className={styles.weeklyCardLeft}>
+                    <span className={styles.weeklyEvery}>Every</span>
+                    <span className={styles.weeklyDay}>{r.day}</span>
+                  </div>
+                  <div className={styles.weeklyCardRight}>
+                    <span className={styles.weeklyName}>{r.name}</span>
+                    {r.support && <span className={styles.weeklySupport}>{r.support}</span>}
+                    <span className={styles.weeklyMeta}>{[r.time, r.tickets].filter(Boolean).join(' · ')}</span>
+                  </div>
+                  {r.poster_url && (
+                    <button
+                      type="button"
+                      className={styles.weeklyPoster}
+                      onClick={() => setPoster({ src: r.poster_url as string, name: r.name })}
+                      aria-label={`View the ${r.name} poster`}
+                    >
+                      <ImageOrPlaceholder
+                        src={r.poster_url}
+                        alt={`${r.name} poster`}
+                        label={r.name}
+                        natural
+                        loading="lazy"
+                        className={styles.weeklyPosterImg}
+                      />
+                      <span className={styles.weeklyPosterZoom} aria-hidden="true">⤢</span>
+                    </button>
+                  )}
                 </div>
-                <div className={styles.weeklyCardRight}>
-                  <span className={styles.weeklyName}>{r.name}</span>
-                  <span className={styles.weeklySupport}>{r.support}</span>
-                  <span className={styles.weeklyMeta}>{r.time} · {r.tickets}</span>
-                </div>
-                {r.poster_url && (
-                  <button
-                    type="button"
-                    className={styles.weeklyPoster}
-                    onClick={() => setPoster({ src: r.poster_url as string, name: r.name })}
-                    aria-label={`View the ${r.name} poster`}
-                  >
-                    <ImageOrPlaceholder
-                      src={r.poster_url}
-                      alt={`${r.name} poster`}
-                      label={r.name}
-                      natural
-                      loading="lazy"
-                      className={styles.weeklyPosterImg}
-                    />
-                    <span className={styles.weeklyPosterZoom} aria-hidden="true">⤢</span>
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className={styles.foot}>
           <button className="btn btn-ghost">View Full Calendar →</button>

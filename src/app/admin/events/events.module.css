@@ -597,3 +597,83 @@
   line-height: 1.35;
   color: var(--ember);
 }
+
+/* ── One-time or weekly ───────────────────────────────────────── */
+/*
+ * The first choice on the create form. Two big halves rather than a
+ * small radio: it changes which fields follow, so it has to be
+ * impossible to miss.
+ */
+.kindToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.kindOn,
+.kindOff,
+.dayOn,
+.dayOff {
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.kindOn,
+.dayOn {
+  background: rgba(217, 119, 66, 0.16);
+  border: 1px solid var(--ember);
+  color: var(--ember);
+}
+
+.kindOff,
+.dayOff {
+  background: none;
+  border: 1px solid var(--ink-4);
+  color: var(--bone-mute);
+}
+
+/* Seven across fits a 390px phone at ~44px each; no wrap, no scroll. */
+.dayPicker {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.dayOn,
+.dayOff {
+  padding: 0;
+  letter-spacing: 0.04em;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeRow .input { flex: 1 1 auto; min-width: 0; }
+.timeRow .input:disabled { opacity: 0.4; }
+
+.check {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  color: var(--bone);
+  cursor: pointer;
+}
+
+.check input { width: 22px; height: 22px; accent-color: var(--ember); }
+
+.endInput { margin-top: 8px; }

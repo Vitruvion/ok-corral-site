@@ -1,7 +1,16 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import type { AdminEvent } from '@/lib/admin/events-repo'
+import type { AdminRecurring } from '@/lib/admin/recurring-repo'
+import {
+  HHMM,
+  WEEK_DAYS,
+  dayName,
+  formatWeeklyTime,
+  parseWeeklyTime,
+  type DayAbbr,
+} from '@/lib/recurring'
 import PosterField, { uploadPoster } from './PosterField'
 import styles from './events.module.css'
 
@@ -18,9 +27,14 @@ import styles from './events.module.css'
  * behind "More details", because adding a show should be three taps and
  * a save, not a scroll past twelve inputs to reach the button. Editing
  * is a considered action and shows everything.
+ *
+ * WEEKLY SPECIALS live here too ("Every week"), but in their own table
+ * and their own API -- /api/admin/recurring. They have a day of the week
+ * instead of a date, and no tickets, no featuring and no "past", so the
+ * sales panel is simply never rendered for them.
  */
 
-type Props = { initial: AdminEvent[] }
+type Props = { initial: AdminEvent[]; initialRecurring: AdminRecurring[] }
 
 type RowState = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -53,8 +67,9 @@ const prettyDate = (iso: string) => {
   return MONTHS[+m[2] - 1] + ' ' + +m[3] + ', ' + m[1]
 }
 
-export default function EventsEditor({ initial }: Props) {
+export default function EventsEditor({ initial, initialRecurring }: Props) {
   const [events, setEvents] = useState<AdminEvent[]>(initial)
+  const [recurring, setRecurring] = useState<AdminRecurring[]>(initialRecurring)
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const [state, setState] = useState<Record<string, RowState>>({})
   const [errors, setErrors] = useState<Record<string, string | null>>({})
@@ -77,6 +92,16 @@ export default function EventsEditor({ initial }: Props) {
     if (res.ok) {
       const data = await res.json()
       setEvents(data.events ?? [])
+    }
+  }, [])
+
+  // Already Monday-first: the API sorts with the same compareRecurring
+  // the homepage uses.
+  const refreshRecurring = useCallback(async () => {
+    const res = await fetch('/api/admin/recurring', { cache: 'no-store' })
+    if (res.ok) {
+      const data = await res.json()
+      setRecurring(data.recurring ?? [])
     }
   }, [])
 
@@ -191,21 +216,59 @@ export default function EventsEditor({ initial }: Props) {
     [refresh]
   )
 
+  /** A weekly special has nothing to confirm -- nobody holds a ticket for it. */
+  const patchWeekly = useCallback(
+    async (id: string, body: Record<string, unknown>): Promise<boolean> => {
+      setRow(id, 'saving')
+      const res = await fetch('/api/admin/recurring', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...body }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setRow(id, 'error', data.error || 'Could not save.')
+        return false
+      }
+      setRow(id, 'saved')
+      await refreshRecurring()
+      return true
+    },
+    [refreshRecurring]
+  )
+
+  const removeWeekly = useCallback(
+    async (r: AdminRecurring) => {
+      if (!window.confirm('Delete ' + r.name + '? The poster is deleted too. This cannot be undone.')) return
+      setRow(r.id, 'saving')
+      const res = await fetch('/api/admin/recurring', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: r.id }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) return setRow(r.id, 'error', data.error || 'Could not delete it.')
+      await refreshRecurring()
+    },
+    [refreshRecurring]
+  )
+
   return (
     <div className={styles.editor}>
       <CreateForm
         busy={creating}
-        onCreate={async (body, posterFile) => {
+        onCreate={async (kind, body, posterFile) => {
           setCreating(true)
           setPosterWarning(null)
+          const weekly = kind === 'weekly'
           try {
-            const res = await fetch('/api/admin/events', {
+            const res = await fetch(weekly ? '/api/admin/recurring' : '/api/admin/events', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body),
             })
             const data = await res.json().catch(() => ({}))
-            if (!res.ok) return data.error || 'Could not create the show.'
+            if (!res.ok) return data.error || (weekly ? 'Could not create the weekly event.' : 'Could not create the show.')
 
             /*
              * The poster goes up only now, with the id the insert just
@@ -221,18 +284,18 @@ export default function EventsEditor({ initial }: Props) {
              */
             if (posterFile) {
               try {
-                await uploadPoster(data.id, posterFile)
+                await uploadPoster(data.id, posterFile, undefined, weekly ? 'recurring' : 'event')
               } catch (err: any) {
                 setPosterWarning(
                   String(body.name) +
                     ' was added, but the poster did not upload: ' +
                     (err?.message || 'unknown error') +
-                    ' Open the show to add it.'
+                    (weekly ? ' Open it under Every week to add it.' : ' Open the show to add it.')
                 )
               }
             }
 
-            await refresh()
+            await (weekly ? refreshRecurring() : refresh())
             return null
           } finally {
             setCreating(false)
@@ -287,6 +350,24 @@ export default function EventsEditor({ initial }: Props) {
         />
       ))}
 
+      {/* Monday to Sunday, separate from dated shows. Hidden ones stay
+          in place, marked, rather than dropping to the bottom. */}
+      <h2 className={styles.sectionHead}>Every week</h2>
+      {recurring.length === 0 && <p className={styles.empty}>No weekly events.</p>}
+      {recurring.map(r => (
+        <RecurringRow
+          key={r.id}
+          r={r}
+          open={open[r.id] ?? false}
+          state={state[r.id] ?? 'idle'}
+          error={errors[r.id] ?? null}
+          onToggle={() => setOpen(p => ({ ...p, [r.id]: !p[r.id] }))}
+          onPatch={body => patchWeekly(r.id, body)}
+          onRemove={() => removeWeekly(r)}
+          onRefresh={refreshRecurring}
+        />
+      ))}
+
       {past.length > 0 && (
         <>
           <button className={styles.pastToggle} onClick={() => setShowPast(s => !s)}>
@@ -317,6 +398,8 @@ export default function EventsEditor({ initial }: Props) {
 }
 
 // ── Create ────────────────────────────────────────────────────────
+type CreateKind = 'once' | 'weekly'
+
 /**
  * Three fields and a save.
  *
@@ -324,15 +407,20 @@ export default function EventsEditor({ initial }: Props) {
  * and cannot derive. Everything else is optional and folded away: "we
  * just booked this, get it on the site" should not require scrolling
  * past a genre picker.
+ *
+ * "Every week" swaps the date for a day of the week and is the same
+ * three fields: name, day, start time. One-time is the default because
+ * that is what gets added most.
  */
 function CreateForm({
   busy,
   onCreate,
 }: {
   busy: boolean
-  onCreate: (body: Record<string, unknown>, posterFile: File | null) => Promise<string | null>
+  onCreate: (kind: CreateKind, body: Record<string, unknown>, posterFile: File | null) => Promise<string | null>
 }) {
   const [openForm, setOpenForm] = useState(false)
+  const [kind, setKind] = useState<CreateKind>('once')
   const [more, setMore] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   /**
@@ -340,51 +428,102 @@ function CreateForm({
    * until the save below succeeds.
    */
   const [posterFile, setPosterFile] = useState<File | null>(null)
-  const [f, setF] = useState({
+  const BLANK = {
     name: '', date: '', time: '',
     support: '', doors: '', genre: '', tickets: '', description: '', tags: '',
     youtube_url: '', signup_url: '',
-  })
+  }
+  const [f, setF] = useState(BLANK)
+  const [day, setDay] = useState<DayAbbr | ''>('')
+  const [wt, setWt] = useState<TimeForm>(EMPTY_TIME)
 
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) =>
     setF(p => ({ ...p, [k]: e.target.value }))
 
+  const weekly = kind === 'weekly'
   const weekday = weekdayFor(f.date)
-  const ready = f.name.trim() && f.date && f.time.trim()
+  const ready = weekly
+    ? f.name.trim() && day && timeReady(wt)
+    : f.name.trim() && f.date && f.time.trim()
+
+  const reset = () => {
+    setF(BLANK)
+    setDay('')
+    setWt(EMPTY_TIME)
+    setPosterFile(null)
+    setMore(false)
+    setKind('once')
+    setOpenForm(false)
+  }
 
   if (!openForm) {
     return (
       <button className={styles.addBtn} onClick={() => setOpenForm(true)}>
-        + Add a show
+        + Add a show or weekly event
       </button>
     )
   }
 
   return (
     <section className={styles.create}>
-      <h2 className={styles.sectionHead}>New show</h2>
+      <h2 className={styles.sectionHead}>{weekly ? 'New weekly event' : 'New show'}</h2>
+
+      <div className={styles.kindToggle} role="radiogroup" aria-label="How often">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={!weekly}
+          className={!weekly ? styles.kindOn : styles.kindOff}
+          onClick={() => setKind('once')}
+        >
+          One-time show
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={weekly}
+          className={weekly ? styles.kindOn : styles.kindOff}
+          onClick={() => setKind('weekly')}
+        >
+          Every week
+        </button>
+      </div>
 
       <label className={styles.field}>
         <span className={styles.label}>
           Name <em className={styles.req}>required</em>
         </span>
-        <input className={styles.input} value={f.name} onChange={set('name')} placeholder="Who's playing" />
+        <input
+          className={styles.input}
+          value={f.name}
+          onChange={set('name')}
+          placeholder={weekly ? 'Karaoke Night' : "Who's playing"}
+        />
       </label>
 
-      <label className={styles.field}>
-        <span className={styles.label}>
-          Date <em className={styles.req}>required</em>
-          {weekday && <em className={styles.derived}>{weekday}</em>}
-        </span>
-        <input className={styles.input} type="date" value={f.date} onChange={set('date')} />
-      </label>
+      {weekly ? (
+        <>
+          <DayPicker value={day} onChange={setDay} required />
+          <StartTimeField t={wt} onChange={setWt} required />
+        </>
+      ) : (
+        <>
+          <label className={styles.field}>
+            <span className={styles.label}>
+              Date <em className={styles.req}>required</em>
+              {weekday && <em className={styles.derived}>{weekday}</em>}
+            </span>
+            <input className={styles.input} type="date" value={f.date} onChange={set('date')} />
+          </label>
 
-      <label className={styles.field}>
-        <span className={styles.label}>
-          Time <em className={styles.req}>required</em>
-        </span>
-        <input className={styles.input} value={f.time} onChange={set('time')} placeholder="8:30 PM" />
-      </label>
+          <label className={styles.field}>
+            <span className={styles.label}>
+              Time <em className={styles.req}>required</em>
+            </span>
+            <input className={styles.input} value={f.time} onChange={set('time')} placeholder="8:30 PM" />
+          </label>
+        </>
+      )}
 
       <button className={styles.moreToggle} onClick={() => setMore(m => !m)}>
         {more ? '−' : '+'} More details
@@ -392,29 +531,45 @@ function CreateForm({
 
       {more && (
         <div className={styles.moreFields}>
-          <Field label="Support" value={f.support} onChange={set('support')} placeholder="w/ Tanner Bingaman" />
-          <Field
-            label="Doors"
-            value={f.doors}
-            onChange={set('doors')}
-            placeholder="7:30 PM"
-            hint="Not shown on the site, but used in the ticket email and at the door."
-          />
-          <Field label="Genre" value={f.genre} onChange={set('genre')} placeholder="Cajun alt-folk" />
-          <Field label="Tickets line" value={f.tickets} onChange={set('tickets')} placeholder="$15 at the door" />
-          <Field label="Tags" value={f.tags} onChange={set('tags')} placeholder="live music, 21+" hint="Comma separated." />
-          <Field label="YouTube URL" value={f.youtube_url} onChange={set('youtube_url')} />
-          <Field label="Sign-up URL" value={f.signup_url} onChange={set('signup_url')} hint="For contests. Separate from tickets." />
-          <label className={styles.field}>
-            <span className={styles.label}>Description</span>
-            <textarea className={styles.textarea} rows={4} value={f.description} onChange={set('description')} />
-          </label>
+          {weekly ? (
+            <WeeklyDetails
+              t={wt}
+              onTime={setWt}
+              support={f.support}
+              tickets={f.tickets}
+              onSupport={set('support')}
+              onTickets={set('tickets')}
+            />
+          ) : (
+            <>
+              <Field label="Support" value={f.support} onChange={set('support')} placeholder="w/ Tanner Bingaman" />
+              <Field
+                label="Doors"
+                value={f.doors}
+                onChange={set('doors')}
+                placeholder="7:30 PM"
+                hint="Not shown on the site, but used in the ticket email and at the door."
+              />
+              <Field label="Genre" value={f.genre} onChange={set('genre')} placeholder="Cajun alt-folk" />
+              <Field label="Tickets line" value={f.tickets} onChange={set('tickets')} placeholder="$15 at the door" />
+              <Field label="Tags" value={f.tags} onChange={set('tags')} placeholder="live music, 21+" hint="Comma separated." />
+              <Field label="YouTube URL" value={f.youtube_url} onChange={set('youtube_url')} />
+              <Field label="Sign-up URL" value={f.signup_url} onChange={set('signup_url')} hint="For contests. Separate from tickets." />
+              <label className={styles.field}>
+                <span className={styles.label}>Description</span>
+                <textarea className={styles.textarea} rows={4} value={f.description} onChange={set('description')} />
+              </label>
+            </>
+          )}
           {/*
-            eventId null -- the show does not exist yet, so this stages the
-            file rather than uploading it. See PosterField.
+            eventId null -- the row does not exist yet, so this stages the
+            file rather than uploading it. See PosterField. It sits in the
+            same place for both kinds, so switching kind keeps a staged
+            poster rather than silently dropping it.
           */}
           <PosterField
             eventId={null}
+            kind={weekly ? 'recurring' : 'event'}
             posterUrl={null}
             onChange={() => {}}
             onStage={setPosterFile}
@@ -430,27 +585,32 @@ function CreateForm({
           disabled={!ready || busy}
           onClick={async () => {
             setErr(null)
-            const message = await onCreate({
-              name: f.name,
-              date: f.date,
-              time: f.time,
-              support: f.support || undefined,
-              doors: f.doors || undefined,
-              genre: f.genre || undefined,
-              tickets: f.tickets || undefined,
-              description: f.description || undefined,
-              youtube_url: f.youtube_url || undefined,
-              signup_url: f.signup_url || undefined,
-              tags: f.tags ? f.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
-            }, posterFile)
+            const message = weekly
+              ? await onCreate('weekly', {
+                  name: f.name,
+                  day,
+                  time: timeBody(wt),
+                  support: f.support || undefined,
+                  tickets: f.tickets || undefined,
+                }, posterFile)
+              : await onCreate('once', {
+                  name: f.name,
+                  date: f.date,
+                  time: f.time,
+                  support: f.support || undefined,
+                  doors: f.doors || undefined,
+                  genre: f.genre || undefined,
+                  tickets: f.tickets || undefined,
+                  description: f.description || undefined,
+                  youtube_url: f.youtube_url || undefined,
+                  signup_url: f.signup_url || undefined,
+                  tags: f.tags ? f.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
+                }, posterFile)
             if (message) return setErr(message)
-            setF({ name: '', date: '', time: '', support: '', doors: '', genre: '', tickets: '', description: '', tags: '', youtube_url: '', signup_url: '' })
-            setPosterFile(null)
-            setMore(false)
-            setOpenForm(false)
+            reset()
           }}
         >
-          {busy ? 'Saving…' : 'Add show'}
+          {busy ? 'Saving…' : weekly ? 'Add weekly event' : 'Add show'}
         </button>
         <button
           className={styles.cancelBtn}
@@ -776,5 +936,303 @@ function SalesPanel({
         </div>
       )}
     </div>
+  )
+}
+
+// ── Weekly ────────────────────────────────────────────────────────
+/**
+ * The time of a weekly special, as the form holds it.
+ *
+ * Real inputs, not free text: the API turns these parts into the
+ * display string the homepage prints ("7 PM", "6–11 PM", "6 PM til
+ * late", "All Day") -- see src/lib/recurring.ts -- so every row is in a
+ * shape that sorts by start time and reads back into this form.
+ */
+type TimeForm = { allDay: boolean; start: string; endMode: 'none' | 'at' | 'late'; end: string }
+
+const EMPTY_TIME: TimeForm = { allDay: false, start: '', endMode: 'none', end: '' }
+
+function timeFormFrom(text: string | null): TimeForm {
+  const t = parseWeeklyTime(text)
+  if (!t) return EMPTY_TIME
+  if (t.allDay) return { ...EMPTY_TIME, allDay: true }
+  return {
+    allDay: false,
+    start: t.start,
+    endMode: t.end ? 'at' : t.late ? 'late' : 'none',
+    end: t.end ?? '',
+  }
+}
+
+const timeReady = (t: TimeForm) =>
+  t.allDay || (HHMM.test(t.start) && (t.endMode !== 'at' || HHMM.test(t.end)))
+
+/** What the API takes. Only meaningful once timeReady(t). */
+const timeBody = (t: TimeForm) => ({
+  all_day: t.allDay,
+  start: t.allDay ? null : t.start,
+  end: !t.allDay && t.endMode === 'at' ? t.end : null,
+  til_late: !t.allDay && t.endMode === 'late',
+})
+
+/** Exactly what the homepage will print, or '' while incomplete. */
+const timePreview = (t: TimeForm) =>
+  timeReady(t)
+    ? formatWeeklyTime(
+        t.allDay
+          ? { allDay: true }
+          : { allDay: false, start: t.start, end: t.endMode === 'at' ? t.end : null, late: t.endMode === 'late' }
+      )
+    : ''
+
+/** Seven buttons, one tap. A select would be two taps and a wheel. */
+function DayPicker({
+  value, onChange, required,
+}: {
+  value: string
+  onChange: (d: DayAbbr) => void
+  required?: boolean
+}) {
+  return (
+    <div className={styles.field}>
+      <span className={styles.label}>
+        Day {required && <em className={styles.req}>required</em>}
+        {value && <em className={styles.derived}>Every {dayName(value)}</em>}
+      </span>
+      <div className={styles.dayPicker} role="radiogroup" aria-label="Day of the week">
+        {WEEK_DAYS.map(d => (
+          <button
+            key={d.abbr}
+            type="button"
+            role="radio"
+            aria-checked={value === d.abbr}
+            aria-label={d.long}
+            className={value === d.abbr ? styles.dayOn : styles.dayOff}
+            onClick={() => onChange(d.abbr)}
+          >
+            {d.short}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function StartTimeField({
+  t, onChange, required, hint,
+}: {
+  t: TimeForm
+  onChange: (t: TimeForm) => void
+  required?: boolean
+  hint?: string
+}) {
+  const preview = timePreview(t)
+  const id = useId()
+  return (
+    <div className={styles.field}>
+      <label className={styles.label} htmlFor={id}>
+        Start time {required && <em className={styles.req}>required</em>}
+        {preview && <em className={styles.derived}>{preview}</em>}
+      </label>
+      <div className={styles.timeRow}>
+        <input
+          id={id}
+          className={styles.input}
+          type="time"
+          step={900}
+          value={t.allDay ? '' : t.start}
+          disabled={t.allDay}
+          onChange={e => onChange({ ...t, start: e.target.value })}
+        />
+        <label className={styles.check}>
+          <input
+            type="checkbox"
+            checked={t.allDay}
+            onChange={e => onChange({ ...t, allDay: e.target.checked })}
+          />
+          All day
+        </label>
+      </div>
+      {hint && <span className={styles.hint}>{hint}</span>}
+    </div>
+  )
+}
+
+/** The optional half of a weekly special: when it ends, tagline, price. */
+function WeeklyDetails({
+  t, onTime, support, tickets, onSupport, onTickets,
+}: {
+  t: TimeForm
+  onTime: (t: TimeForm) => void
+  support: string
+  tickets: string
+  onSupport: (e: { target: { value: string } }) => void
+  onTickets: (e: { target: { value: string } }) => void
+}) {
+  return (
+    <>
+      {!t.allDay && (
+        <div className={styles.field}>
+          <span className={styles.label}>Ends</span>
+          <select
+            className={styles.input}
+            value={t.endMode}
+            onChange={e => onTime({ ...t, endMode: e.target.value as TimeForm['endMode'] })}
+            aria-label="Ends"
+          >
+            <option value="none">No end time</option>
+            <option value="late">Til late</option>
+            <option value="at">At a set time</option>
+          </select>
+          {t.endMode === 'at' && (
+            <input
+              className={styles.input + ' ' + styles.endInput}
+              type="time"
+              step={900}
+              value={t.end}
+              onChange={e => onTime({ ...t, end: e.target.value })}
+              aria-label="End time"
+            />
+          )}
+        </div>
+      )}
+      <Field
+        label="Tagline"
+        value={support}
+        onChange={onSupport}
+        placeholder="Grab the mic · anyone can sing"
+        hint="The line under the name."
+      />
+      <Field label="Price line" value={tickets} onChange={onTickets} placeholder="No Cover" />
+    </>
+  )
+}
+
+// ── One weekly special ────────────────────────────────────────────
+/**
+ * Same row as a show -- name, state, hide/restore, delete -- minus
+ * everything a weekly special does not have. There is deliberately no
+ * SalesPanel and no "Make featured" here: weekly specials are never
+ * ticketed, and featuring is for the one dated show that auto-opens.
+ */
+function RecurringRow({
+  r, open, state, error, onToggle, onPatch, onRemove, onRefresh,
+}: {
+  r: AdminRecurring
+  open: boolean
+  state: RowState
+  error: string | null
+  onToggle: () => void
+  onPatch: (body: Record<string, unknown>) => Promise<boolean>
+  onRemove: () => void
+  onRefresh: () => Promise<void>
+}) {
+  const [d, setD] = useState({
+    name: r.name,
+    support: r.support ?? '',
+    tickets: r.tickets ?? '',
+    sort_order: String(r.sort_order),
+  })
+  const [day, setDay] = useState<string>(r.day)
+  const [t, setT] = useState<TimeForm>(() => timeFormFrom(r.time))
+  const set = (k: keyof typeof d) => (e: { target: { value: string } }) =>
+    setD(p => ({ ...p, [k]: e.target.value }))
+
+  /**
+   * Text from before the editor existed that is not in its grammar. Kept
+   * as-is on save unless a start time is picked, so opening an old row
+   * to fix a typo in its name cannot blank its time.
+   */
+  const legacy = r.time && !parseWeeklyTime(r.time) ? r.time : null
+  const ready = timeReady(t)
+
+  return (
+    <section className={r.active ? styles.row : styles.rowOff}>
+      {!r.active && (
+        <div className={styles.hiddenStrip}>
+          <span className={styles.hiddenLabel}>Hidden from the site</span>
+          <button className={styles.restoreBtn} onClick={() => onPatch({ active: true })}>
+            Restore
+          </button>
+        </div>
+      )}
+
+      <button className={styles.rowHead} onClick={onToggle} aria-expanded={open}>
+        <span className={styles.rowMain}>
+          <span className={styles.rowName}>{r.name}</span>
+          <span className={styles.rowMeta}>
+            Every {dayName(r.day)}
+            {r.time ? ' · ' + r.time : ''}
+          </span>
+        </span>
+        <span className={styles.chevron}>{open ? '−' : '+'}</span>
+      </button>
+
+      {open && (
+        <div className={styles.rowBody}>
+          <label className={styles.field}>
+            <span className={styles.label}>Name</span>
+            <input className={styles.input} value={d.name} onChange={set('name')} />
+          </label>
+
+          <DayPicker value={day} onChange={setDay} />
+          <StartTimeField
+            t={t}
+            onChange={setT}
+            hint={legacy ? 'Currently shows “' + legacy + '”. Pick a start time to change it.' : undefined}
+          />
+          <WeeklyDetails
+            t={t}
+            onTime={setT}
+            support={d.support}
+            tickets={d.tickets}
+            onSupport={set('support')}
+            onTickets={set('tickets')}
+          />
+          <Field
+            label="Sort order"
+            value={d.sort_order}
+            onChange={set('sort_order')}
+            hint="Only breaks a tie between two on the same day and time. Lower sorts first."
+          />
+
+          <PosterField
+            eventId={r.id}
+            kind="recurring"
+            posterUrl={r.poster_url}
+            onChange={() => void onRefresh()}
+          />
+
+          <div className={styles.rowActions}>
+            <button
+              className={styles.saveBtn}
+              disabled={state === 'saving' || (!ready && !legacy)}
+              onClick={() =>
+                onPatch({
+                  name: d.name,
+                  day,
+                  ...(ready ? { time: timeBody(t) } : {}),
+                  support: d.support,
+                  tickets: d.tickets,
+                  sort_order: Number(d.sort_order) || 0,
+                })
+              }
+            >
+              {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : 'Save'}
+            </button>
+
+            <button className={styles.ghostBtn} onClick={() => onPatch({ active: !r.active })}>
+              {r.active ? 'Hide from site' : 'Show on site'}
+            </button>
+
+            <button className={styles.dangerBtn} onClick={onRemove}>
+              Delete
+            </button>
+          </div>
+
+          {error && <div className={styles.error}>{error}</div>}
+        </div>
+      )}
+    </section>
   )
 }

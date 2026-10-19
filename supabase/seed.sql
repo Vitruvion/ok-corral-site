@@ -185,8 +185,27 @@ end
 $events_bootstrap$;
 
 -- -- Recurring Events --------------------------------------------
-delete from recurring_events;
+-- ****************************************************************
+-- *  WEEKLY SPECIALS ARE NO LONGER SEEDED.                       *
+-- *                                                              *
+-- *  The bar edits them at /admin/events ("Every week"), so      *
+-- *  Supabase is the authoritative copy. Re-running this file    *
+-- *  used to DELETE and re-INSERT every recurring_events row,    *
+-- *  which would silently throw away every name, day, time and   *
+-- *  poster the owners had entered.                              *
+-- *                                                              *
+-- *  The block below therefore only runs when the table is       *
+-- *  completely empty - i.e. first-run bootstrapping of a fresh  *
+-- *  database. On any seeded database it is a no-op.             *
+-- *                                                              *
+-- *  To deliberately reset weekly specials to these defaults,    *
+-- *  empty the table first:  delete from recurring_events;       *
+-- ****************************************************************
 -- poster_url requires migration 0008_recurring_events_poster.sql. Run it first.
+do $recurring_bootstrap$
+begin
+if not exists (select 1 from recurring_events) then
+
 insert into recurring_events (day_abbr, name, support, time, tickets, poster_url, sort_order)
 values
   (E'MON', E'Madi''s Madness Pool Tournament', E'Rack ''em up \u00B7 anyone can play', E'7:30 PM', E'$5 Buy-In', E'/assets/events/madis-madness-pool.jpg', 1),
@@ -194,6 +213,10 @@ values
   -- (E'TUE', E'Taco Tuesday',         E'$4 tacos every Tuesday night', E'All Day', E'No Cover', null, 2),
   (E'WED', E'Free Pool Wednesday',  E'Tables on the house, all night long',     E'All Day', E'No Cover', null, 3),
   (E'SUN', E'Karaoke Night',        E'Grab the mic \u00B7 6 PM til late',            E'6 PM',    E'No Cover', null, 4);
+
+end if;
+end
+$recurring_bootstrap$;
 
 -- -- Drinks ------------------------------------------------------
 -- ****************************************************************

@@ -1,8 +1,8 @@
 import { getSupabase } from './supabase'
 import { fetchInstagramPosts } from './instagram'
 import { filterUpcomingEvents } from './events'
+import { sortRecurring } from './recurring'
 import {
-  RECURRING as FALLBACK_RECURRING,
   MERCH as FALLBACK_MERCH,
   DRINK_TABS,
   SHOW_MERCH,
@@ -125,27 +125,35 @@ export async function fetchEvents(): Promise<EventData[]> {
 }
 
 export async function fetchRecurring(): Promise<RecurringData[]> {
+  // No hardcoded fallback, same reasoning as fetchEvents: weekly specials
+  // are edited at /admin/events, so an empty table means the bar hid them
+  // all -- and serving the old data.ts list instead would undo that.
   const sb = getSupabase()
-  if (!sb) return FALLBACK_RECURRING
+  if (!sb) return []
   try {
     const { data, error } = await sb
       .from('recurring_events')
-      .select('day_abbr, name, support, time, tickets, poster_url')
+      .select('id, day_abbr, name, support, time, tickets, poster_url, sort_order')
       .eq('active', true)
-      .order('sort_order', { ascending: true })
     if (error) throw error
-    if (!data || data.length === 0) return FALLBACK_RECURRING
-    return data.map(r => ({
-      day: m(r.day_abbr),
-      name: m(r.name),
-      support: m(r.support),
-      time: m(r.time),
-      tickets: m(r.tickets),
-      poster_url: r.poster_url ?? null,
-    }))
+    // Ordered here rather than by the query: "by start time" means the
+    // parsed time, which Postgres only has as display text.
+    // See src/lib/recurring.ts.
+    return sortRecurring(
+      (data ?? []).map(r => ({
+        id: String(r.id),
+        day: m(r.day_abbr),
+        name: m(r.name),
+        support: m(r.support),
+        time: m(r.time),
+        tickets: m(r.tickets),
+        poster_url: r.poster_url ?? null,
+        sort_order: Number(r.sort_order ?? 0),
+      }))
+    ).map(({ sort_order: _ignored, ...r }) => r)
   } catch (e) {
     log('recurring', e)
-    return FALLBACK_RECURRING
+    return []
   }
 }
 
