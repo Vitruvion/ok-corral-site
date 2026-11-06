@@ -56,7 +56,11 @@
   display: block;
 }
 
-.post:hover .over { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .post:hover .over {
+    opacity: 1;
+  }
+}
 
 .over {
   position: absolute;

@@ -33,7 +33,11 @@
   transition: color 180ms ease;
 }
 
-.blockText a:hover { color: var(--ember); }
+@media (hover: hover) and (pointer: fine) {
+  .blockText a:hover {
+    color: var(--ember);
+  }
+}
 
 /* Hours grid */
 .hoursGrid {

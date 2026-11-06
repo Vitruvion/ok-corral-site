@@ -18,9 +18,11 @@
   transition: all 180ms ease;
 }
 
-.filter:hover {
-  border-color: var(--bone);
-  color: var(--bone);
+@media (hover: hover) and (pointer: fine) {
+  .filter:hover {
+    border-color: var(--bone);
+    color: var(--bone);
+  }
 }
 
 .filterActive {
@@ -40,10 +42,21 @@
   cursor: pointer;
 }
 
-.card:hover .overlay { opacity: 1; }
-.card:hover .image img,
-.card:hover .imgPlaceholder { transform: translateY(-4px); }
-.card:hover .quickAdd { opacity: 1; transform: translateY(0); }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .overlay {
+    opacity: 1;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .image img, .card:hover .imgPlaceholder {
+    transform: translateY(-4px);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .quickAdd {
+    opacity: 1; transform: translateY(0);
+  }
+}
 
 .image {
   aspect-ratio: 4/5;
@@ -157,7 +170,11 @@
   transition: all 200ms ease;
 }
 
-.quickAdd:hover { background: var(--ember); }
+@media (hover: hover) and (pointer: fine) {
+  .quickAdd:hover {
+    background: var(--ember);
+  }
+}
 
 @media (hover: none) {
   .quickAdd { opacity: 1; transform: translateY(0); }

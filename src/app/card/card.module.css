@@ -558,9 +558,11 @@
   width: 100%;
 }
 
-.submit:hover:not(:disabled) {
-  background: #f0884a;
-  border-color: #f0884a;
+@media (hover: hover) and (pointer: fine) {
+  .submit:hover:not(:disabled) {
+    background: #f0884a;
+    border-color: #f0884a;
+  }
 }
 
 .submit:disabled {
@@ -670,16 +672,20 @@
   transition: background 180ms ease;
 }
 
-.stickyBtn:hover {
-  background: #f0884a;
+@media (hover: hover) and (pointer: fine) {
+  .stickyBtn:hover {
+    background: #f0884a;
+  }
 }
 
 .stickyArrow {
   transition: transform 180ms ease;
 }
 
-.stickyBtn:hover .stickyArrow {
-  transform: rotate(-20deg) translateX(3px);
+@media (hover: hover) and (pointer: fine) {
+  .stickyBtn:hover .stickyArrow {
+    transform: rotate(-20deg) translateX(3px);
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────── */

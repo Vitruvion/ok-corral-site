@@ -138,9 +138,11 @@ body::after {
   text-decoration: none;
 }
 
-.btn:hover {
-  background: var(--bone);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--bone);
+    color: var(--ink);
+  }
 }
 
 .btn-primary {
@@ -149,9 +151,11 @@ body::after {
   color: var(--ink);
 }
 
-.btn-primary:hover {
-  background: #f0884a;
-  border-color: #f0884a;
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    background: #f0884a;
+    border-color: #f0884a;
+  }
 }
 
 .btn-ghost {
@@ -159,17 +163,21 @@ body::after {
   color: var(--bone);
 }
 
-.btn-ghost:hover {
-  border-color: var(--bone);
-  color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .btn-ghost:hover {
+    border-color: var(--bone);
+    color: var(--ember);
+  }
 }
 
 .btn-door .arrow {
   transition: transform 180ms ease;
 }
 
-.btn-door:hover .arrow {
-  transform: rotate(-20deg) translateX(3px);
+@media (hover: hover) and (pointer: fine) {
+  .btn-door:hover .arrow {
+    transform: rotate(-20deg) translateX(3px);
+  }
 }
 
 /* ── 7. Ornaments ─────────────────────────────────── */

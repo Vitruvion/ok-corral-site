@@ -203,9 +203,11 @@
   line-height: 1;
 }
 
-.qtyBtn:hover {
-  border-color: var(--ember);
-  color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .qtyBtn:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
 }
 
 .qty {

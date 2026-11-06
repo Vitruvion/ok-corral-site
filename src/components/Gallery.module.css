@@ -15,7 +15,11 @@
   cursor: pointer;
 }
 
-.item:hover .zoom { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .item:hover .zoom {
+    opacity: 1;
+  }
+}
 
 .zoom {
   position: absolute;
@@ -145,7 +149,11 @@
   transition: all 180ms ease;
 }
 
-.lbNav:hover { background: var(--ember); border-color: var(--ember); }
+@media (hover: hover) and (pointer: fine) {
+  .lbNav:hover {
+    background: var(--ember); border-color: var(--ember);
+  }
+}
 
 .lbPrev { left: 20px; }
 .lbNext { right: 20px; }

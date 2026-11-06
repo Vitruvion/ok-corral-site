@@ -97,7 +97,11 @@
   transition: background 180ms ease;
 }
 
-.newsBtn:hover { background: var(--ember); }
+@media (hover: hover) and (pointer: fine) {
+  .newsBtn:hover {
+    background: var(--ember);
+  }
+}
 
 .newsDone {
   display: flex;
@@ -172,7 +176,11 @@
   transition: color 180ms ease;
 }
 
-.col a:hover { color: var(--ember); }
+@media (hover: hover) and (pointer: fine) {
+  .col a:hover {
+    color: var(--ember);
+  }
+}
 
 /* Bottom */
 .bottom {

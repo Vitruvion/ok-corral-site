@@ -1,6 +1,10 @@
 .overlay {
   position: fixed;
   inset: 0;
+  /* The VISIBLE viewport. iOS's 100vh includes the strip behind Safari's
+     toolbar, which is where the bottom of the menu used to disappear. */
+  height: 100vh;
+  height: 100dvh;
   z-index: 500;
   background: rgba(11,9,8,0.85);
   backdrop-filter: blur(8px);
@@ -11,21 +15,41 @@
   position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
   width: min(420px, 88vw);
   background: var(--ink-2);
   border-left: 1px solid rgba(235,228,212,0.08);
-  padding: 24px 28px 40px;
+  padding-top: 24px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   animation: slide-in-right 280ms cubic-bezier(0.2,0.7,0.2,1);
 }
 
+/* Fixed at the top of the drawer -- only .scroll below it moves, so the
+   close button is reachable however far down the menu has been scrolled. */
 .head {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 0 28px 20px;
+}
+
+/* The drawer's content is taller than a short phone (842px against 667),
+   so it scrolls -- inside the drawer, never the page behind it. */
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* Clear of the home indicator. env() only reports an inset when the
+     page uses viewport-fit=cover; without it, 40px is the floor. */
+  padding: 0 28px calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 .headLabel {
@@ -55,8 +79,10 @@
   color: var(--ember);
 }
 
+/* Takes up the slack on a tall screen, so Find Us sits at the bottom;
+   never shrinks, so on a short one the content scrolls instead. */
 .nav {
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .navLink {
@@ -76,13 +102,40 @@
   border-bottom: 1px solid rgba(235,228,212,0.08);
 }
 
-.navLink:hover,
+/* Pressed: feedback for as long as the finger is down, and no longer. */
 .navLink:active {
   color: var(--ember);
   padding-left: 6px;
 }
 
-.navLink:hover .navArrow {
+/* Hover only where there is a real pointer. iOS keeps :hover on the last
+   thing tapped, so on a phone a hover rule leaves that item orange and
+   shifted every time the menu is reopened. */
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover {
+    color: var(--ember);
+    padding-left: 6px;
+  }
+
+  .navLink:hover .navArrow {
+    transform: translateX(4px);
+  }
+
+  .socialLink:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
+}
+
+/* Keyboard focus gets the same treatment, plus a ring. */
+.navLink:focus-visible {
+  color: var(--ember);
+  padding-left: 6px;
+  outline: 1px solid var(--ember);
+  outline-offset: 4px;
+}
+
+.navLink:focus-visible .navArrow {
   transform: translateX(4px);
 }
 
@@ -160,7 +213,7 @@
   transition: all 180ms ease;
 }
 
-.socialLink:hover {
+.socialLink:focus-visible {
   border-color: var(--ember);
   color: var(--ember);
 }

@@ -21,8 +21,12 @@
   transition: width 300ms ease;
 }
 
-.row:hover { padding-left: 16px; }
-.row:hover::before { width: 4px; }
+/* Hover only with a real pointer: iOS keeps :hover on the last row
+   tapped, which left a closed row shifted with its ember bar showing. */
+@media (hover: hover) and (pointer: fine) {
+  .row:hover { padding-left: 16px; }
+  .row:hover::before { width: 4px; }
+}
 
 /* Persistent open state — pulls the row in like hover and keeps the
    ember bar visible to signal "this one's expanded". */
@@ -207,9 +211,11 @@
   text-decoration: none;
 }
 
-.relatedCard:hover {
-  border-color: rgba(217,119,66,0.45);
-  background: rgba(20,17,16,0.7);
+@media (hover: hover) and (pointer: fine) {
+  .relatedCard:hover {
+    border-color: rgba(217,119,66,0.45);
+    background: rgba(20,17,16,0.7);
+  }
 }
 
 .relatedThumb {
@@ -236,9 +242,11 @@
   transition: color 200ms ease, background 200ms ease;
 }
 
-.relatedCard:hover .relatedIcon {
-  color: var(--ember);
-  background: rgba(217,119,66,0.08);
+@media (hover: hover) and (pointer: fine) {
+  .relatedCard:hover .relatedIcon {
+    color: var(--ember);
+    background: rgba(217,119,66,0.08);
+  }
 }
 
 .relatedIcon svg {
@@ -262,8 +270,10 @@
   line-height: 1;
 }
 
-.relatedCard:hover .relatedName {
-  color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .relatedCard:hover .relatedName {
+    color: var(--ember);
+  }
 }
 
 .relatedRole {
@@ -283,8 +293,10 @@
   transition: text-decoration-color 180ms ease;
 }
 
-.descLink:hover {
-  text-decoration-color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .descLink:hover {
+    text-decoration-color: var(--ember);
+  }
 }
 
 /* Fixed-position toast for Share/Add-to-Calendar feedback. Lives on the
@@ -458,8 +470,10 @@
   transition: border-color 200ms ease;
 }
 
-.weeklyCard:hover {
-  border-color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .weeklyCard:hover {
+    border-color: var(--ember);
+  }
 }
 
 /* Weekly event with a flyer: takes the full grid row so the poster has
@@ -492,10 +506,15 @@
   transition: border-color 200ms ease, transform 200ms ease;
 }
 
-.weeklyPoster:hover,
 .weeklyPoster:focus-visible {
   border-color: var(--ember);
   transform: translateY(-2px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .weeklyPoster:hover {
+    border-color: var(--ember);
+    transform: translateY(-2px);
+  }
 }
 
 .weeklyPosterImg {
@@ -514,9 +533,13 @@
   transition: opacity 200ms ease;
 }
 
-.weeklyPoster:hover .weeklyPosterZoom,
 .weeklyPoster:focus-visible .weeklyPosterZoom {
   opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .weeklyPoster:hover .weeklyPosterZoom {
+    opacity: 1;
+  }
 }
 
 /* Full-size flyer */

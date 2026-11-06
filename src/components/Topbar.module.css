@@ -142,9 +142,11 @@
   transition: all 180ms ease;
 }
 
-.cartBtn:hover {
-  border-color: var(--ember);
-  color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .cartBtn:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
 }
 
 .cartLabel {}
@@ -176,12 +178,16 @@
   transition: all 180ms ease;
 }
 
-.menuBtn:hover {
-  border-color: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .menuBtn:hover {
+    border-color: var(--ember);
+  }
 }
 
-.menuBtn:hover .menuBar {
-  background: var(--ember);
+@media (hover: hover) and (pointer: fine) {
+  .menuBtn:hover .menuBar {
+    background: var(--ember);
+  }
 }
 
 .menuBar {

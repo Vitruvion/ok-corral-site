@@ -34,8 +34,10 @@
   pointer-events: none;
 }
 
-.art:hover {
-  transform: perspective(800px) rotateY(-4deg) rotateX(1deg) translateY(-4px);
+@media (hover: hover) and (pointer: fine) {
+  .art:hover {
+    transform: perspective(800px) rotateY(-4deg) rotateX(1deg) translateY(-4px);
+  }
 }
 
 .artContent {

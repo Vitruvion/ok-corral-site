@@ -68,7 +68,11 @@
   transition: color 180ms ease;
 }
 
-.directLink:hover { color: var(--ember); }
+@media (hover: hover) and (pointer: fine) {
+  .directLink:hover {
+    color: var(--ember);
+  }
+}
 
 /* Form */
 .form {

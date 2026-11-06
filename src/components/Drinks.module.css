@@ -134,10 +134,12 @@
   color: var(--bone);
 }
 
-.featCta:hover {
-  background: var(--rust);
-  border-color: var(--rust);
-  color: var(--bone);
+@media (hover: hover) and (pointer: fine) {
+  .featCta:hover {
+    background: var(--rust);
+    border-color: var(--rust);
+    color: var(--bone);
+  }
 }
 
 .featRight {
@@ -197,7 +199,11 @@
   scroll-snap-align: start;
 }
 
-.tab:hover { color: var(--bone); }
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover {
+    color: var(--bone);
+  }
+}
 
 .tabActive {
   color: var(--ember);
@@ -226,9 +232,11 @@
   transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
 }
 
-.card:hover {
-  border-color: rgba(217,119,66,0.4);
-  background: rgba(20,17,16,0.65);
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: rgba(217,119,66,0.4);
+    background: rgba(20,17,16,0.65);
+  }
 }
 
 .cardHead {
