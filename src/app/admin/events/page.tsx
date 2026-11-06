@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { requireAdminPage } from '@/lib/admin/guard'
 import { listEvents, type AdminEvent } from '@/lib/admin/events-repo'
 import { listRecurring, type AdminRecurring } from '@/lib/admin/recurring-repo'
+import { withPosterSizes } from '@/lib/poster-size'
 import BackToDashboard from '../BackToDashboard'
 import EventsEditor from './EventsEditor'
 import styles from './events.module.css'
@@ -29,7 +30,11 @@ export default async function AdminEventsPage() {
 
   // Loaded independently: a failure reading one list should not hide
   // the other.
-  const [shows, weekly] = await Promise.allSettled([listEvents(), listRecurring()])
+  // Poster sizes come along so the previews reserve their exact box.
+  const [shows, weekly] = await Promise.allSettled([
+    listEvents().then(withPosterSizes),
+    listRecurring().then(withPosterSizes),
+  ])
   const events: AdminEvent[] = shows.status === 'fulfilled' ? shows.value : []
   const recurring: AdminRecurring[] = weekly.status === 'fulfilled' ? weekly.value : []
   const why = (r: PromiseSettledResult<unknown>, fallback: string) =>

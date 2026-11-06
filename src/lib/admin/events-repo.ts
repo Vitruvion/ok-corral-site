@@ -6,6 +6,7 @@ import { countAdmissions } from '@/lib/tickets/occupancy'
 // venue's calendar day in America/Los_Angeles.
 import { isEventUpcoming, venueTodayParts } from '@/lib/events'
 import type { EventData } from '@/lib/data'
+import type { PosterSize } from '@/lib/poster-size'
 
 /**
  * Admin-side events access.
@@ -31,6 +32,12 @@ export type AdminEvent = {
   tags: string[]
   description: string | null
   poster_url: string | null
+  /**
+   * Set only where the editor is rendered (page + GET), via
+   * withPosterSizes -- not by listEvents itself, which every write path
+   * calls through getEvent and which should not fetch image headers.
+   */
+  poster_size?: PosterSize | null
   active: boolean
   featured: boolean
   sort_order: number

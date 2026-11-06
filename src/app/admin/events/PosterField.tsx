@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { formatBytes, resizeForUpload } from '@/lib/admin/image-resize'
+import type { PosterSize } from '@/lib/poster-size'
+import PosterImage from '@/components/PosterImage'
 import styles from './events.module.css'
 
 /**
@@ -35,6 +37,8 @@ type Props = {
   /** Whose poster this is. Defaults to a show. */
   kind?: PosterKind
   posterUrl: string | null
+  /** posterUrl's pixel size, read on the server, so the preview's box is exact. */
+  posterSize?: PosterSize | null
   onChange: (url: string | null) => void
   /** Required in staging mode. Gets the resized file, or null when cleared. */
   onStage?: (file: File | null) => void
@@ -77,13 +81,15 @@ export function uploadPoster(
   })
 }
 
-export default function PosterField({ eventId, kind = 'event', posterUrl, onChange, onStage }: Props) {
+export default function PosterField({ eventId, kind = 'event', posterUrl, posterSize, onChange, onStage }: Props) {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [note, setNote] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   /** Object URL for a staged file, so a poster is visible before it exists. */
   const [preview, setPreview] = useState<string | null>(null)
+  /** The staged file's size, which the resize has already measured. */
+  const [previewSize, setPreviewSize] = useState<PosterSize | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const staging = eventId === null
@@ -115,6 +121,7 @@ export default function PosterField({ eventId, kind = 'event', posterUrl, onChan
         // Nothing is sent yet. The create handler uploads this the moment
         // the row exists, which is what keeps Storage free of orphans.
         setPreview(URL.createObjectURL(shrunk.file))
+        setPreviewSize({ w: shrunk.width, h: shrunk.height })
         onStage?.(shrunk.file)
         setNote(size + (kind === 'recurring' ? ' · uploads when you add it' : ' · uploads when you add the show'))
         return
@@ -139,6 +146,7 @@ export default function PosterField({ eventId, kind = 'event', posterUrl, onChan
     if (staging) {
       // Never left this browser, so clearing it is purely local.
       setPreview(null)
+      setPreviewSize(null)
       onStage?.(null)
       setNote(null)
       return
@@ -163,17 +171,22 @@ export default function PosterField({ eventId, kind = 'event', posterUrl, onChan
 
   // The uploaded poster if there is one, otherwise the staged preview.
   const shown = posterUrl ?? preview
+  const shownSize = posterUrl ? posterSize ?? null : previewSize
 
   return (
     <div className={styles.poster}>
       <span className={styles.label}>Poster</span>
 
       {shown && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        // key: a replaced poster is a new image, not the old one resized.
+        <PosterImage
+          key={shown}
           className={styles.posterImage}
           src={shown}
+          size={shownSize}
+          loading="eager"
           alt={posterUrl ? 'Current poster' : 'Poster to be uploaded'}
+          label="Poster"
         />
       )}
 

@@ -1,0 +1,38 @@
+/* See PosterImage.tsx. Callers set --poster-max-w / --poster-max-h on an
+   ancestor; --pw / --ph are the poster's own pixel size, set inline. */
+
+/* Known size. The width is the smaller of "as wide as allowed" and "as
+   wide as fits under the height cap at this poster's ratio", the height
+   follows from aspect-ratio, and max-width keeps it inside its column.
+   None of it depends on the image having loaded. */
+.sized {
+  display: block;
+  width: min(var(--poster-max-w, 100%), calc(var(--poster-max-h, 80vh) * var(--pw) / var(--ph)));
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: var(--pw) / var(--ph);
+  /* Reads as a frame while a slow poster fills in top-down -- a 300KB
+     baseline JPEG on a weak signal paints in strips. */
+  background: var(--ink-3);
+}
+
+/* Unknown size. The frame's box is fixed by the fallback ratio alone; the
+   image is taken out of flow, so whatever shape it turns out to be, it is
+   contained inside the frame and cannot push or cover anything. */
+.frame {
+  position: relative;
+  display: block;
+  width: min(var(--poster-max-w, 100%), calc(var(--poster-max-h, 80vh) * var(--poster-fallback-ratio, 0.75)));
+  max-width: 100%;
+  aspect-ratio: var(--poster-fallback-ratio, 0.75);
+  overflow: hidden;
+}
+
+.contained {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

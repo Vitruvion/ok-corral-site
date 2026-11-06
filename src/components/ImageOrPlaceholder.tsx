@@ -10,17 +10,6 @@ type Props = {
   style?: CSSProperties
   /** Apply object-fit: cover (default true). Set false for object-fit: contain. */
   cover?: boolean
-  /**
-   * Size to the image's own proportions instead of filling the parent.
-   *
-   * For anything whose SHAPE IS THE CONTENT -- a poster a band sent, which
-   * may be a tall flyer, a square or a landscape banner -- filling a fixed
-   * box means cropping it, and a cropped poster loses the words at its
-   * edges. In this mode no width, height or object-fit is set inline; the
-   * caller's class supplies max-width / max-height and the browser keeps
-   * the ratio.
-   */
-  natural?: boolean
   /** Loading hint for browser. */
   loading?: 'lazy' | 'eager'
   /** decoding hint for browser. */
@@ -32,8 +21,8 @@ type Props = {
  * On error, falls back to the existing .placeholder hatched div with the label.
  * Parent should have width/height set; this fills 100% of both.
  *
- * With `natural`, it does the opposite: the image keeps its own
- * proportions and the class caps how large it may get. See the prop.
+ * Not for posters: a poster's shape is its content, and PosterImage sizes
+ * it from its own pixel size instead.
  */
 export default function ImageOrPlaceholder({
   src,
@@ -42,7 +31,6 @@ export default function ImageOrPlaceholder({
   className = '',
   style,
   cover = true,
-  natural = false,
   loading = 'lazy',
   decoding = 'async',
 }: Props) {
@@ -61,17 +49,13 @@ export default function ImageOrPlaceholder({
       src={src}
       alt={alt}
       className={className}
-      style={
-        natural
-          ? { display: 'block', ...style }
-          : {
-              width: '100%',
-              height: '100%',
-              objectFit: cover ? 'cover' : 'contain',
-              display: 'block',
-              ...style,
-            }
-      }
+      style={{
+        width: '100%',
+        height: '100%',
+        objectFit: cover ? 'cover' : 'contain',
+        display: 'block',
+        ...style,
+      }}
       loading={loading}
       decoding={decoding}
       onError={() => setFailed(true)}

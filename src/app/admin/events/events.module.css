@@ -496,15 +496,17 @@
   border: 1px solid var(--ink-4);
   border-radius: 5px;
   background: var(--ink);
+  /* Preview caps. PosterImage sizes the box from the poster's own pixel
+     size within them, before it loads. */
+  --poster-max-w: 240px;
+  --poster-max-h: 360px;
 }
 
 .posterImage {
-  display: block;
-  width: 100%;
-  max-width: 240px;
-  height: auto;
   margin: 8px 0 12px;
-  border: 1px solid var(--ink-4);
+  /* A ring, not a border, so the box is exactly the poster's ratio in
+     every engine (see .lightboxImg in Events.module.css). */
+  box-shadow: 0 0 0 1px var(--ink-4);
   border-radius: 4px;
 }
 

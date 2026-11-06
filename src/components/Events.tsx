@@ -2,6 +2,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { type EventData, type RelatedLink, type RecurringEvent } from '@/lib/data'
 import ImageOrPlaceholder from './ImageOrPlaceholder'
+import PosterImage from './PosterImage'
 import { downloadIcs } from '@/lib/ics'
 import { shareOrCopy } from '@/lib/share'
 import { InstagramIcon, FacebookIcon, TikTokIcon } from './SocialIcons'
@@ -30,7 +31,7 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
   })
 
   // Full-size flyer for a weekly event, opened from its card thumbnail.
-  const [poster, setPoster] = useState<{ src: string; name: string } | null>(null)
+  const [poster, setPoster] = useState<{ src: string; name: string; size: RecurringEvent['poster_size'] } | null>(null)
   useEffect(() => {
     if (!poster) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPoster(null) }
@@ -113,25 +114,27 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                   </button>
                 </div>
 
+                {/* Mounted on open, gone on close, and never given a height:
+                    the panel is always height:auto, sized by its content.
+                    Nothing measures it, so nothing can lock it to a size
+                    taken before the poster arrived -- and the poster's own
+                    box is known before it arrives anyway (PosterImage). */}
                 {isOpen && (
                   <div className={styles.expand}>
                     <div className={styles.expandLeft}>
                       {ev.poster_url ? (
-                        // The FRAME holds the space; the poster sits inside
-                        // it whole. A poster's own size is unknown until it
-                        // loads, so without a frame the page grows underneath
-                        // an anchor jump and the visitor lands in the wrong
-                        // section.
-                        <div className={styles.posterFrame}>
-                          <ImageOrPlaceholder
-                            src={ev.poster_url}
-                            alt={`${ev.name} poster`}
-                            label={`${ev.name} · Poster`}
-                            natural
-                            loading="eager"
-                            className={styles.poster}
-                          />
-                        </div>
+                        // Sized from the poster's own pixel size, read on
+                        // the server: the box is exact before the image
+                        // loads, so nothing below it moves when it arrives
+                        // and an anchor jump lands where it should.
+                        <PosterImage
+                          src={ev.poster_url}
+                          alt={`${ev.name} poster`}
+                          label={`${ev.name} · Poster`}
+                          size={ev.poster_size}
+                          loading="eager"
+                          className={styles.poster}
+                        />
                       ) : (
                         <div className="placeholder" style={{ aspectRatio: '3/4', borderRadius: 4 }}>
                           <span className="placeholder-label">{ev.name} · Poster 3:4</span>
@@ -305,14 +308,14 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                     <button
                       type="button"
                       className={styles.weeklyPoster}
-                      onClick={() => setPoster({ src: r.poster_url as string, name: r.name })}
+                      onClick={() => setPoster({ src: r.poster_url as string, name: r.name, size: r.poster_size })}
                       aria-label={`View the ${r.name} poster`}
                     >
-                      <ImageOrPlaceholder
+                      <PosterImage
                         src={r.poster_url}
                         alt={`${r.name} poster`}
                         label={r.name}
-                        natural
+                        size={r.poster_size}
                         loading="lazy"
                         className={styles.weeklyPosterImg}
                       />
@@ -335,8 +338,15 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
           onClick={() => setPoster(null)}
         >
           <button className={styles.posterClose} onClick={() => setPoster(null)} aria-label="Close poster">✕</button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={poster.src} alt={`${poster.name} poster`} onClick={e => e.stopPropagation()} />
+          <PosterImage
+            src={poster.src}
+            alt={`${poster.name} poster`}
+            label={poster.name}
+            size={poster.size}
+            loading="eager"
+            className={styles.lightboxImg}
+            onClick={e => e.stopPropagation()}
+          />
         </div>
       )}
 

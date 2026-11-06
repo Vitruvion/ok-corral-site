@@ -108,8 +108,15 @@ export type EventData = {
    * signup where general entry is still free. Opens in a new tab.
    */
   signup_url?: string | null
-  /** Path to the event poster image (3:4-ish aspect). */
+  /** Path to the event poster image. Any shape -- see poster_size. */
   poster_url?: string | null
+  /**
+   * The poster's intrinsic pixel size, read from the file's header on the
+   * server (src/lib/poster-size.ts) so the box can be reserved exactly
+   * before the image loads. Null when it could not be read: PosterImage
+   * then falls back to a contained frame.
+   */
+  poster_size?: { w: number; h: number } | null
   /**
    * Direct ticket sales, replacing Eventbrite one show at a time.
    *
@@ -176,6 +183,8 @@ export type RecurringEvent = {
    * art alongside — the 3-up grid is too narrow to fit one otherwise.
    */
   poster_url?: string | null
+  /** Intrinsic size of poster_url, as on EventData. */
+  poster_size?: { w: number; h: number } | null
 }
 
 /*

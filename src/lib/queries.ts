@@ -2,6 +2,7 @@ import { getSupabase } from './supabase'
 import { fetchInstagramPosts } from './instagram'
 import { filterUpcomingEvents } from './events'
 import { sortRecurring } from './recurring'
+import { withPosterSizes } from './poster-size'
 import {
   MERCH as FALLBACK_MERCH,
   DRINK_TABS,
@@ -264,8 +265,11 @@ export async function fetchAll() {
   // is used directly by src/lib/catalog.ts to price checkouts server-side,
   // so /api/checkout keeps working while the storefront is hidden.
   const [events, recurring, drinks, merch, igPosts] = await Promise.all([
-    fetchEvents(),
-    fetchRecurring(),
+    // Every poster's pixel size, read from its header now, during the ISR
+    // render, so the browser can reserve the exact box before the image
+    // arrives. A size that cannot be read is null -- never an error.
+    fetchEvents().then(withPosterSizes),
+    fetchRecurring().then(withPosterSizes),
     // The homepage would rather lose its drinks section than 500 outright:
     // events, gallery, hours and everything else still render. The TV gets
     // the opposite treatment — see getDrinks().

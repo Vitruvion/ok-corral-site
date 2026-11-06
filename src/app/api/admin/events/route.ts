@@ -12,6 +12,7 @@ import {
   slugify,
   weekdayFor,
 } from '@/lib/admin/events-repo'
+import { withPosterSizes } from '@/lib/poster-size'
 
 /**
  * /api/admin/events — the editor's CRUD surface.
@@ -108,7 +109,7 @@ export async function GET() {
   if (!isAdmin()) return unauthorized()
   try {
     return NextResponse.json(
-      { events: await listEvents() },
+      { events: await withPosterSizes(await listEvents()) },
       { headers: { 'Cache-Control': 'no-store' } }
     )
   } catch (err: any) {

@@ -1,4 +1,5 @@
 import { sortRecurring } from '@/lib/recurring'
+import type { PosterSize } from '@/lib/poster-size'
 import { POSTER_BUCKET, serviceClient, storageKeyFromUrl } from './events-repo'
 
 /**
@@ -24,6 +25,8 @@ export type AdminRecurring = {
   /** Price line, e.g. 'No Cover'. */
   tickets: string | null
   poster_url: string | null
+  /** As on AdminEvent: filled in only where the editor is rendered. */
+  poster_size?: PosterSize | null
   active: boolean
   sort_order: number
 }

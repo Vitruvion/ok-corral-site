@@ -124,39 +124,32 @@
 
 .expandRight {}
 
-/* Poster image.
-   NO FIXED ASPECT RATIO, and nothing is cropped. Posters arrive in
-   whatever shape the band sent -- a tall flyer, a square, a landscape
-   banner -- and a fixed box plus object-fit: cover ate the left and
-   right edges of a wide one ("Oktoberfest" rendered as "ktoberfes").
-   Width fills the column, height follows the image, and max-height only
-   binds on something extremely tall, at which point the browser narrows
-   the width to match and the poster stays centred and whole.
-   80vh keeps a 2:3 portrait large on a phone rather than a stamp. */
-/* Poster.
-   TWO REQUIREMENTS AT ONCE, and they pull against each other:
-   nothing may be cropped (posters arrive in any shape and the words run
-   to their edges), and the space must be reserved BEFORE the image
-   loads (otherwise the page grows under an anchor jump and a nav click
-   lands in the next section -- measured at +842px on a phone).
-   So the frame is a fixed 3/4 box, and the poster is contained within
-   it: whole, never cropped, and the layout is the same height empty as
-   it is full. A poster that is not 3/4 leaves bands rather than losing
-   its edges, which is the right way round. */
-.posterFrame {
-  aspect-ratio: 3 / 4;
-  max-height: 80vh;
-  display: grid;
-  place-items: center;
+/* Poster. Sized by PosterImage from the poster's own pixel size, which
+   the server reads from the file before the page is sent: the box is
+   exact before the image loads, so nothing is cropped, nothing is
+   letterboxed, and nothing below it moves when it arrives.
+   History, so nobody walks back into it:
+     fde2ac8 natural sizing -- no reserved box, so the page grew under an
+             anchor jump and a nav click landed in the wrong section;
+     2af4ac8 a fixed 3:4 frame -- reserved the space, but the poster's
+             percentage max-height is ignored inside a grid frame sized by
+             aspect-ratio, so a tall poster spilled out over the text below,
+             and in WebKit a poster that arrived after the open row narrowed
+             its column was laid out at the old, wider width.
+   The caps: the full column, and 80% of the visible viewport. */
+.expandLeft {
+  --poster-max-w: 100%;
+  --poster-max-h: 80vh;
+}
+
+@supports (height: 1svh) {
+  /* svh: the viewport with the browser's toolbars SHOWING, so on a phone
+     the poster fits the screen as it actually is. */
+  .expandLeft { --poster-max-h: 80svh; }
 }
 
 .poster {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  margin-inline: auto;
   border-radius: 4px;
 }
 
@@ -477,16 +470,18 @@
   align-items: center;
 }
 
-/* Flyer thumbnail on a recurring-event card. Same bargain as .poster
-   above: a reserved 2/3 box so the card's height is known before the
-   image arrives, with the flyer contained inside rather than cropped to
-   fill it. Tapping it opens the lightbox for the full-size view. */
+/* Flyer thumbnail on a recurring-event card. Sized by PosterImage from
+   the flyer's own pixel size, like .poster above: capped at 104 x 168,
+   exact before it loads, never cropped. The button wraps it tightly.
+   Tapping it opens the lightbox for the full-size view. */
 .weeklyPoster {
   position: relative;
-  width: 104px;
-  aspect-ratio: 2 / 3;
-  display: grid;
-  place-items: center;
+  display: block;
+  width: fit-content;
+  --poster-max-w: 104px;
+  --poster-max-h: 168px;
+  /* Only if the size could not be read: a 2:3 frame, flyer contained. */
+  --poster-fallback-ratio: 0.6667;
   padding: 0;
   border: 1px solid rgba(235, 228, 212, 0.18);
   border-radius: 3px;
@@ -505,10 +500,6 @@
 
 .weeklyPosterImg {
   display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
 }
 
 .weeklyPosterZoom {
@@ -533,18 +524,29 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  display: grid;
-  place-items: center;
+  /* Flex, not grid: a percentage cap on a grid item in an auto-sized
+     track is the same trap the expanded poster fell into. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 32px;
   background: rgba(11, 9, 8, 0.92);
   cursor: zoom-out;
+  /* Inside the 32px padding on every side. */
+  --poster-max-w: min(calc(100vw - 64px), 620px);
+  --poster-max-h: calc(100vh - 64px);
 }
 
-.posterLightbox img {
-  max-width: min(92vw, 620px);
-  max-height: 90vh;
-  object-fit: contain;
-  border: 1px solid rgba(235, 228, 212, 0.2);
+@supports (height: 1svh) {
+  .posterLightbox { --poster-max-h: calc(100svh - 64px); }
+}
+
+.lightboxImg {
+  flex: 0 0 auto;
+  /* A ring, not a border: a border takes part in sizing, and WebKit adds
+     it outside an aspect-ratio box where Chromium fits it inside, so the
+     two engines would draw the poster a pixel apart. */
+  box-shadow: 0 0 0 1px rgba(235, 228, 212, 0.2);
   cursor: default;
 }
 
@@ -669,9 +671,11 @@
     justify-self: start;
     margin-top: 4px;
   }
-  /* A little larger with a whole row to itself. The frame grows; the
-     flyer inside it still keeps its own shape. */
+  /* A little larger with a whole row to itself. Still capped in BOTH
+     directions, so a landscape flyer widens and a tall one does not run
+     down the page. */
   .weeklyCardFeatured .weeklyPoster {
-    width: 128px;
+    --poster-max-w: 128px;
+    --poster-max-h: 200px;
   }
 }

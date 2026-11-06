@@ -752,6 +752,7 @@ function EventRow({
           <PosterField
             eventId={ev.id}
             posterUrl={ev.poster_url}
+            posterSize={ev.poster_size}
             onChange={() => void onRefresh()}
           />
 
@@ -1200,6 +1201,7 @@ function RecurringRow({
             eventId={r.id}
             kind="recurring"
             posterUrl={r.poster_url}
+            posterSize={r.poster_size}
             onChange={() => void onRefresh()}
           />
 

@@ -5,6 +5,7 @@ import { isAdmin } from '@/lib/admin/guard'
 import { serviceClient } from '@/lib/admin/events-repo'
 import { deleteRecurring, getRecurring, listRecurring } from '@/lib/admin/recurring-repo'
 import { DAY_ABBRS, HHMM, formatWeeklyTime, type WeeklyTime } from '@/lib/recurring'
+import { withPosterSizes } from '@/lib/poster-size'
 
 /**
  * /api/admin/recurring — the weekly specials ("Every week" in the
@@ -95,7 +96,7 @@ export async function GET() {
   if (!isAdmin()) return unauthorized()
   try {
     return NextResponse.json(
-      { recurring: await listRecurring() },
+      { recurring: await withPosterSizes(await listRecurring()) },
       { headers: { 'Cache-Control': 'no-store' } }
     )
   } catch (err: any) {

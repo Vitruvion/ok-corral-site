@@ -466,6 +466,9 @@ Real posts from `@okcorralsaloon` render on the homepage in InstagramStrip. Toke
 - Past shows drop off the homepage by **venue calendar day** (America/Los_Angeles), not by UTC and not by the browser's clock. `filterUpcomingEvents` / `isEventUpcoming` / `venueTodayParts` in `src/lib/events.ts` are the only correct comparison — import them, never re-derive one
 - All "Doors" references removed from public copy, but `doors` is still a real field: the ticket confirmation email and the door manifest both read it
 - Only one event may be `featured` at a time, enforced by a partial unique index. Featuring is a **swap**, done atomically by `set_featured_event(uuid)` — not a toggle, and not two UPDATEs
+- **Posters are sized on the server, before the page is sent.** `fetchAll()` runs every event and weekly special through `withPosterSizes()` (`src/lib/poster-size.ts`), which reads the image header -- a 64KB ranged request to Storage, or a file read for `/assets/...` -- with `image-size`, memoised per server instance (Storage URLs are immutable). Every poster renders through `src/components/PosterImage.tsx`: with a size, `width`/`height` go on the `<img>` and the box is computed from the ratio, capped by `--poster-max-w` / `--poster-max-h` set on an ancestor -- exact before load, never cropped, never letterboxed. Without one (lookup failed), a fixed-ratio frame with the image absolutely positioned inside, so it still cannot overflow or overlap. Used by the expanded event, the weekly flyer thumbnail, the lightbox and the admin preview -- do not size a poster any other way. No DB column: sizes are not stored.
+- **The expanded panel is mounted on open and unmounted on close, with no height ever set on it.** Nothing measures it. Keep it that way: a panel locked to a measured height is how posters end up overflowing onto the text below.
+- History of the poster box, so nobody walks back into it: `fde2ac8` natural sizing (no reserved box → anchor jumps landed short); `2af4ac8` a fixed 3:4 grid frame (the poster's `max-height: 100%` is ignored inside a grid item whose container is sized by `aspect-ratio`, so tall posters spilled out of the frame over the text below whenever `80vh` clamped it, and in WebKit a poster that arrived after the open row narrowed its column was laid out at the stale wider width). Both are replaced by the server-side size.
 
 ### 6. Event posters + export pipeline (deployed)
 
@@ -738,11 +741,13 @@ C:\Projects\ok-corral-site\
     │   ├── SocialIcons.tsx
     │   ├── StripeReturnHandler.tsx
     │   ├── ImageOrPlaceholder.tsx
+    │   ├── PosterImage.tsx           # every event/weekly poster: box from its known pixel size
     │   └── ClientShell.tsx
     └── lib\
         ├── data.ts                   # BRAND, feature flags. NO drinks/events/recurring arrays — those live in Supabase
         ├── events.ts                 # venue-day rules: filterUpcomingEvents, isEventUpcoming
         ├── recurring.ts              # weekly specials: days, time format/parse, THE order
+        ├── poster-size.ts            # server-side poster header read (image-size), memoised
         ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
         ├── admin\                    # drinks-repo, events-repo, recurring-repo, session/guard, image-resize, rate-limit
         ├── supabase.ts               # getSupabase() + getServiceSupabase()
@@ -810,4 +815,6 @@ Vestaboard-style animated marquee hero with flip cards. Branch `hero-vestaboard`
 - **iOS Safari `100vh` vs `innerHeight`:** On iOS Safari, `100vh` is the full viewport (with address bar hidden) while `window.innerHeight` is the visible area (with bar showing). Use `100svh` for the conservative value, and measure `stage.clientHeight` alongside `innerHeight` in scaling code. Re-fit on `visualViewport.resize` so the layout adapts when the bar collapses.
 - **Windows file-handle locks after Sharp/Node:** When using a temp `tmp/` directory for image-generation scripts, Node sometimes holds the directory open briefly after the script exits. `rm -rf tmp` may fail with EBUSY; a 2-3 second sleep and retry clears it.
 - **next/font Google Fonts warnings:** `IM Fell English` and `IM Fell English SC` log "Failed to find font override values" warnings on every build. Cosmetic — fonts render fine. Don't bother chasing them.
+- **Percentage `max-width`/`max-height` on an image inside a grid frame sized by `aspect-ratio` does not work** -- both engines ignore the percentage height (the grid area's height is not definite), and WebKit can resolve the percentage width against a stale width. This is what broke event posters in November 2026. Size images from their known pixel size instead (`PosterImage`).
+- **`.expand { animation: fade-up }` in `Events.module.css` never runs** -- the CSS Modules keyframes trap again (the name is hashed, the keyframes live in `globals.css`). The panel simply appears. Harmless, but if it is ever "fixed", it animates `transform`, which moves bounding rects during the first 400ms -- measure after it.
 - **Don't trust math alone for visual layout fixes:** Multiple commits in the poster history had correct math but wrong visual results because of subpixel rounding, scaled rendering, or constraint conflicts. Always render and visually verify; ideally also measure the actual rendered geometry via DOM bounding rects.
