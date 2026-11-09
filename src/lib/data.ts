@@ -65,6 +65,41 @@ export const HOURS = [
   { day: 'Saturday',  abbr: 'Sat', open: '8 AM', close: '2 AM' },
 ]
 
+/**
+ * "Open daily, 8 AM – 2 AM" -- but only while every day really does share
+ * one set of hours. Read from HOURS, so the hours live in one place; if
+ * they ever differ by day this returns null and callers point at the full
+ * table in Visit instead.
+ */
+export function dailyHours(): string | null {
+  const first = HOURS[0]
+  return HOURS.every(h => h.open === first.open && h.close === first.close)
+    ? `${first.open} – ${first.close}`
+    : null
+}
+
+/**
+ * Harvest Hosts -- the RV overnight-stay membership. Members book through
+ * Harvest Hosts' own app or site, never through the bar.
+ *
+ * The listing facts below are as of November 2026; the stay section and the
+ * footer render from here. Opening hours come from HOURS, not from here.
+ */
+export const HARVEST_HOSTS = {
+  listingUrl: 'https://www.harvesthosts.com/hosts/california/the-ok-corral',
+  /**
+   * Where the official host badge goes, in order of preference. It renders
+   * only when one of these files exists (checked on the server, with its
+   * real pixel size), so dropping the file in is the whole change. Use it
+   * exactly as supplied: no recolouring, cropping or effects.
+   */
+  badgePaths: ['/assets/harvest-hosts/host-badge.svg', '/assets/harvest-hosts/host-badge.png'],
+  spaces: 5,
+  surface: 'Gravel lot',
+  rigLength: 'Over 45 ft welcome',
+  extraNights: 4,
+}
+
 export const NAV_LINKS = [
   { label: 'Events',   href: '#events' },
   { label: 'Bar',      href: '#drinks' },

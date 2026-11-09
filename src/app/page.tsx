@@ -1,5 +1,6 @@
 import ClientShell from '@/components/ClientShell'
 import { fetchAll } from '@/lib/queries'
+import { findHostBadge } from '@/lib/host-badge'
 
 export const revalidate = 60
 
@@ -7,6 +8,7 @@ export default async function Home() {
   const { events, recurring, drinks, merch, igPosts } = await fetchAll()
   return (
     <ClientShell
+      hostBadge={findHostBadge()}
       events={events}
       recurring={recurring}
       drinks={drinks}

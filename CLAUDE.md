@@ -652,6 +652,28 @@ the two.
 - Weekly specials have no "Add to Calendar", and there is no full-calendar
   page (the dead "View Full Calendar" button was removed).
 
+### 16. Harvest Hosts -- "Stay the Night" (deployed)
+
+The Corral is a Harvest Hosts stop: RV members park overnight free in the lot.
+`src/components/HarvestHosts.tsx` renders `#stay`, directly after Visit (not in
+the nav -- it doesn't earn a top-level slot). A footer link sits with the
+socials.
+
+- **Members book through Harvest Hosts, never the bar** -- the copy says so
+  next to the button, so the phone doesn't ring with reservation attempts.
+- Listing facts live in `HARVEST_HOSTS` in `data.ts` (URL, spaces, surface,
+  rig length, extra nights). Hours come from `HOURS` via `dailyHours()`.
+- **Badge drop-in:** put the official badge at
+  `public/assets/harvest-hosts/host-badge.svg` (or `.png`). `src/lib/host-badge.ts`
+  finds it on the server with its real size, so it renders with no layout
+  shift; with no file the section shows no slot at all. `next.config.mjs`
+  traces that folder into the homepage function so ISR regeneration on Vercel
+  still sees it. Use it unmodified: no recolouring, cropping or filters.
+- **Rules from the brief:** never draw or trace their logo or use their
+  colours, never hotlink anything from harvesthosts.com, never show the
+  listing's rating, and never mention food, meals, a gift shop, exhibits or
+  wine tasting -- we have none of those.
+
 ---
 
 ## Env vars
@@ -743,6 +765,7 @@ C:\Projects\ok-corral-site\
     │   ├── StripeReturnHandler.tsx
     │   ├── ImageOrPlaceholder.tsx
     │   ├── PosterImage.tsx           # every event/weekly poster: box from its known pixel size
+    │   ├── HarvestHosts.tsx          # #stay -- the Harvest Hosts section (badge slot: lib/host-badge.ts)
     │   └── ClientShell.tsx
     └── lib\
         ├── data.ts                   # BRAND (incl. THE phone number -- every page, email, JSON-LD and the Wallet pass read it), feature flags. NO drinks/events/recurring arrays — those live in Supabase

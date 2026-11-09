@@ -1,0 +1,176 @@
+/* "Stay the Night" -- Harvest Hosts. Same tokens and idioms as the
+   sections around it: Visit's mono block labels, Bookings' bordered
+   ink-2 panel, the ember accent. */
+
+.section {
+  border-top: 1px solid rgba(235,228,212,0.08);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 72px;
+  align-items: start;
+}
+
+/* ── Left: photo, what it is, the plain notes ─────────────── */
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+}
+
+.photo {
+  margin: 0;
+  background: var(--ink-3);
+}
+
+/* width/height on the tag give the ratio before load; this only scales. */
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.lead {
+  font-family: var(--ff-serif);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--bone-dim);
+}
+
+.notes {
+  border-top: 1px solid rgba(235,228,212,0.12);
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.notesLabel,
+.cardLabel {
+  display: block;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.note {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--bone-dim);
+}
+
+.note strong {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+/* ── Right: the spot, and how to book it ──────────────────── */
+.card {
+  padding: 40px;
+  background: var(--ink-2);
+  border: 1px solid rgba(235,228,212,0.08);
+  min-width: 0;
+}
+
+.specs {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(235,228,212,0.08);
+}
+
+.spec {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 12px 18px 0;
+  border-bottom: 1px solid rgba(235,228,212,0.08);
+  min-width: 0;
+}
+
+.specIcon {
+  flex: 0 0 auto;
+  color: var(--ember);
+  line-height: 0;
+  margin-top: 1px;
+}
+
+.specText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.specTitle {
+  font-family: var(--ff-display);
+  font-size: 17px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--bone);
+  overflow-wrap: anywhere;
+}
+
+.specDetail {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  line-height: 1.4;
+}
+
+.book {
+  margin-top: 32px;
+}
+
+.bookRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.bookBtn {
+  flex: 0 0 auto;
+}
+
+/* The badge exactly as supplied: scaled to a height, never recoloured,
+   cropped or filtered. width/height on the tag reserve its box. */
+.badge {
+  display: block;
+  height: 64px;
+  width: auto;
+  max-width: 100%;
+}
+
+.bookNote {
+  margin-top: 16px;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--bone-mute);
+}
+
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+}
+
+@media (max-width: 760px) {
+  .lead { font-size: 17px; }
+  .card { padding: 24px 20px; }
+  .spec { gap: 10px; padding: 16px 8px 16px 0; }
+  .specTitle { font-size: 15px; }
+  .specDetail { font-size: 10px; letter-spacing: 0.06em; }
+  .bookBtn { flex: 1 1 100%; justify-content: center; }
+  .badge { height: 56px; }
+}

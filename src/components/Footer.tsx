@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Wordmark from './Wordmark'
-import { BRAND, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
+import { BRAND, HARVEST_HOSTS, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Footer.module.css'
 
@@ -49,6 +49,7 @@ export default function Footer() {
             <li><a href={BRAND.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram · @{BRAND.instagram}</a></li>
             <li><a href={BRAND.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook · {BRAND.facebook}</a></li>
             <li><a href={BRAND.tiktokUrl} target="_blank" rel="noopener noreferrer">TikTok · @{BRAND.tiktok}</a></li>
+            <li><a href={HARVEST_HOSTS.listingUrl} target="_blank" rel="noopener noreferrer">Harvest Hosts · RV stays</a></li>
             <li><a href={`mailto:${BRAND.email}`}>{BRAND.email}</a></li>
             <li><a href={BRAND.phoneHref}>{BRAND.phone}</a></li>
           </ul>
