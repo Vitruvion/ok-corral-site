@@ -39,7 +39,13 @@
   transition: color 180ms ease;
 }
 
-.navLink:hover { color: var(--ember); }
+/* Hover only with a real pointer (an iPad gets this whole bar and would
+   keep :hover on the last link tapped); keyboard focus gets the same. */
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover { color: var(--ember); }
+}
+
+.navLink:focus-visible { color: var(--ember); }
 
 .right {
   display: flex;
@@ -97,7 +103,14 @@
   transition: all 180ms ease;
 }
 
-.igLink:hover {
+@media (hover: hover) and (pointer: fine) {
+  .igLink:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
+}
+
+.igLink:focus-visible {
   border-color: var(--ember);
   color: var(--ember);
 }
@@ -116,10 +129,21 @@
   transition: all 180ms ease;
 }
 
-.socialBtn:hover {
+@media (hover: hover) and (pointer: fine) {
+  .socialBtn:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
+}
+
+.socialBtn:focus-visible {
   border-color: var(--ember);
   color: var(--ember);
 }
+
+/* The Instagram icon button: a .socialBtn in every respect, shown only
+   where the handle does not fit (below). */
+.igIcon { display: none; }
 
 .socialBtn svg {
   width: 15px;
@@ -197,11 +221,19 @@
   transition: background 180ms ease;
 }
 
+/* 1101-1220px: the nav, hours and socials only fit with the Instagram
+   handle swapped for its icon button. */
+@media (max-width: 1220px) {
+  .igLink { display: none; }
+  .igIcon { display: inline-flex; }
+}
+
 @media (max-width: 1100px) {
   .hoursPill, .socials { display: none; }
 }
 
-@media (max-width: 760px) {
+/* Hamburger up to 800px: below that the full nav runs into the logo. */
+@media (max-width: 800px) {
   .nav { display: none; }
   .menuBtn { display: flex; }
   .logo { font-size: 17px !important; }

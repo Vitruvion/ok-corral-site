@@ -89,6 +89,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* Never closer to its arrow than this: a label that doesn't fit wraps
+     onto a second line rather than touching it. */
+  gap: 16px;
   padding: 22px 0;
   border-top: 1px solid rgba(235,228,212,0.08);
   font-family: var(--ff-display);
@@ -139,7 +142,32 @@
   transform: translateX(4px);
 }
 
+/* Label (plus its note). The note is positioned in the row's bottom
+   padding, out of flow, so a row with a note is exactly as tall as the
+   rest: same tap target, label in the same place, arrow centred on the
+   whole row. */
+.navText {
+  position: relative;
+  min-width: 0;
+}
+
+/* The drawer's small mono label style (as "◆ MENU"), in the accent. */
+.navNote {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: -6px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ember);
+  white-space: nowrap;
+}
+
 .navArrow {
+  flex: none;
   font-family: var(--ff-mono);
   font-size: 14px;
   color: var(--ember);

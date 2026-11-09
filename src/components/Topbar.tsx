@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Wordmark from './Wordmark'
 import MobileMenu from './MobileMenu'
-import { FacebookIcon, TikTokIcon } from './SocialIcons'
+import { FacebookIcon, InstagramIcon, TikTokIcon } from './SocialIcons'
 import { NAV_LINKS, BRAND, SHOW_MERCH } from '@/lib/data'
 import { useCart } from '@/lib/cart'
 import styles from './Topbar.module.css'
@@ -46,6 +46,19 @@ export default function Topbar() {
               className={styles.igLink}
             >
               @{BRAND.instagram}
+            </a>
+            {/* Where the bar is tight (1101-1220px) the handle swaps for an
+                icon button like Facebook's and TikTok's, so Instagram is
+                always in the bar. Topbar.module.css decides which shows. */}
+            <a
+              href={BRAND.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.socialBtn} ${styles.igIcon}`}
+              aria-label={`Instagram @${BRAND.instagram}`}
+              title="Instagram"
+            >
+              <InstagramIcon />
             </a>
             <a
               href={BRAND.facebookUrl}

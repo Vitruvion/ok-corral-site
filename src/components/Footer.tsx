@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Wordmark from './Wordmark'
-import { BRAND, HARVEST_HOSTS, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
+import { BRAND, HARVEST_HOSTS, NAV_LINKS, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Footer.module.css'
 
@@ -22,11 +22,9 @@ export default function Footer() {
         <div className={styles.col}>
           <h5 className={styles.colTitle}>Explore</h5>
           <ul>
-            <li><a href="#events">Events</a></li>
-            {SHOW_MERCH && <li><a href="#merch">Merch</a></li>}
-            <li><a href="#gallery">Gallery</a></li>
-            <li><a href="#bookings">Bookings</a></li>
-            <li><a href="#visit">Visit</a></li>
+            {NAV_LINKS.map(link => (
+              <li key={link.href}><a href={link.href}>{link.label}</a></li>
+            ))}
           </ul>
         </div>
         {/* Shipping/Size/Wholesale only mean something when the store is

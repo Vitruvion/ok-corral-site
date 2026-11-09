@@ -79,8 +79,11 @@ export default function MobileMenu({ onClose }: { onClose: () => void }) {
           <nav className={styles.nav}>
             {NAV_LINKS.map(link => (
               <a key={link.href} href={link.href} className={styles.navLink} onClick={go}>
-                <span>{link.label}</span>
-                <span className={styles.navArrow}>→</span>
+                <span className={styles.navText}>
+                  {link.label}
+                  {link.drawerNote && <span className={styles.navNote}>{link.drawerNote}</span>}
+                </span>
+                <span className={styles.navArrow} aria-hidden="true">→</span>
               </a>
             ))}
           </nav>

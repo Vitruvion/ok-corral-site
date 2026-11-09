@@ -38,7 +38,14 @@
   border-radius: 50%;
 }
 
-.dot:hover {
+@media (hover: hover) and (pointer: fine) {
+  .dot:hover {
+    background: var(--bone);
+    transform: scale(1.4);
+  }
+}
+
+.dot:focus-visible {
   background: var(--bone);
   transform: scale(1.4);
 }
@@ -50,7 +57,13 @@
   box-shadow: 0 0 0 3px rgba(217,119,66,0.18);
 }
 
-.dotActive:hover {
+@media (hover: hover) and (pointer: fine) {
+  .dotActive:hover {
+    background: var(--ember);
+  }
+}
+
+.dotActive:focus-visible {
   background: var(--ember);
 }
 
@@ -74,7 +87,14 @@
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
-.item:hover .tip {
+@media (hover: hover) and (pointer: fine) {
+  .item:hover .tip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.item:focus-within .tip {
   opacity: 1;
   transform: translateY(-50%) translateX(0);
 }

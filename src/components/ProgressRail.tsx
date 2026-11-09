@@ -1,16 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { SHOW_MERCH } from '@/lib/data'
+import { NAV_LINKS } from '@/lib/data'
 import styles from './ProgressRail.module.css'
 
-const SECTIONS = [
-  { id: 'events',   label: 'Events' },
-  { id: 'drinks',   label: 'Bar' },
-  ...(SHOW_MERCH ? [{ id: 'merch', label: 'Merch' }] : []),
-  { id: 'gallery',  label: 'Gallery' },
-  { id: 'bookings', label: 'Bookings' },
-  { id: 'visit',    label: 'Visit' },
-]
+// The same list as the top bar, drawer and footer: one dot per section.
+const SECTIONS = NAV_LINKS.map(l => ({ id: l.href.slice(1), label: l.label }))
 
 export default function ProgressRail() {
   const [activeId, setActiveId] = useState<string>('events')

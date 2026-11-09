@@ -100,13 +100,22 @@ export const HARVEST_HOSTS = {
   extraNights: 4,
 }
 
-export const NAV_LINKS = [
+/**
+ * THE list of homepage sections people can jump to -- in page order. The
+ * top bar, the mobile drawer, the footer's Explore column and the dot rail
+ * all render this array; never type a copy of it anywhere else.
+ * `drawerNote` is a second line shown under the label in the drawer only.
+ */
+export type NavLink = { label: string; href: `#${string}`; drawerNote?: string }
+
+export const NAV_LINKS: NavLink[] = [
   { label: 'Events',   href: '#events' },
   { label: 'Bar',      href: '#drinks' },
-  ...(SHOW_MERCH ? [{ label: 'Merch', href: '#merch' }] : []),
+  ...(SHOW_MERCH ? [{ label: 'Merch', href: '#merch' } as NavLink] : []),
   { label: 'Gallery',  href: '#gallery' },
   { label: 'Bookings', href: '#bookings' },
   { label: 'Visit',    href: '#visit' },
+  { label: 'RV Stays', href: '#stay', drawerNote: 'via Harvest Hosts' },
 ]
 
 export type RelatedLink = {
