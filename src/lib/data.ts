@@ -36,8 +36,11 @@ export const BRAND = {
     line1: '3633 Main Street',
     line2: 'Cottonwood, CA 96022',
   },
-  phone: '(530) 348-2062',
-  phoneHref: 'tel:5303482062',
+  // THE phone number. Everything that shows or dials it reads these two --
+  // the site, the emails, the JSON-LD, the Wallet pass -- so a new number
+  // is this edit plus the site_settings row in supabase/seed.sql.
+  phone: '(530) 840-1132',
+  phoneHref: 'tel:+15308401132',
   email: 'howdy@okcorralsaloon.com',
   instagram: 'okcorralsaloon',
   instagramUrl: 'https://instagram.com/okcorralsaloon',

@@ -745,7 +745,7 @@ C:\Projects\ok-corral-site\
     │   ├── PosterImage.tsx           # every event/weekly poster: box from its known pixel size
     │   └── ClientShell.tsx
     └── lib\
-        ├── data.ts                   # BRAND, feature flags. NO drinks/events/recurring arrays — those live in Supabase
+        ├── data.ts                   # BRAND (incl. THE phone number -- every page, email, JSON-LD and the Wallet pass read it), feature flags. NO drinks/events/recurring arrays — those live in Supabase
         ├── events.ts                 # venue-day rules: filterUpcomingEvents, isEventUpcoming
         ├── recurring.ts              # weekly specials: days, time format/parse, THE order
         ├── poster-size.ts            # server-side poster header read (image-size), memoised

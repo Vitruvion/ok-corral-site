@@ -285,5 +285,5 @@ on conflict (slug) do update set
 -- -- Site settings -----------------------------------------------
 insert into site_settings (key, value) values
   (E'hours',   E'{"mon":"8 AM \u2013 2 AM","tue":"8 AM \u2013 2 AM","wed":"8 AM \u2013 2 AM","thu":"8 AM \u2013 2 AM","fri":"8 AM \u2013 2 AM","sat":"8 AM \u2013 2 AM","sun":"8 AM \u2013 2 AM"}'::jsonb),
-  (E'contact', E'{"phone":"(530) 348-2062","email":"howdy@okcorralsaloon.com","instagram":"okcorralsaloon"}'::jsonb)
+  (E'contact', E'{"phone":"(530) 840-1132","email":"howdy@okcorralsaloon.com","instagram":"okcorralsaloon"}'::jsonb)
 on conflict (key) do update set value = excluded.value;

@@ -8,6 +8,7 @@
  */
 
 import { TIERS, tierForPoints, nextTier, progressInTier, type Tier } from './tiers'
+import { BRAND } from '@/lib/data'
 
 export type MemberInput = {
   name: string
@@ -186,7 +187,7 @@ export function buildPass(member: MemberInput): BuiltPass {
         {
           key: 'questions',
           label: 'Questions?',
-          value: 'howdy@okcorralsaloon.com  ·  (530) 348-2062',
+          value: `${BRAND.email}  ·  ${BRAND.phone}`,
         },
         {
           key: 'more_info',
