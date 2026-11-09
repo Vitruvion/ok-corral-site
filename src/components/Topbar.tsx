@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import Wordmark from './Wordmark'
 import MobileMenu from './MobileMenu'
 import { FacebookIcon, InstagramIcon, TikTokIcon } from './SocialIcons'
@@ -12,6 +12,26 @@ export default function Topbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // The bar's real bottom edge, as --topbar-h on <html>: nav jumps land
+  // sections clear of it (.section[id] in globals.css). Measured, never
+  // hard-coded, and kept current as the bar changes (scrolled state,
+  // breakpoints, fonts arriving).
+  const barRef = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    const bar = barRef.current
+    if (!bar) return
+    const root = document.documentElement
+    let last = ''
+    const measure = () => {
+      const h = `${Math.ceil(bar.getBoundingClientRect().bottom)}px`
+      if (h !== last) { root.style.setProperty('--topbar-h', h); last = h }
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(bar, { box: 'border-box' })
+    return () => { ro.disconnect(); root.style.removeProperty('--topbar-h') }
+  }, [])
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -20,7 +40,7 @@ export default function Topbar() {
 
   return (
     <>
-      <header className={`${styles.topbar} ${scrolled ? styles.scrolled : ''}`}>
+      <header ref={barRef} className={`${styles.topbar} ${scrolled ? styles.scrolled : ''}`}>
         <a href="#" className={styles.logo}>
           <Wordmark variant="inline" size={scrolled ? 18 : 20} />
         </a>
