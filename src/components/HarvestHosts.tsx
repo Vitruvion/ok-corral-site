@@ -1,7 +1,8 @@
 'use client'
-import type { ReactNode, SVGProps } from 'react'
+import { useEffect, useRef, type ReactNode, type SVGProps } from 'react'
 import { HARVEST_HOSTS, dailyHours } from '@/lib/data'
 import type { HostBadge } from '@/lib/host-badge'
+import { excludeFromGrain } from '@/lib/grain-hole'
 import styles from './HarvestHosts.module.css'
 
 /**
@@ -112,6 +113,9 @@ const ICONS = {
 
 export default function HarvestHosts({ badge }: Props) {
   const hours = dailyHours()
+  // Shown as supplied means no film grain over it either.
+  const badgeRef = useRef<HTMLImageElement>(null)
+  useEffect(() => (badgeRef.current ? excludeFromGrain(badgeRef.current) : undefined), [badge])
   const specs: { icon: ReactNode; title: string; detail: string }[] = [
     { icon: ICONS.rig, title: `${HARVEST_HOSTS.spaces} RV spaces`, detail: HARVEST_HOSTS.surface },
     { icon: ICONS.length, title: 'Big rigs', detail: HARVEST_HOSTS.rigLength },
@@ -130,7 +134,7 @@ export default function HarvestHosts({ badge }: Props) {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">07 · Stay the Night</span>
+            <span className="section-label"><span className="section-num">Stay the Night</span></span>
             <h2 className="section-title">Park the rig,<br /><em>pull up a stool</em></h2>
           </div>
           <p className="section-intro">
@@ -204,9 +208,11 @@ export default function HarvestHosts({ badge }: Props) {
                 </a>
                 {badge && (
                   // The official host badge, exactly as supplied. Its real
-                  // size is on the tag, so it never shifts the layout.
+                  // size is on the tag, so it never shifts the layout; the
+                  // film grain is masked off it (lib/grain-hole.ts).
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
+                    ref={badgeRef}
                     className={styles.badge}
                     src={badge.src}
                     width={badge.w}

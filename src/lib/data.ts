@@ -43,7 +43,7 @@ export const BRAND = {
   phoneHref: 'tel:+15308401132',
   email: 'howdy@okcorralsaloon.com',
   instagram: 'okcorralsaloon',
-  instagramUrl: 'https://instagram.com/okcorralsaloon',
+  instagramUrl: 'https://www.instagram.com/okcorralsaloon',
   facebook: 'The OK Corral',
   facebookUrl: 'https://www.facebook.com/profile.php?id=61575694323377',
   tiktok: 'okcorralsaloon',

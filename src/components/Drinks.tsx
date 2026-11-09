@@ -21,7 +21,7 @@ export default function DrinkMenu({ drinks = {} }: Props = {}) {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">03 · The Pour</span>
+            <span className="section-label"><span className="section-num">The Pour</span></span>
             <h2 className="section-title">At the <em>bar</em></h2>
           </div>
           <p className="section-intro">

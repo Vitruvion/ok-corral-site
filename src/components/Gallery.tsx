@@ -17,7 +17,7 @@ export default function GallerySection() {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">05 · The Room</span>
+            <span className="section-label"><span className="section-num">The Room</span></span>
             <h2 className="section-title">How it<br /><em>actually feels</em></h2>
           </div>
           <p className="section-intro">

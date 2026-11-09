@@ -75,7 +75,7 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">02 · What&apos;s On</span>
+            <span className="section-label"><span className="section-num">What&apos;s On</span></span>
             <h2 className="section-title">
               Upcoming<br /><em>at the corral</em>
             </h2>

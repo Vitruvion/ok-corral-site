@@ -53,6 +53,7 @@ body {
   color: var(--bone);
   background: var(--ink);
   overflow-x: hidden;
+  counter-reset: home-section; /* see .section-num */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -73,6 +74,24 @@ body::before {
   mix-blend-mode: overlay;
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 128px 128px;
+}
+
+/* A hole in the grain over one element -- only the Harvest Hosts badge,
+   which is shown exactly as supplied. Inactive (no attribute) on every
+   page and every pixel unless that element is visible and on top; the box
+   comes from src/lib/grain-hole.ts, which also explains why the badge is
+   not simply raised above the grain. Four solid bands around the box, so
+   no mask-composite is needed and both engines agree. */
+html[data-grain-hole] body::before {
+  -webkit-mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000);
+          mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000);
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  /* above · below · left of · right of the box */
+  -webkit-mask-position: 0 0, 0 var(--gh-b), 0 var(--gh-y), var(--gh-r) var(--gh-y);
+          mask-position: 0 0, 0 var(--gh-b), 0 var(--gh-y), var(--gh-r) var(--gh-y);
+  -webkit-mask-size: 100% var(--gh-y), 100% 100%, var(--gh-x) calc(var(--gh-b) - var(--gh-y)), 100% calc(var(--gh-b) - var(--gh-y));
+          mask-size: 100% var(--gh-y), 100% 100%, var(--gh-x) calc(var(--gh-b) - var(--gh-y)), 100% calc(var(--gh-b) - var(--gh-y));
 }
 
 body::after {
@@ -213,6 +232,17 @@ body::after {
   background: var(--ember);
   transform: rotate(45deg);
   flex-shrink: 0;
+}
+
+/* Homepage section numbers -- "01 · What's On". A CSS counter, so the
+   numbers ARE the render order: a section hidden by SHOW_MERCH or
+   SHOW_GIFT_CARDS is never rendered, never increments it, and leaves no
+   gap. Never type a number into a label; wrap the text in .section-num.
+   The number is in the same inline box as the text, so the spacing is
+   exactly the old typed "02 · " (U+00B7 middle dot). */
+.section-num::before {
+  counter-increment: home-section;
+  content: counter(home-section, decimal-leading-zero) ' \0000B7 ';
 }
 
 .rule {

@@ -19,7 +19,7 @@ export default function MerchSection({ merch = MERCH }: Props = {}) {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">03 · The General Store</span>
+            <span className="section-label"><span className="section-num">The General Store</span></span>
             <h2 className="section-title">Corral<br /><em>provisions</em></h2>
           </div>
           <p className="section-intro">

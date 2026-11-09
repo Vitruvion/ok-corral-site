@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import '@/styles/globals.css'
-import { BRAND } from '@/lib/data'
+import { BRAND, HARVEST_HOSTS } from '@/lib/data'
 
 export const metadata: Metadata = {
   title: 'The OK Corral — Western Saloon in Cottonwood, California',
@@ -257,6 +257,8 @@ if(document.body)install();
               url: 'https://okcorralsaloon.com',
               geo: { '@type': 'GeoCoordinates', latitude: 40.384, longitude: -122.281 },
               openingHours: 'Mo-Su 08:00-02:00',
+              // The same constants the footer links, so they cannot drift.
+              sameAs: [BRAND.instagramUrl, BRAND.facebookUrl, BRAND.tiktokUrl, HARVEST_HOSTS.listingUrl],
             }),
           }}
         />

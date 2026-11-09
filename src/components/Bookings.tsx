@@ -97,7 +97,7 @@ export default function Bookings() {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">06 · Groups & Get-Togethers</span>
+            <span className="section-label"><span className="section-num">Groups & Get-Togethers</span></span>
             <h2 className="section-title">Bring the<br /><em>whole crew</em></h2>
           </div>
           <p className="section-intro">

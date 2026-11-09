@@ -10,7 +10,7 @@ export default function Location() {
       <div className="container">
         <div className="section-head">
           <div>
-            <span className="section-label">05 · Come Find Us</span>
+            <span className="section-label"><span className="section-num">Come Find Us</span></span>
             <h2 className="section-title">Visit<br /><em>the corral</em></h2>
           </div>
           <p className="section-intro">
