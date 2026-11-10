@@ -12,6 +12,21 @@
 
 ---
 
+## RULE: NO OVERNIGHT STAYS -- INSURANCE
+
+**Per our insurance provider, the website must never state or imply that
+overnight stays, RV / van / camper parking, or camping are allowed.** Not in
+copy, nav, metadata, JSON-LD, alt text, emails, legal pages or anywhere else.
+Do not add such content back, in any wording, and never link to an
+overnight-stay or RV-parking platform. A whole section of this kind was
+removed in November 2026 for exactly this reason. If a request would add one,
+stop and ask Brady first.
+
+Ordinary visitor parking ("Free parking out back" in Visit and the order
+emails) is fine. Anything about staying, sleeping or spending the night is not.
+
+---
+
 ## WORKFLOW: AUTO-PUSH AFTER EVERY COMMIT
 
 After making any commit, immediately run `git push origin main` without asking for confirmation. Brady prefers continuous deployment over per-commit review. **This applies to cloud sessions exactly as it does on Brady's PC** -- see **WORKFLOW: CLOUD SESSIONS**.
@@ -187,7 +202,7 @@ key, but the anon key still reaches the same production database, and
 | `/tickets/success` | Where Stripe returns a ticket buyer. Shows no codes; those go by email. |
 | `/menu-board` | The TV behind the bar. Fixed 3-column board, self-refreshing every 5 min. No chrome, no login. |
 | `/poster/dustin-gaspard` + `/instagram` | Print and 4:5 social poster for one show. |
-| `/privacy` + `/terms` | Privacy Policy and Terms of Service (§17). Not age-gated -- Stripe's reviewers must be able to read them. |
+| `/privacy` + `/terms` | Privacy Policy and Terms of Service (§16). Not age-gated -- Stripe's reviewers must be able to read them. |
 
 **Admin** — all behind the `corral_admin` cookie via `src/middleware.ts`. One
 shared passcode, 30-day cookie, no per-user accounts. Every route re-checks the
@@ -365,12 +380,12 @@ be committed again.
 - Marquee: weekly items come from `recurring_events` (active, Monday-first -- the same array as "Every Week", passed down from `ClientShell`), followed by the fixed `MARQUEE_ITEMS` in `data.ts` (the hours line). rAF-driven scroll (50 px/s), drag-to-pan with smooth resume, mobile 16px font + 40px gap below 760px. The loop length is measured (first item to first item of the next copy) and the track renders as many copies as it takes to cover the screen, so a short list never shows an empty stretch. **`@keyframes marqueeScroll` MUST live inside `Marquee.module.css`** (don't move back to globals — CSS Modules can't resolve external keyframe references; same trap re-hit on card.module.css, see Card section)
 - Gallery (16 items): photos render in a 12-col masonry grid with per-item `cols`/`rows` spans from `GALLERY` in `src/lib/data.ts`. No captions (removed); each tile keeps its hover zoom glyph and click-to-lightbox behavior.
 - Social links (Topbar, MobileMenu, Footer): IG + Facebook + TikTok wired via `SocialIcons` component
-- **`NAV_LINKS` in `data.ts` is the only list of nav items.** The top bar, the mobile drawer, the footer's Explore column and the dot rail (`ProgressRail`) all render it -- never type a copy. Order = page order: Events, Bar, (Merch), Gallery, Bookings, Visit, RV Stays (`#stay`). An item's optional `drawerNote` is a second line under its label in the drawer only ("via Harvest Hosts"); it sits in the row's bottom padding, so the row keeps the same height and centred arrow as the rest. Drawer labels keep >= 16px before their arrow and wrap rather than touch
+- **`NAV_LINKS` in `data.ts` is the only list of nav items.** The top bar, the mobile drawer, the footer's Explore column and the dot rail (`ProgressRail`) all render it -- never type a copy. Order = page order: Events, Bar, (Merch), Gallery, Bookings, Visit. An item's optional `drawerNote` is a second line under its label in the drawer only (none uses it today); it sits in the row's bottom padding, so the row keeps the same height and centred arrow as the rest. Drawer labels keep >= 16px before their arrow and wrap rather than touch
 - **Nav-jump clearance** is `scroll-margin-top` on `.section[id]` in `globals.css`: `max(0, --topbar-h + --nav-gap - --section-pad)`. `Topbar.tsx` keeps `--topbar-h` equal to the bar's real bottom edge (ResizeObserver), `--nav-gap` is 20px, `--section-pad` is the section's own top padding (120px, 72px at <=760). Phones: label ~20px below the bar (the 72px padding alone left it 6px under). Desktop: the padding already clears it, so the margin is 0 and labels sit ~50px below. Never hard-code a bar height or a per-section offset; a new nav target only needs `className="section"` and an id
-- **Direct `#hash` links** (a shared `/#stay`) are scrolled by the browser before any script runs, so `--topbar-h` also has a stylesheet default on `:root` per Topbar breakpoint -- the bar's page-top heights, measured: 70px (>1100), 66px (801-1100), 78px (<=800). Re-measure them if the bar's breakpoints or padding change. Smooth scrolling is **not** in the stylesheet: `html.smooth-scroll` is added by `src/components/ScrollSetup.tsx` (root layout) once the page has landed -- a smooth first-load hash jump flew towards a position the web fonts then moved, and stopped 80-150px short. On a hash load ScrollSetup also re-scrolls **once** to the target when `document.fonts.status` is `loaded` (not `fonts.ready`: in WebKit that only settles at window load), unless the visitor has already wheeled/swiped/pressed a key. Measured: label 19.6-21.5px under the bar on phones, ~50px desktop, both engines, nothing moving when images arrive
+- **Direct `#hash` links** (a shared `/#visit`) are scrolled by the browser before any script runs, so `--topbar-h` also has a stylesheet default on `:root` per Topbar breakpoint -- the bar's page-top heights, measured: 70px (>1100), 66px (801-1100), 78px (<=800). Re-measure them if the bar's breakpoints or padding change. Smooth scrolling is **not** in the stylesheet: `html.smooth-scroll` is added by `src/components/ScrollSetup.tsx` (root layout) once the page has landed -- a smooth first-load hash jump flew towards a position the web fonts then moved, and stopped 80-150px short. On a hash load ScrollSetup also re-scrolls **once** to the target when `document.fonts.status` is `loaded` (not `fonts.ready`: in WebKit that only settles at window load), unless the visitor has already wheeled/swiped/pressed a key. Measured: label 19.6-21.5px under the bar on phones, ~50px desktop, both engines, nothing moving when images arrive
 - Top bar widths (measured November 2026): hamburger at <= 800px (below that the full nav runs into the logo); 801-1100 nav only (hours badge and socials hidden); 1101-1220 the `@okcorralsaloon` text pill swaps for an Instagram icon button styled as Facebook/TikTok; above 1220 everything. Narrowest point is 29.5px free each side at 1101. With the text pill the bar breaks up to 1150 and has 12px a side only from 1175 -- 1220 keeps iPad Air (1180) and iPad Pro 11" (1194) landscape comfortable. Adding a nav item means re-measuring this whole range, not just 1280/1440
-- Section labels ("◆ 01 · What's On") are numbered by a CSS counter, not typed: wrap the label text in `<span className="section-num">` and the number is its render position (`.section-num::before` in `globals.css`, reset on `body`). A section hidden by `SHOW_MERCH` / `SHOW_GIFT_CARDS` is never rendered, so it never counts and never leaves a gap. Never type a number into a label. Today: 01 What's On · 02 The Pour · (General Store) · The Room · Groups · Come Find Us · Stay the Night -- 06 or 07 total depending on merch
-- JSON-LD (`layout.tsx`) `sameAs` is built from `BRAND.instagramUrl` / `facebookUrl` / `tiktokUrl` and `HARVEST_HOSTS.listingUrl` -- the same constants the footer links -- so a profile URL is changed in exactly one place
+- Section labels ("◆ 01 · What's On") are numbered by a CSS counter, not typed: wrap the label text in `<span className="section-num">` and the number is its render position (`.section-num::before` in `globals.css`, reset on `body`). A section hidden by `SHOW_MERCH` / `SHOW_GIFT_CARDS` is never rendered, so it never counts and never leaves a gap. Never type a number into a label. Today: 01 What's On · 02 The Pour · (General Store) · The Room · Groups · Come Find Us -- 05 or 06 total depending on merch
+- JSON-LD (`layout.tsx`) `sameAs` is built from `BRAND.instagramUrl` / `facebookUrl` / `tiktokUrl` -- the same constants the footer links -- so a profile URL is changed in exactly one place
 - AgeGate: bare `position: fixed; inset: 0; display: grid; place-items: center` after 4 centering iterations — don't refactor this layout
 - Mobile menu drawer (`MobileMenu.tsx`): `100dvh` tall (iOS `100vh` includes the strip behind Safari's toolbar, which is where the FOLLOW buttons used to vanish); the header with the X stays put and only `.scroll` below it scrolls, with `overscroll-behavior: contain`. The page behind is pinned with `body { position: fixed; top: -scrollY }` -- `overflow: hidden` does not stop iOS scrolling -- and put back exactly on close. A nav link releases that lock **synchronously in its click handler**, so the browser's own anchor jump runs on an unlocked page; keep it that way or nav links stop landing. Bottom padding is `40px + env(safe-area-inset-bottom)`, but the site has no `viewport-fit=cover`, so on an iPhone the env() part is 0 today.
 - Map: dark filter `filter: brightness(0.7) contrast(1.1) saturate(0.8)` on the iframe (Google embed doesn't accept style params)
@@ -401,7 +416,7 @@ resolving, so do not delete or redirect it. Its copy says only what
 happens today: a Wallet pass with your name, Newcomer, 0 points and a share
 QR, which doesn't change after it's added. **When Square Loyalty lands:**
 restore the links and indexing, rewrite the copy for what then works, and
-update `/privacy` in the same change (§17), and rewrite the pass's back
+update `/privacy` in the same change (§16), and rewrite the pass's back
 fields in `pass-builder.ts` -- "How It Works" (now: name + share QR, points
 not tracked, the pass won't change) and the "Next: <tier> -- N points away"
 line. Passes already in Wallets keep the text they were made with (no push
@@ -711,46 +726,7 @@ the two.
 - Weekly specials have no "Add to Calendar", and there is no full-calendar
   page (the dead "View Full Calendar" button was removed).
 
-### 16. Harvest Hosts -- "Stay the Night" (deployed)
-
-The Corral is a Harvest Hosts stop: RV members park overnight free in the lot.
-`src/components/HarvestHosts.tsx` renders `#stay`, directly after Visit. It is
-the last nav item, labelled **"RV Stays"** ("Harvest Hosts" did not fit the
-top bar); the drawer adds "via Harvest Hosts" under it. The footer also keeps
-an external link to the listing, with the socials.
-
-- **The photo is the hero's photo** (`HERO_PHOTO` in `data.ts`, the same URL
-  as `Hero.tsx`, so it is downloaded once), cropped in `HarvestHosts.module.css`:
-  a 4:3 box with `object-fit: cover; object-position: 50% 88%`. The box is
-  wider than the portrait photo, so its full width always shows and the
-  visible slice (rows ~986-2426 of 2560) is the same at every screen width --
-  the cowboy, his dog and the truck, below the sign. **Not `loading="lazy"`:**
-  WebKit treats a lazy image as a new request and downloaded the 830KB file a
-  second time (counted at the server); eager, it reuses the hero's.
-- **Members book through Harvest Hosts, never the bar** -- the copy says so
-  next to the button, so the phone doesn't ring with reservation attempts.
-- Listing facts live in `HARVEST_HOSTS` in `data.ts` (URL, spaces, surface,
-  rig length, extra nights). Hours come from `HOURS` via `dailyHours()`.
-- **Badge drop-in:** put the official badge at
-  `public/assets/harvest-hosts/host-badge.svg` (or `.png`). `src/lib/host-badge.ts`
-  finds it on the server with its real size, so it renders with no layout
-  shift; with no file the section shows no slot at all. `next.config.mjs`
-  traces that folder into the homepage function so ISR regeneration on Vercel
-  still sees it. Use it unmodified: no recolouring, cropping or filters.
-- **The film grain is masked off the badge.** The grain is `body::before`,
-  z-index 9999, above every piece of chrome (Topbar 100, drawer 500, modals
-  and lightboxes up to 2000) -- so the badge is NOT raised above it, which
-  would paint it over the Topbar and any open overlay. `src/lib/grain-hole.ts`
-  cuts a mask hole in the grain exactly where the badge is visible and on top:
-  clipped below the Topbar, and none at all while a drawer/modal covers it.
-  Everywhere else the grain is byte-identical. With no badge file it never
-  runs.
-- **Rules from the brief:** never draw or trace their logo or use their
-  colours, never hotlink anything from harvesthosts.com, never show the
-  listing's rating, and never mention food, meals, a gift shop, exhibits or
-  wine tasting -- we have none of those.
-
-### 17. Privacy Policy + Terms of Service (deployed)
+### 16. Privacy Policy + Terms of Service (deployed)
 
 `/privacy` and `/terms`, framed by `src/components/LegalPage.tsx` (wordmark
 home link, one ~70-character column, small footer). Linked from the footer's
@@ -853,7 +829,7 @@ C:\Projects\ok-corral-site\
     │   ├── page.tsx                  # home → fetchAll() → ClientShell
     │   ├── menu-board\               # the TV board + its overflow guard
     │   ├── tickets\success\          # Stripe return page (shows no codes)
-    │   ├── privacy\ + terms\          # legal pages (§17), framed by components/LegalPage.tsx
+    │   ├── privacy\ + terms\          # legal pages (§16), framed by components/LegalPage.tsx
     │   ├── admin\
     │   │   ├── login\
     │   │   ├── menu\                 # drinks editor
@@ -889,7 +865,6 @@ C:\Projects\ok-corral-site\
     │   ├── StripeReturnHandler.tsx
     │   ├── ImageOrPlaceholder.tsx
     │   ├── PosterImage.tsx           # every event/weekly poster: box from its known pixel size
-    │   ├── HarvestHosts.tsx          # #stay -- the Harvest Hosts section (badge slot: lib/host-badge.ts)
     │   ├── LegalPage.tsx             # frame for /privacy and /terms
     │   ├── ScrollSetup.tsx           # root layout: first-load #hash landing, then turns smooth scrolling on
     │   └── ClientShell.tsx
@@ -924,7 +899,7 @@ All generated passes hardcode `points: 0`. Phase 2 wires Square Loyalty API → 
 `webServiceURL` is placeholder. Phase 3 implements Apple's push API so passes update when points change without re-downloading.
 
 ### 🍻 Stripe live mode — now the blocker for selling tickets
-Still test mode, which means **no real ticket can be sold yet**. Activate when the bank account is ready, then re-verify the webhook against the live endpoint secret before announcing a show. Once live: flip `SHOW_MERCH = true` after product photos (merch-launch checklist: Terms gaps and the Klarna switch in §17), `SHOW_GIFT_CARDS = true` to relaunch gift cards.
+Still test mode, which means **no real ticket can be sold yet**. Activate when the bank account is ready, then re-verify the webhook against the live endpoint secret before announcing a show. Once live: flip `SHOW_MERCH = true` after product photos (merch-launch checklist: Terms gaps and the Klarna switch in §16), `SHOW_GIFT_CARDS = true` to relaunch gift cards.
 
 ### 🖼️ Apple Wallet strip image
 `pass-signer.ts` is wired to pick up `strip.png` + `@2x` + `@3x` from `public/assets/wallet/` if they exist. Currently no strip — would meaningfully upgrade the pass visual but needs designer attention (a bad strip looks cheap, a good one is the highest-leverage pass upgrade Wallet allows).
@@ -969,6 +944,6 @@ Vestaboard-style animated marquee hero with flip cards. Branch `hero-vestaboard`
 - **Hover only with a real pointer.** iOS keeps `:hover` on the last thing tapped, so any `:hover` rule that moves, recolours or resizes something sticks on a phone (the menu drawer left VISIT orange and shifted). Put such rules inside `@media (hover: hover) and (pointer: fine)`, and give keyboard users a `:focus-visible` equivalent where it matters. The `Topbar` nav/socials and the `ProgressRail` dots are guarded too (an iPad in landscape gets both), with `:focus-visible` twins. Deliberately left unguarded (November 2026): close buttons of overlays (they unmount, so nothing is left to stick), card-page tier chips (hover = their active style), and `PassMockup`'s 3D tilt/flip/QR hover -- the iOS flip was verified on a device with that hover applied, so changing it needs a device re-test.
 - **Percentage `max-width`/`max-height` on an image inside a grid frame sized by `aspect-ratio` does not work** -- both engines ignore the percentage height (the grid area's height is not definite), and WebKit can resolve the percentage width against a stale width. This is what broke event posters in November 2026. Size images from their known pixel size instead (`PosterImage`).
 - **`.expand { animation: fade-up }` in `Events.module.css` never runs** -- the CSS Modules keyframes trap again (the name is hashed, the keyframes live in `globals.css`). The panel simply appears. Harmless, but if it is ever "fixed", it animates `transform`, which moves bounding rects during the first 400ms -- measure after it.
-- **The film grain (`body::before`, z 9999) sits above every fixed element on the site** except the AgeGate (10000). Anything that must be grain-free gets a mask hole (`lib/grain-hole.ts`), not a z-index above 9999 -- a raised element paints over the Topbar and every overlay.
+- **The film grain (`body::before`, z 9999) sits above every fixed element on the site** except the AgeGate (10000). Nothing may be raised above 9999 to escape it: a raised element paints over the Topbar and every overlay. If an element ever must be grain-free, cut a mask hole in `body::before` where it is visible (git history has a worked version, removed with the only element that used it).
 - **Never fade the FOUC reveal in.** The inline head style hides `<body>` (opacity 0) until styles load; the reveal must be instant. WebKit does not render a page that has painted nothing, and a transition only advances on rendered frames, so `transition: opacity` from 0 never started: with any image still loading the page stayed invisible -- and requestAnimationFrame, ResizeObserver and hash landing all stalled -- until window.load (measured November 2026; the old "WebKit harness quirks" -- fonts.ready never resolving, deferred smooth anchor scrolls -- were this). Measured with every image held 8s: first visible text in WebKit at 8.1s with the fade (the moment the images finished), 0.75-0.85s without it. Any reveal effect on `<body>` -- a fade, a transform, an animation -- brings it back.
 - **Don't trust math alone for visual layout fixes:** Multiple commits in the poster history had correct math but wrong visual results because of subpixel rounding, scaled rendering, or constraint conflicts. Always render and visually verify; ideally also measure the actual rendered geometry via DOM bounding rects.

@@ -3,6 +3,6 @@
  * page's substance changes, and say so on the page -- the date is a
  * promise about which version someone agreed to.
  */
-export const PRIVACY_EFFECTIVE = 'November 9, 2026'
-export const TERMS_EFFECTIVE = 'November 9, 2026'
+export const PRIVACY_EFFECTIVE = 'November 10, 2026'
+export const TERMS_EFFECTIVE = 'November 10, 2026'
 

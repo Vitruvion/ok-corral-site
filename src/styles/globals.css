@@ -93,24 +93,6 @@ body::before {
   background-size: 128px 128px;
 }
 
-/* A hole in the grain over one element -- only the Harvest Hosts badge,
-   which is shown exactly as supplied. Inactive (no attribute) on every
-   page and every pixel unless that element is visible and on top; the box
-   comes from src/lib/grain-hole.ts, which also explains why the badge is
-   not simply raised above the grain. Four solid bands around the box, so
-   no mask-composite is needed and both engines agree. */
-html[data-grain-hole] body::before {
-  -webkit-mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000);
-          mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000), linear-gradient(#000, #000);
-  -webkit-mask-repeat: no-repeat;
-          mask-repeat: no-repeat;
-  /* above · below · left of · right of the box */
-  -webkit-mask-position: 0 0, 0 var(--gh-b), 0 var(--gh-y), var(--gh-r) var(--gh-y);
-          mask-position: 0 0, 0 var(--gh-b), 0 var(--gh-y), var(--gh-r) var(--gh-y);
-  -webkit-mask-size: 100% var(--gh-y), 100% 100%, var(--gh-x) calc(var(--gh-b) - var(--gh-y)), 100% calc(var(--gh-b) - var(--gh-y));
-          mask-size: 100% var(--gh-y), 100% 100%, var(--gh-x) calc(var(--gh-b) - var(--gh-y)), 100% calc(var(--gh-b) - var(--gh-y));
-}
-
 body::after {
   content: '';
   position: fixed;
@@ -156,7 +138,7 @@ body::after {
   position: relative;
 }
 
-/* Nav targets (#events ... #stay -- whatever NAV_LINKS, the drawer, the
+/* Nav targets (#events ... #visit -- whatever NAV_LINKS, the drawer, the
    footer or the dot rail jump to). A jump puts the section's top at the
    top of the viewport, under the fixed bar; the section's own top padding
    is what keeps its label clear. On a phone that padding (72px) is less

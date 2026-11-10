@@ -1,13 +1,12 @@
 const nextConfig = {
   experimental: {
-    // Files the homepage reads from /public on the SERVER: the Harvest Hosts
-    // badge (src/lib/host-badge.ts) and local poster files whose size
-    // src/lib/poster-size.ts reads. /public is served by the CDN and is not
-    // part of the server function by default, so without this an ISR
-    // regeneration on Vercel would not find them -- the badge would vanish
-    // after the first revalidation.
+    // Files the homepage reads from /public on the SERVER: local poster
+    // files whose size src/lib/poster-size.ts reads. /public is served by
+    // the CDN and is not part of the server function by default, so without
+    // this an ISR regeneration on Vercel would not find them, and the weekly
+    // flyers would lose their known size after the first revalidation.
     outputFileTracingIncludes: {
-      '/': ['./public/assets/harvest-hosts/**/*', './public/assets/events/**/*'],
+      '/': ['./public/assets/events/**/*'],
     },
   },
   images: {

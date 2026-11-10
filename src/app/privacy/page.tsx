@@ -162,8 +162,8 @@ export default function PrivacyPage() {
         </li>
       </ul>
       <p>
-        Google Maps and YouTube may set their own cookies. Links to other sites, such as Harvest
-        Hosts, Facebook or TikTok, take you to sites with their own policies; nothing from them loads
+        Google Maps and YouTube may set their own cookies. Links to other sites, such as Facebook
+        or TikTok, take you to sites with their own policies; nothing from them loads
         on our pages until you click.
       </p>
 

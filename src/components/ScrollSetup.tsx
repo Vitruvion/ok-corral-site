@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 /**
  * Two jobs, both about a page opened with a #hash (a shared link like
- * okcorralsaloon.com/#stay):
+ * okcorralsaloon.com/#visit):
  *
  * 1. Smooth scrolling is OFF until the page has landed. The browser's own
  *    jump to a hash happens while the page is still loading. If it is

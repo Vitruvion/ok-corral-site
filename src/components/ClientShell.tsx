@@ -14,8 +14,6 @@ import InstagramStrip from '@/components/InstagramStrip'
 import Bookings from '@/components/Bookings'
 import GiftCards from '@/components/GiftCards'
 import Location from '@/components/Location'
-import HarvestHosts from '@/components/HarvestHosts'
-import type { HostBadge } from '@/lib/host-badge'
 import Footer from '@/components/Footer'
 import ProgressRail from '@/components/ProgressRail'
 import CartDrawer from '@/components/CartDrawer'
@@ -28,11 +26,9 @@ type Props = {
   drinks: Record<string, DrinkData[]>
   merch: MerchItem[]
   igPosts: InstagramPost[] | null
-  /** The Harvest Hosts host badge, if its file is in /public. */
-  hostBadge: HostBadge | null
 }
 
-export default function ClientShell({ events, recurring, drinks, merch, igPosts, hostBadge }: Props) {
+export default function ClientShell({ events, recurring, drinks, merch, igPosts }: Props) {
   return (
     <CartProvider>
       <Loader />
@@ -48,7 +44,6 @@ export default function ClientShell({ events, recurring, drinks, merch, igPosts,
       <Bookings />
       {SHOW_GIFT_CARDS && <GiftCards />}
       <Location />
-      <HarvestHosts badge={hostBadge} />
       <Footer />
       <ProgressRail />
       {SHOW_MERCH && <CartDrawer />}

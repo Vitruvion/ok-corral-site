@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import LegalPage from '@/components/LegalPage'
-import { BRAND, HARVEST_HOSTS } from '@/lib/data'
+import { BRAND } from '@/lib/data'
 import { TERMS_EFFECTIVE } from '@/lib/legal'
 
 /*
@@ -14,7 +14,7 @@ import { TERMS_EFFECTIVE } from '@/lib/legal'
 export const metadata: Metadata = {
   title: 'Terms of Service — The OK Corral',
   description:
-    'Terms for tickets, merchandise and visits to The OK Corral in Cottonwood, California: 21 and over, refunds, entry, and RV stays through Harvest Hosts.',
+    'Terms for tickets, merchandise and visits to The OK Corral in Cottonwood, California: 21 and over, refunds and entry.',
 }
 
 export default function TermsPage() {
@@ -88,16 +88,6 @@ export default function TermsPage() {
         </li>
       </ul>
       <p>To start a return, email {mail}.</p>
-
-      <h2>RV stays</h2>
-      <p>
-        Overnight RV stays in our lot are booked only through{' '}
-        <a href={HARVEST_HOSTS.listingUrl} target="_blank" rel="noopener noreferrer">
-          Harvest Hosts
-        </a>{' '}
-        and are governed by Harvest Hosts&apos; own terms and membership rules. The bar
-        doesn&apos;t take RV reservations directly, by phone or otherwise.
-      </p>
 
       <h2>This website</h2>
       <p>

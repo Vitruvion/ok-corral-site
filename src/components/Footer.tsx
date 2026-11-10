@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Wordmark from './Wordmark'
-import { BRAND, HARVEST_HOSTS, NAV_LINKS, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
+import { BRAND, NAV_LINKS, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 import styles from './Footer.module.css'
 
@@ -48,7 +48,6 @@ export default function Footer() {
             <li><a href={BRAND.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram · @{BRAND.instagram}</a></li>
             <li><a href={BRAND.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook · {BRAND.facebook}</a></li>
             <li><a href={BRAND.tiktokUrl} target="_blank" rel="noopener noreferrer">TikTok · @{BRAND.tiktok}</a></li>
-            <li><a href={HARVEST_HOSTS.listingUrl} target="_blank" rel="noopener noreferrer">Harvest Hosts · RV stays</a></li>
             <li><a href={`mailto:${BRAND.email}`}>{BRAND.email}</a></li>
             <li><a href={BRAND.phoneHref}>{BRAND.phone}</a></li>
           </ul>
@@ -101,7 +100,7 @@ function Newsletter() {
           </h3>
           <p className={styles.newsDesc}>
             {/* No frequency promise: nothing sends to this list yet (see
-                CLAUDE.md §17 before wiring a mailing service). */}
+                CLAUDE.md §16 before wiring a mailing service). */}
             <em>Occasional word on big shows and what&apos;s coming up at the bar.</em>
           </p>
         </div>
