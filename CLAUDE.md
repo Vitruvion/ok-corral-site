@@ -183,7 +183,7 @@ key, but the anon key still reaches the same production database, and
 | Route | What it is |
 |---|---|
 | `/` | The site. Hero, events, drinks, gallery, Instagram strip. ISR, `revalidate = 60`. |
-| `/card` | Corral Rewards — Apple Wallet pass landing + enrollment. |
+| `/card` | Corral Rewards — Apple Wallet pass landing + enrollment. **Parked:** unlinked and noindexed until Square Loyalty lands (§3). |
 | `/tickets/success` | Where Stripe returns a ticket buyer. Shows no codes; those go by email. |
 | `/menu-board` | The TV behind the bar. Fixed 3-column board, self-refreshing every 5 min. No chrome, no login. |
 | `/poster/dustin-gaspard` + `/instagram` | Print and 4:5 social poster for one show. |
@@ -391,13 +391,26 @@ Hand-drawn OK monogram on solid black, generated from page 9 of `brand/OK_Corral
 
 Working `/card` page generates signed `.pkpass` files. Brady's iPhone test confirmed end-to-end pass install + display.
 
+**PARKED (November 2026) until the Square Loyalty work (Phase 2) lands.**
+Points aren't tracked and passes never update, so `/card` is deliberately
+**unlinked** (nothing on the site points to it) and **noindexed**
+(`robots: { index: false, follow: false }` in `src/app/card/page.tsx`). The
+route still works -- passes already in Wallets and saved links must keep
+resolving, so do not delete or redirect it. Its copy says only what
+happens today: a Wallet pass with your name, Newcomer, 0 points and a share
+QR, which doesn't change after it's added. **When Square Loyalty lands:**
+restore the links and indexing, rewrite the copy for what then works, and
+update `/privacy` in the same change (§17). Still promised and not
+delivered, flagged to Brady: the tier rewards in `tiers.ts` (birthday shot,
+koozie, hat, tee) and the pass's back-of-card "how it works" text.
+
 **5-tier ladder:** Newcomer (0) → Regular (500) → Local (1500) → Familiar Face (3500) → One of Ours (7500)
 
 **`/card` page sections (in order):**
 1. **Hero** — parallax storefront + dust particles, copied verbatim from Hero.tsx z-layering
 2. **Pass mockup** — interactive 5-tier preview chips with escalating-materials treatment per tier (paper → bronze → antique brass → burnished bronze → molten gold; "One of Ours" gets a breathing-glow animation). Click chip to swap tier, click card to flip front↔back.
 3. **Ranks ladder** with `fade-up` reveal animation
-4. **How It Works** — three-step copy (currently: Sign Up / Add to Wallet / Earn Points — "Earn Points" body explicitly says points come from phone number at checkout or tap-pay-with-card, NOT QR scanning)
+4. **How It Works** — three-step copy: Sign Up / Add to Wallet / "Points: Not Yet" (says plainly that points aren't tracked and the pass stays as it is -- see PARKED above)
 5. **Form** — framed enrollment card
 6. **Sticky mobile CTA** — hides on form-in-view via IntersectionObserver
 

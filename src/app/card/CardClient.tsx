@@ -210,9 +210,10 @@ function CardClientInner() {
               </h1>
               <p className={styles.heroIntro}>
                 <em>
-                  Five tiers, Newcomer to One of Ours. Pay with the card or just
-                  give your phone number — points roll in automatically. Bring a
-                  friend with the QR on your pass and you&apos;ll move up faster.
+                  Five tiers, Newcomer to One of Ours. Your card goes straight into
+                  Apple Wallet with your name on it and a QR code to share with
+                  friends. Points aren&apos;t being tracked yet, so every card starts
+                  at Newcomer with 0 points.
                 </em>
               </p>
               <div className={styles.heroCtas}>
@@ -264,8 +265,8 @@ function CardClientInner() {
               </div>
               <p className={styles.sectionIntro}>
                 <em>
-                  Start at Newcomer. Tip well, drink slow, come back often.
-                  Your rank lives on the card and updates as you go.
+                  Here&apos;s the ladder. Every card starts at Newcomer. Points
+                  aren&apos;t switched on yet, so for now nobody moves up it.
                 </em>
               </p>
             </div>
@@ -342,18 +343,18 @@ function CardClientInner() {
                 <p className={styles.stepBody}>
                   <em>
                     One tap and the card lives in Apple Wallet next to your
-                    boarding passes. Lock-screen access, updates over the air.
+                    boarding passes, on your lock screen when you want it.
                   </em>
                 </p>
               </div>
               <div className={styles.step}>
                 <span className={styles.stepNum}>03</span>
-                <h3 className={styles.stepTitle}>Earn Points</h3>
+                <h3 className={styles.stepTitle}>Points: Not Yet</h3>
                 <p className={styles.stepBody}>
                   <em>
-                    Pay with the card on your Wallet, or give the bartender your
-                    phone number at checkout. Points hit your tier automatically
-                    — no scanning required.
+                    We aren&apos;t tracking points yet. For now every card shows
+                    Newcomer and 0 points, and the pass stays as it is once
+                    it&apos;s in your Wallet.
                   </em>
                 </p>
               </div>
