@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import Wordmark from './Wordmark'
 import { BRAND, HARVEST_HOSTS, NAV_LINKS, SHOW_MERCH, SHOW_GIFT_CARDS } from '@/lib/data'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
@@ -55,6 +56,10 @@ export default function Footer() {
       </div>
       <div className={styles.bottom}>
         <span>© 2026 The OK Corral · All rights reserved</span>
+        <nav className={styles.legal} aria-label="Legal">
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+        </nav>
         <span>◆ Drink responsibly · 21+ every day, all day</span>
       </div>
     </footer>

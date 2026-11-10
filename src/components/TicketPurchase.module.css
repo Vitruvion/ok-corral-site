@@ -87,6 +87,22 @@
   max-width: 46ch;
 }
 
+.terms {
+  margin: 0;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--bone-mute);
+}
+
+.terms a {
+  color: var(--bone-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .error {
   font-family: var(--ff-sans);
   font-size: 13px;

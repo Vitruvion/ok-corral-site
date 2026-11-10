@@ -29,6 +29,10 @@ export const SHOW_GIFT_CARDS = false
 
 export const BRAND = {
   name: 'The OK Corral',
+  /** The company that operates the bar -- named in /privacy and /terms. */
+  legalName: 'SIX SHOT LLC',
+  /** Canonical public origin, for absolute links (e.g. Stripe's checkout text). */
+  siteUrl: 'https://www.okcorralsaloon.com',
   location: 'Cottonwood, California',
   since: 'Est. 1954',
   tagline: "NorCal's favorite western bar.",

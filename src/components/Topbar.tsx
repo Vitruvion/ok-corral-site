@@ -34,6 +34,9 @@ export default function Topbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
+    // A page opened at a #hash is already scrolled when this mounts, and
+    // no scroll event may follow -- start in the right state.
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])

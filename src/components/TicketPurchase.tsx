@@ -155,6 +155,12 @@ export default function TicketPurchase({ eventId, eventName, price, blurb }: Pro
 
       {note && <div className={styles.blurb}>{note}</div>}
 
+      {/* New tab: reading the terms shouldn't lose the ticket count. */}
+      <p className={styles.terms}>
+        By purchasing you agree to our{' '}
+        <a href="/terms" target="_blank" rel="noopener">Terms</a>.
+      </p>
+
       {error && (
         <div className={styles.error} role="alert">
           {error}

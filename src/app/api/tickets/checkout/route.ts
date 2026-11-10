@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
+import { CHECKOUT_TERMS_TEXT } from '@/lib/legal'
 import {
   checkSaleable,
   MARKETING_FIELD_KEY,
@@ -173,6 +174,7 @@ export async function POST(req: NextRequest) {
       expires_at:
         Math.floor(Date.now() / 1000) +
         Math.max(SESSION_TTL_MINUTES, MIN_STRIPE_TTL_MINUTES) * 60,
+      custom_text: { submit: { message: CHECKOUT_TERMS_TEXT } },
       success_url: `${origin}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?tickets=cancel`,
     })

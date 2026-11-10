@@ -1,0 +1,183 @@
+/* Reading pages (/privacy, /terms): the site's ink and bone, its type,
+   one column of about 70 characters. */
+
+.page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink);
+}
+
+.bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px var(--rail);
+  border-bottom: 1px solid rgba(235,228,212,0.08);
+  background: rgba(11,9,8,0.92);
+}
+
+.home {
+  line-height: 0;
+  text-decoration: none;
+}
+
+.back {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  white-space: nowrap;
+  transition: color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back:hover { color: var(--ember); }
+}
+
+.back:focus-visible { color: var(--ember); }
+
+.main {
+  flex: 1 0 auto;
+  padding: 64px var(--rail) 96px;
+}
+
+.article {
+  max-width: 62ch;
+  margin: 0 auto;
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--bone-dim);
+}
+
+.kicker {
+  display: block;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 14px;
+}
+
+.title {
+  font-family: var(--ff-display);
+  font-weight: 400;
+  font-size: clamp(34px, 8vw, 56px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--bone);
+  margin: 0 0 16px;
+}
+
+.effective {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  margin: 0 0 40px;
+}
+
+/* Section headings and body copy written as plain elements in the page. */
+.article h2 {
+  font-family: var(--ff-display);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--bone);
+  margin: 48px 0 14px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(235,228,212,0.08);
+}
+
+.article h3 {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--bone);
+  margin: 28px 0 8px;
+}
+
+.article p {
+  margin: 0 0 16px;
+}
+
+.article ul {
+  list-style: disc;   /* globals.css resets lists to none */
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+
+.article li {
+  margin: 0 0 8px;
+}
+
+.article li::marker {
+  color: var(--ember);
+}
+
+.article strong {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+.article a {
+  color: var(--ember);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.foot {
+  padding: 28px var(--rail) 36px;
+  border-top: 1px solid rgba(235,228,212,0.08);
+  text-align: center;
+}
+
+.footLinks {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.footLinks a,
+.footContact {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+.footContact {
+  line-height: 1.8;
+  margin: 0;
+}
+
+.footContact a {
+  color: inherit;
+  text-transform: none;
+  letter-spacing: 0.06em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footLinks a:hover,
+  .footContact a:hover { color: var(--ember); }
+}
+
+.footLinks a:focus-visible,
+.footContact a:focus-visible { color: var(--ember); }
+
+@media (max-width: 760px) {
+  .main { padding: 40px var(--rail) 72px; }
+  .article { font-size: 16px; }
+  .article h2 { font-size: 19px; margin-top: 40px; }
+  .back { font-size: 10px; letter-spacing: 0.14em; }
+}

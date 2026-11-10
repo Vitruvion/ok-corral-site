@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import '@/styles/globals.css'
 import { BRAND, HARVEST_HOSTS } from '@/lib/data'
+import ScrollSetup from '@/components/ScrollSetup'
 
 export const metadata: Metadata = {
   title: 'The OK Corral — Western Saloon in Cottonwood, California',
@@ -49,7 +50,13 @@ export default function RootLayout({
           Strategy:
             - Inline <style> hides <body> by default (opacity: 0) and
               paints <html> with the brand ink so users never see a
-              white flash while body is hidden.
+              white flash while body is hidden. The reveal is INSTANT --
+              no opacity transition. WebKit does not render a page that
+              has painted nothing yet, and a transition only advances on
+              rendered frames, so a fade from 0 never started: with any
+              image still loading, the page stayed invisible (and
+              requestAnimationFrame, ResizeObserver and the #hash landing
+              all stalled) until window.load. Measured November 2026.
             - Inline <script> reveals the body once styles are confirmed
               loaded (DOMContentLoaded / window.load / requestAnimationFrame),
               with a 500ms safety timeout so slow connections still reveal
@@ -77,7 +84,7 @@ export default function RootLayout({
         <style
           dangerouslySetInnerHTML={{
             __html:
-              'html{background:#0b0908}body{opacity:0;transition:opacity 120ms ease-out}body.fouc-ready{opacity:1}',
+              'html{background:#0b0908}body{opacity:0}body.fouc-ready{opacity:1}',
           }}
         />
         <script
@@ -268,7 +275,10 @@ if(document.body)install();
           would otherwise log a "Extra attributes from the server: class"
           hydration mismatch in dev. The mismatch is intentional and
           harmless — React doesn't manage that class. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <ScrollSetup />
+      </body>
     </html>
   )
 }

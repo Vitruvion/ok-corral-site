@@ -187,6 +187,7 @@ key, but the anon key still reaches the same production database, and
 | `/tickets/success` | Where Stripe returns a ticket buyer. Shows no codes; those go by email. |
 | `/menu-board` | The TV behind the bar. Fixed 3-column board, self-refreshing every 5 min. No chrome, no login. |
 | `/poster/dustin-gaspard` + `/instagram` | Print and 4:5 social poster for one show. |
+| `/privacy` + `/terms` | Privacy Policy and Terms of Service (§17). Not age-gated -- Stripe's reviewers must be able to read them. |
 
 **Admin** — all behind the `corral_admin` cookie via `src/middleware.ts`. One
 shared passcode, 30-day cookie, no per-user accounts. Every route re-checks the
@@ -365,6 +366,7 @@ be committed again.
 - Social links (Topbar, MobileMenu, Footer): IG + Facebook + TikTok wired via `SocialIcons` component
 - **`NAV_LINKS` in `data.ts` is the only list of nav items.** The top bar, the mobile drawer, the footer's Explore column and the dot rail (`ProgressRail`) all render it -- never type a copy. Order = page order: Events, Bar, (Merch), Gallery, Bookings, Visit, RV Stays (`#stay`). An item's optional `drawerNote` is a second line under its label in the drawer only ("via Harvest Hosts"); it sits in the row's bottom padding, so the row keeps the same height and centred arrow as the rest. Drawer labels keep >= 16px before their arrow and wrap rather than touch
 - **Nav-jump clearance** is `scroll-margin-top` on `.section[id]` in `globals.css`: `max(0, --topbar-h + --nav-gap - --section-pad)`. `Topbar.tsx` keeps `--topbar-h` equal to the bar's real bottom edge (ResizeObserver), `--nav-gap` is 20px, `--section-pad` is the section's own top padding (120px, 72px at <=760). Phones: label ~20px below the bar (the 72px padding alone left it 6px under). Desktop: the padding already clears it, so the margin is 0 and labels sit ~50px below. Never hard-code a bar height or a per-section offset; a new nav target only needs `className="section"` and an id
+- **Direct `#hash` links** (a shared `/#stay`) are scrolled by the browser before any script runs, so `--topbar-h` also has a stylesheet default on `:root` per Topbar breakpoint -- the bar's page-top heights, measured: 70px (>1100), 66px (801-1100), 78px (<=800). Re-measure them if the bar's breakpoints or padding change. Smooth scrolling is **not** in the stylesheet: `html.smooth-scroll` is added by `src/components/ScrollSetup.tsx` (root layout) once the page has landed -- a smooth first-load hash jump flew towards a position the web fonts then moved, and stopped 80-150px short. On a hash load ScrollSetup also re-scrolls **once** to the target when `document.fonts.status` is `loaded` (not `fonts.ready`: in WebKit that only settles at window load), unless the visitor has already wheeled/swiped/pressed a key. Measured: label 19.6-21.5px under the bar on phones, ~50px desktop, both engines, nothing moving when images arrive
 - Top bar widths (measured November 2026): hamburger at <= 800px (below that the full nav runs into the logo); 801-1100 nav only (hours badge and socials hidden); 1101-1220 the `@okcorralsaloon` text pill swaps for an Instagram icon button styled as Facebook/TikTok; above 1220 everything. Narrowest point is 29.5px free each side at 1101. With the text pill the bar breaks up to 1150 and has 12px a side only from 1175 -- 1220 keeps iPad Air (1180) and iPad Pro 11" (1194) landscape comfortable. Adding a nav item means re-measuring this whole range, not just 1280/1440
 - Section labels ("◆ 01 · What's On") are numbered by a CSS counter, not typed: wrap the label text in `<span className="section-num">` and the number is its render position (`.section-num::before` in `globals.css`, reset on `body`). A section hidden by `SHOW_MERCH` / `SHOW_GIFT_CARDS` is never rendered, so it never counts and never leaves a gap. Never type a number into a label. Today: 01 What's On · 02 The Pour · (General Store) · The Room · Groups · Come Find Us · Stay the Night -- 06 or 07 total depending on merch
 - JSON-LD (`layout.tsx`) `sameAs` is built from `BRAND.instagramUrl` / `facebookUrl` / `tiktokUrl` and `HARVEST_HOSTS.listingUrl` -- the same constants the footer links -- so a profile URL is changed in exactly one place
@@ -688,6 +690,35 @@ an external link to the listing, with the socials.
   listing's rating, and never mention food, meals, a gift shop, exhibits or
   wine tasting -- we have none of those.
 
+### 17. Privacy Policy + Terms of Service (deployed)
+
+`/privacy` and `/terms`, framed by `src/components/LegalPage.tsx` (wordmark
+home link, one ~70-character column, small footer). Linked from the footer's
+bottom row, and "By purchasing you agree to our Terms" sits under the ticket
+button (`TicketPurchase.tsx`) and the cart's checkout button
+(`CartDrawer.tsx`), opening in a new tab. Ticket and merch Stripe sessions
+carry the same line beside the pay button (`custom_text.submit`,
+`CHECKOUT_TERMS_TEXT` in `src/lib/legal.ts`).
+
+- **The privacy policy describes what the code does -- keep it that way.**
+  Adding or removing a form, field, embed, cookie, email or vendor means
+  editing `/privacy` in the same change. Its header comment lists the files
+  it was written from. As written (November 2026): booking form, Bulletin
+  sign-up, ticket checkout, `/card` (stores nothing), merch and gift cards
+  (described as not yet sold), Vercel, Supabase, Stripe, Resend, Google
+  Workspace, Apple; Google Fonts, Maps, YouTube and Instagram load in the
+  visitor's browser; no analytics or tracking at all.
+- **Effective dates** live in `src/lib/legal.ts`. Change one only when that
+  page's substance changes.
+- **Policies are the owners'.** Refund, return and entry rules came from
+  Brady -- don't add or soften one. Gift-card terms are deliberately absent
+  while `SHOW_GIFT_CARDS` is false: write them before flipping it.
+- Stripe's own Terms checkbox (`consent_collection.terms_of_service`) is NOT
+  used: it errors unless a Terms URL is set in the Stripe Dashboard's public
+  details, which is Brady's to set.
+- The legal entity is `BRAND.legalName` (SIX SHOT LLC); `BRAND.siteUrl` is
+  the canonical origin for absolute links.
+
 ---
 
 ## Env vars
@@ -744,6 +775,7 @@ C:\Projects\ok-corral-site\
     │   ├── page.tsx                  # home → fetchAll() → ClientShell
     │   ├── menu-board\               # the TV board + its overflow guard
     │   ├── tickets\success\          # Stripe return page (shows no codes)
+    │   ├── privacy\ + terms\          # legal pages (§17), framed by components/LegalPage.tsx
     │   ├── admin\
     │   │   ├── login\
     │   │   ├── menu\                 # drinks editor
@@ -780,11 +812,14 @@ C:\Projects\ok-corral-site\
     │   ├── ImageOrPlaceholder.tsx
     │   ├── PosterImage.tsx           # every event/weekly poster: box from its known pixel size
     │   ├── HarvestHosts.tsx          # #stay -- the Harvest Hosts section (badge slot: lib/host-badge.ts)
+    │   ├── LegalPage.tsx             # frame for /privacy and /terms
+    │   ├── ScrollSetup.tsx           # root layout: first-load #hash landing, then turns smooth scrolling on
     │   └── ClientShell.tsx
     └── lib\
         ├── data.ts                   # BRAND (incl. THE phone number -- every page, email, JSON-LD and the Wallet pass read it), feature flags. NO drinks/events/recurring arrays — those live in Supabase
         ├── events.ts                 # venue-day rules: filterUpcomingEvents, isEventUpcoming
         ├── recurring.ts              # weekly specials: days, time format/parse, THE order
+        ├── legal.ts                  # effective dates for /privacy + /terms, Stripe checkout terms line
         ├── poster-size.ts            # server-side poster header read (image-size), memoised
         ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
         ├── admin\                    # drinks-repo, events-repo, recurring-repo, session/guard, image-resize, rate-limit
@@ -857,4 +892,5 @@ Vestaboard-style animated marquee hero with flip cards. Branch `hero-vestaboard`
 - **Percentage `max-width`/`max-height` on an image inside a grid frame sized by `aspect-ratio` does not work** -- both engines ignore the percentage height (the grid area's height is not definite), and WebKit can resolve the percentage width against a stale width. This is what broke event posters in November 2026. Size images from their known pixel size instead (`PosterImage`).
 - **`.expand { animation: fade-up }` in `Events.module.css` never runs** -- the CSS Modules keyframes trap again (the name is hashed, the keyframes live in `globals.css`). The panel simply appears. Harmless, but if it is ever "fixed", it animates `transform`, which moves bounding rects during the first 400ms -- measure after it.
 - **The film grain (`body::before`, z 9999) sits above every fixed element on the site** except the AgeGate (10000). Anything that must be grain-free gets a mask hole (`lib/grain-hole.ts`), not a z-index above 9999 -- a raised element paints over the Topbar and every overlay.
+- **Never fade the FOUC reveal in.** The inline head style hides `<body>` (opacity 0) until styles load; the reveal must be instant. WebKit does not render a page that has painted nothing, and a transition only advances on rendered frames, so `transition: opacity` from 0 never started: with any image still loading the page stayed invisible -- and requestAnimationFrame, ResizeObserver and hash landing all stalled -- until window.load (measured November 2026; the old "WebKit harness quirks" -- fonts.ready never resolving, deferred smooth anchor scrolls -- were this).
 - **Don't trust math alone for visual layout fixes:** Multiple commits in the poster history had correct math but wrong visual results because of subpixel rounding, scaled rendering, or constraint conflicts. Always render and visually verify; ideally also measure the actual rendered geometry via DOM bounding rects.

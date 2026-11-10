@@ -316,6 +316,21 @@
   margin-top: 14px;
 }
 
+.terms {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bone-mute);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.terms a {
+  color: var(--bone-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 @media (max-width: 540px) {
   .drawer {
     width: 100vw;

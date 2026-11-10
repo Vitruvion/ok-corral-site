@@ -183,6 +183,23 @@
 }
 
 /* Bottom */
+/* Privacy / Terms: small and quiet, the same mono as the line it sits in. */
+.legal {
+  display: flex;
+  gap: 18px;
+}
+
+.legal a {
+  color: var(--bone-mute);
+  transition: color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .legal a:hover { color: var(--ember); }
+}
+
+.legal a:focus-visible { color: var(--ember); }
+
 .bottom {
   display: flex;
   justify-content: space-between;

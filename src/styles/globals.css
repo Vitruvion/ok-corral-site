@@ -35,6 +35,13 @@
   /* Space between the fixed top bar and a section label after a nav jump
      (see .section[id]). */
   --nav-gap: 20px;
+  /* The top bar's height at page top, per Topbar.module.css breakpoints
+     (measured: 70px above 1100, 66px at 801-1100, 78px at <= 800). It is
+     here for the first paint -- a #hash link opened fresh is scrolled by
+     the browser before any script runs. Topbar.tsx then overwrites it
+     with the measured value. If the bar's breakpoints or padding change,
+     re-measure these three. */
+  --topbar-h: 70px;
 }
 
 /* ── 2. Reset & Base ──────────────────────────────── */
@@ -46,6 +53,13 @@
 
 html {
   overflow-x: hidden;
+}
+
+/* Smooth in-page scrolling -- switched on by ScrollSetup.tsx once the page
+   has landed, NOT in the stylesheet: a browser's own jump to a #hash on
+   first load must be instant, or Chromium flies down the page towards a
+   position that the fonts then move, and stops short. */
+html.smooth-scroll {
   scroll-behavior: smooth;
 }
 
@@ -151,10 +165,11 @@ body::after {
    Topbar.tsx, so it follows the bar if it ever changes (safe-area inset
    included, should the bar ever take one). Where the padding already
    clears bar + gap (desktop: 120px against ~71px), max() makes it 0 and
-   the landing is untouched. Before hydration --topbar-h is unset and the
-   margin is 0 -- the old behaviour, never worse. */
+   the landing is untouched. Before any script runs, --topbar-h is the
+   per-breakpoint default on :root, so a #hash link opened fresh lands
+   right too (ScrollSetup.tsx has the rest of that story). */
 .section[id] {
-  scroll-margin-top: max(0px, calc(var(--topbar-h, 0px) + var(--nav-gap) - var(--section-pad)));
+  scroll-margin-top: max(0px, calc(var(--topbar-h) + var(--nav-gap) - var(--section-pad)));
 }
 
 /* ── 6. Buttons ───────────────────────────────────── */
@@ -463,8 +478,16 @@ body::after {
   .section-head { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 1100px) {
+  :root { --topbar-h: 66px; }
+}
+
 @media (max-width: 900px) {
   :root { --rail: 24px; }
+}
+
+@media (max-width: 800px) {
+  :root { --topbar-h: 78px; }
 }
 
 @media (max-width: 760px) {

@@ -152,6 +152,10 @@ export default function CartDrawer() {
                 {checkingOut ? 'Redirecting…' : 'Checkout →'}
               </button>
               <p className={styles.secure}>◆ Secure checkout · powered by Stripe</p>
+              <p className={styles.terms}>
+                By purchasing you agree to our{' '}
+                <a href="/terms" target="_blank" rel="noopener">Terms</a>.
+              </p>
             </footer>
           </>
         )}
