@@ -240,8 +240,8 @@ async function handleMerch(
       kind: 'merch',
       item_count: String(lines.reduce((n, l) => n + l.qty, 0)),
     },
-    // Required Terms checkbox -- see /api/tickets/checkout. Link (and its
-    // pay-later option) stays on for merch, unlike tickets.
+    // Required Terms checkbox -- see /api/tickets/checkout. Configured the
+    // same way as tickets: pay-later follows the Dashboard's Klarna setting.
     consent_collection: { terms_of_service: 'required' },
     success_url: successBase,
     cancel_url: cancelUrl,

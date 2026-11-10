@@ -492,7 +492,7 @@ Real posts from `@okcorralsaloon` render on the homepage in InstagramStrip. Toke
 - Only one event may be `featured` at a time, enforced by a partial unique index. Featuring is a **swap**, done atomically by `set_featured_event(uuid)` — not a toggle, and not two UPDATEs
 - **Posters are sized on the server, before the page is sent.** `fetchAll()` runs every event and weekly special through `withPosterSizes()` (`src/lib/poster-size.ts`), which reads the image header -- a 64KB ranged request to Storage, or a file read for `/assets/...` -- with `image-size`, memoised per server instance (Storage URLs are immutable). Every poster renders through `src/components/PosterImage.tsx`: with a size, `width`/`height` go on the `<img>` and the box is computed from the ratio, capped by `--poster-max-w` / `--poster-max-h` set on an ancestor -- exact before load, never cropped, never letterboxed. Without one (lookup failed), a fixed-ratio frame with the image absolutely positioned inside, so it still cannot overflow or overlap. Used by the expanded event, the weekly flyer thumbnail, the lightbox and the admin preview -- do not size a poster any other way. No DB column: sizes are not stored.
 - **Action buttons in the expanded event:** a ticketed show is one column -- the purchase group (`TicketPurchase`: stepper + Get Tickets, with its price and Terms lines directly under it) as the primary action, then Add to Calendar + Share together on the same left edge. On a phone Get Tickets takes its own full-width line under the stepper ("Get Tickets · $15 →" doesn't fit beside it, and a nowrap row widened the whole panel past the screen) and Calendar/Share share the row. A free show keeps its single row (badge, Calendar, Share), unchanged
-- **No heading over nothing:** "◆ About the night" renders only when the description has text. The other blocks in the panel (related links, video, tags) have no headings and already render only with content. A show with no poster still shows the grey "<name> · Poster 3:4" placeholder box
+- **No heading over nothing:** "◆ About the night" renders only when the description has text. The other blocks in the panel (related links, video, tags) have no headings and already render only with content. **No poster, no placeholder:** a show without a poster gets no grey box -- and with no related-artist cards either, no left column at all (`.expandSingle`, one column capped at 720px). The weekly flyer, the lightbox and the admin list already render only when there is a poster; the admin upload field always shows. (`PosterImage`'s grey fallback is different: it is for a poster that exists but fails to load)
 - **The expanded panel is mounted on open and unmounted on close, with no height ever set on it.** Nothing measures it. Keep it that way: a panel locked to a measured height is how posters end up overflowing onto the text below.
 - History of the poster box, so nobody walks back into it: `fde2ac8` natural sizing (no reserved box → anchor jumps landed short); `2af4ac8` a fixed 3:4 grid frame (the poster's `max-height: 100%` is ignored inside a grid item whose container is sized by `aspect-ratio`, so tall posters spilled out of the frame over the text below whenever `80vh` clamped it, and in WebKit a poster that arrived after the open row narrowed its column was laid out at the stale wider width). Both are replaced by the server-side size.
 
@@ -599,15 +599,16 @@ and the success URL is guessable.
   NOTHING`, so a second delivery inserts nothing. Claiming an order is a single
   conditional UPDATE (`where status = 'pending'`), so exactly one delivery wins.
   Keep both properties if you touch `src/lib/tickets/complete.ts`.
-- **No pay-later on tickets; merch allows it.** The ticket session is
-  card-only, and the one pay-later route left -- "Klarna on Link", a "Pay
-  later" plan Link offers US customers inside hosted Checkout -- has no
-  per-session switch (Klarna inside Link is a Dashboard-wide setting, and
-  `excluded_payment_method_types` cannot exclude Link). So the ticket session
-  sets `wallet_options: { link: { display: 'never' } }`: cards, Apple Pay and
-  Google Pay still work, Link's saved-card checkout doesn't. Merch
-  (`/api/checkout`) keeps Link and its pay-later. Deliberate -- don't "fix"
-  either side to match the other.
+- **Pay-later is an account-wide Stripe Dashboard setting, not code.**
+  Ticket and merch sessions are configured the same way: card-only, Link on
+  (one-click checkout for returning buyers), required Terms checkbox. The
+  only pay-later either can show is "Klarna on Link", and that follows the
+  **Klarna setting in the Stripe Dashboard -- currently OFF** (Brady,
+  November 2026). There is no per-session switch for it (Stripe can't
+  exclude Link per session; hiding Link to kill it cost one-click checkout,
+  tried in 58c2833 and reverted). When merch launches and Klarna goes back
+  ON, it will also appear on ticket checkout via Link -- a known, accepted
+  trade-off.
 - **`src/lib/tickets/occupancy.ts` is THE count.** Sold = non-void `tickets`
   rows + `sum(quantity)` of paid door orders. Six call sites read it. Do not
   count tickets anywhere else.
@@ -759,8 +760,9 @@ deliberately no extra `custom_text` line repeating it with a raw URL.
   ticket buyers who opted in, so the footer promises no frequency. If a
   mailing service is ever added, `/privacy` must name it, and every email
   needs an unsubscribe link.
-- **Before `SHOW_MERCH` or `SHOW_GIFT_CARDS` is turned on**, finish the
-  Terms: what happens to a pickup order after its 30-day hold, exchanges,
+- **Before `SHOW_MERCH` or `SHOW_GIFT_CARDS` is turned on**: turn Klarna
+  back ON in the Stripe Dashboard if merch should offer pay-later (it will
+  then show on tickets too, via Link -- §13), and finish the Terms: what happens to a pickup order after its 30-day hold, exchanges,
   and the whole gift-card section -- including California's rules on gift
   card expiry (most may not expire). Damaged or incorrect merch is already
   covered (replaced or refunded at our cost).
@@ -898,7 +900,7 @@ All generated passes hardcode `points: 0`. Phase 2 wires Square Loyalty API → 
 `webServiceURL` is placeholder. Phase 3 implements Apple's push API so passes update when points change without re-downloading.
 
 ### 🍻 Stripe live mode — now the blocker for selling tickets
-Still test mode, which means **no real ticket can be sold yet**. Activate when the bank account is ready, then re-verify the webhook against the live endpoint secret before announcing a show. Once live: flip `SHOW_MERCH = true` after product photos, `SHOW_GIFT_CARDS = true` to relaunch gift cards.
+Still test mode, which means **no real ticket can be sold yet**. Activate when the bank account is ready, then re-verify the webhook against the live endpoint secret before announcing a show. Once live: flip `SHOW_MERCH = true` after product photos (merch-launch checklist: Terms gaps and the Klarna switch in §17), `SHOW_GIFT_CARDS = true` to relaunch gift cards.
 
 ### 🖼️ Apple Wallet strip image
 `pass-signer.ts` is wired to pick up `strip.png` + `@2x` + `@3x` from `public/assets/wallet/` if they exist. Currently no strip — would meaningfully upgrade the pass visual but needs designer attention (a bad strip looks cheap, a good one is the highest-leverage pass upgrade Wallet allows).

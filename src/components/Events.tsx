@@ -120,9 +120,12 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                     taken before the poster arrived -- and the poster's own
                     box is known before it arrives anyway (PosterImage). */}
                 {isOpen && (
-                  <div className={styles.expand}>
+                  // No poster and no related-artist cards: no left column at
+                  // all -- no grey box, no reserved space, no label.
+                  <div className={`${styles.expand} ${!ev.poster_url && !ev.related_links?.length ? styles.expandSingle : ''}`}>
+                    {(ev.poster_url || ev.related_links?.length) ? (
                     <div className={styles.expandLeft}>
-                      {ev.poster_url ? (
+                      {ev.poster_url && (
                         // Sized from the poster's own pixel size, read on
                         // the server: the box is exact before the image
                         // loads, so nothing below it moves when it arrives
@@ -135,10 +138,6 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                           loading="eager"
                           className={styles.poster}
                         />
-                      ) : (
-                        <div className="placeholder" style={{ aspectRatio: '3/4', borderRadius: 4 }}>
-                          <span className="placeholder-label">{ev.name} · Poster 3:4</span>
-                        </div>
                       )}
 
                       {/* Related-artist sidebar — one card per related_links
@@ -182,6 +181,7 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                         </div>
                       )}
                     </div>
+                    ) : null}
 
                     <div className={styles.expandRight}>
                       {/* No heading over nothing: a show saved without a

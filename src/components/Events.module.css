@@ -120,6 +120,15 @@
   animation: fade-up 400ms ease;
 }
 
+.expandSingle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* One column only: keep the description a readable width on desktop. */
+.expandSingle .expandRight {
+  max-width: 720px;
+}
+
 .expandLeft {
   display: flex;
   flex-direction: column;

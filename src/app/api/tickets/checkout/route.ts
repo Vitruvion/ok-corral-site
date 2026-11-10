@@ -178,14 +178,11 @@ export async function POST(req: NextRequest) {
       // November 2026) -- without one, Stripe rejects the session. (No extra
       // custom_text line: the checkbox already links the Terms.)
       consent_collection: { terms_of_service: 'required' },
-      // NO PAY-LATER ON TICKETS (merch keeps it -- /api/checkout). With
-      // payment_method_types ['card'] the only pay-later left is "Klarna on
-      // Link": Link offers US customers a "Pay later" plan inside hosted
-      // Checkout. Stripe has no per-session switch for Klarna inside Link
-      // (it is a Dashboard-wide setting, and excluded_payment_method_types
-      // cannot exclude Link), so this session hides Link itself. Cards,
-      // Apple Pay and Google Pay are unaffected.
-      wallet_options: { link: { display: 'never' } },
+      // Link stays on (one-click checkout for returning buyers). Its
+      // "Pay later" (Klarna on Link) is governed only by the account-wide
+      // Klarna setting in the Stripe Dashboard -- OFF since November 2026.
+      // Switching it back on for merch brings it back here too (CLAUDE.md
+      // §13).
       success_url: `${origin}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?tickets=cancel`,
     })
