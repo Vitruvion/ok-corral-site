@@ -270,7 +270,8 @@ branch (not `main`), and wait.
 `0006_events_signup_url` · `0007_merch_orders_fulfillment` ·
 `0008_recurring_events_poster` · `0009_drinks_editor` · `0010_drinks_cigars` ·
 `0011_cigars_price_order` · `0012_ticketing` · `0013_tickets_seq` ·
-`0014_door_sales` · `0015_events_editor` · `0016_booking_reason`
+`0014_door_sales` · `0015_events_editor` · `0016_booking_reason` ·
+`0017_admin_delete_event` (the permanent-delete function, §15)
 
 Run every new migration through `python scripts/ascii-seed.py <file>` before
 handing it over — the Supabase SQL editor has mojibake'd UTF-8 in the past, so
@@ -656,9 +657,32 @@ owners edit from behind the bar — with per-row saves rather than one big form.
 - Changes with money or attendance consequences — moving a date, changing price,
   cutting capacity below tickets sold, stopping sales — return **409 until
   explicitly confirmed**, decided server-side so the client cannot skip it.
-- **Delete is a soft delete only when it has to be:** any issued ticket or any
-  paid order → deactivate (row kept, poster kept). Otherwise the event is really
-  deleted, along with its pending orders and its poster in Storage.
+- **Deleting a show (November 2026, migration 0017).** Two separate actions:
+  - **Hide from site** -- off the site, unfeatured and off sale (checkout
+    reads `tickets_on_sale`, not `active`), row and poster kept, restorable.
+  - **Delete permanently** -- the show, all its orders and tickets, and its
+    poster in Storage. Decided and done by the `admin_delete_event(uuid,
+    text, boolean)` database function in **one transaction**, so a delete
+    can never stop half way; the API (`DELETE /api/admin/events`, actions
+    `hide` / `check` / `delete`) never trusts what the editor's buttons
+    showed. The rules, by *real* orders -- paid or refunded and **not** a
+    Stripe test-mode purchase (`stripe_session_id` starting `cs_test_`;
+    door sales and comps are real):
+    1. **`cs_test_` orders never block deletion** -- no real money moved.
+       They are deleted with the show, tickets and all.
+    2. No real orders (none, abandoned checkouts, test orders only) ->
+       plain confirm, then deleted.
+    3. Real orders and the show is today or later (venue time) -> **hide
+       only**; the server refuses a forced delete. Those buyers scan in at
+       the door.
+    4. Real orders and the show has passed -> deleted only after the show's
+       name is typed back (trimmed, any case); the dialog states the real
+       tickets/orders and that payment records stay in Stripe.
+  - Hidden shows get **Delete permanently** under the same rules. The
+    editor first asks the database for a dry run (`check`) so the numbers
+    it shows are exact. The function is callable by the service role only
+    (`revoke ... from anon, authenticated`).
+  - Weekly specials are unaffected: always a hard delete.
 - Featuring a past show is allowed but does nothing visible; the UI says so
   rather than blocking it.
 
@@ -813,7 +837,7 @@ C:\Projects\ok-corral-site\
 │   └── resize-assets.mjs             # in-place photo resizer (see Images)
 ├── supabase\
 │   ├── seed.sql                      # pure 7-bit ASCII
-│   └── migrations\                  # 0001..0016, listed under Migrations above
+│   └── migrations\                  # 0001..0017, listed under Migrations above
 ├── public\
 │   ├── favicon.ico + icon.png + apple-icon.png + icon-192.png + icon-512.png
 │   ├── manifest.json

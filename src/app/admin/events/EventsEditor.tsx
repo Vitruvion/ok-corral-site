@@ -170,47 +170,104 @@ export default function EventsEditor({ initial, initialRecurring }: Props) {
     [refresh]
   )
 
-  const remove = useCallback(
+  /**
+   * "Hide from site" for a show that can't be deleted yet (real buyers,
+   * still upcoming): hidden, unfeatured and off sale, but kept so every
+   * ticket still scans at the door.
+   */
+  const hide = useCallback(
     async (ev: AdminEvent) => {
-      // ev.sold counts admissions, which is what decides the outcome for
-      // the common case. An abandoned checkout contributes nothing to it,
-      // so a show with only one of those reads as an outright delete --
-      // which is now what happens.
-      const warning =
-        ev.sold > 0
-          ? ev.name + ' has ' + ev.sold + ' admitted. It will be hidden from the site, not deleted, so those tickets still scan. Continue?'
-          : 'Delete ' + ev.name + '? The poster is deleted too. This cannot be undone.'
-      if (!window.confirm(warning)) return
-
+      const n = ev.realTickets
+      const ok = window.confirm(
+        'Hide ' + ev.name + ' from the site? Ticket sales stop and it disappears from the homepage, ' +
+        'but it stays here so ' + (n === 1 ? 'the 1 ticket' : 'its ' + n + ' tickets') +
+        ' still scan at the door. You can restore it any time.'
+      )
+      if (!ok) return
       setRow(ev.id, 'saving')
       const res = await fetch('/api/admin/events', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: ev.id }),
+        body: JSON.stringify({ id: ev.id, action: 'hide' }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) return setRow(ev.id, 'error', data.error || 'Could not remove the show.')
+      if (!res.ok) return setRow(ev.id, 'error', data.error || 'Could not hide the show.')
+      const t = data.realTickets ?? 0
+      setDeactivated(prev => ({
+        ...prev,
+        [ev.id]:
+          'Hidden from the site and taken off sale. It is kept because ' +
+          (t === 1 ? '1 real ticket has' : t + ' real tickets have') +
+          ' been sold for it, and those still have to scan at the door, which needs this show to ' +
+          'exist. Restore it any time; it can be deleted permanently once the show has passed.',
+      }))
+      setRow(ev.id, 'idle')
+      await refresh()
+    },
+    [refresh]
+  )
 
-      // A show someone actually holds something for is hidden, not
-      // deleted. Say so here rather than leaving the row sitting there
-      // looking like a failed delete -- and name the REAL reason, which
-      // is issued tickets or settled money, not the mere existence of an
-      // order row.
-      if (data.mode === 'deactivated') {
-        const tickets = data.tickets ?? 0
-        const settled = data.settledOrders ?? 0
-        const reason =
-          tickets > 0
-            ? (tickets === 1 ? '1 ticket has' : tickets + ' tickets have') + ' been issued for it'
-            : (settled === 1 ? '1 paid order points' : settled + ' paid orders point') + ' at it'
-        setDeactivated(prev => ({
-          ...prev,
-          [ev.id]:
-            'Hidden from the site rather than deleted, because ' + reason +
-            '. Those still have to scan at the door, which needs this show to ' +
-            'exist. Restore it any time.',
-        }))
+  /** The show whose typed-name confirmation dialog is open, if any. */
+  const [confirming, setConfirming] = useState<{ ev: AdminEvent; realOrders: number; realTickets: number } | null>(null)
+  const [confirmError, setConfirmError] = useState<string | null>(null)
+
+  /**
+   * "Delete permanently". The server decides whether it may happen (the
+   * admin_delete_event database function, in the same transaction as the
+   * delete); this only asks the right question first. A show with real
+   * buyers that has passed needs its name typed back; one with no real
+   * buyers (test-mode orders and abandoned checkouts don't count) needs a
+   * plain confirm.
+   */
+  const deleteForever = useCallback(
+    async (ev: AdminEvent, confirmName?: string) => {
+      const send = (body: Record<string, unknown>) =>
+        fetch('/api/admin/events', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: ev.id, ...body }),
+        }).then(async res => ({ res, data: await res.json().catch(() => ({})) }))
+
+      if (confirmName === undefined) {
+        // Ask the database first (a dry run): exact counts, nothing deleted.
+        setRow(ev.id, 'saving')
+        const { res, data } = await send({ action: 'check' })
+        setRow(ev.id, 'idle')
+        if (!res.ok) return setRow(ev.id, 'error', data.error || 'Could not check the show.')
+        if (data.mode === 'blocked') {
+          return setRow(ev.id, 'error',
+            'This show is still coming up and real tickets have been sold for it, so it can only be hidden for now.')
+        }
+        if (data.mode === 'needs_confirmation') {
+          setConfirmError(null)
+          return setConfirming({ ev, realOrders: data.realOrders ?? 0, realTickets: data.realTickets ?? 0 })
+        }
+        const t = data.testOrders ?? 0
+        const other = (data.ordersRemoved ?? 0) - t
+        const extras = [
+          t ? (t === 1 ? '1 test order' : t + ' test orders') + ' (Stripe test mode, no real money)' : '',
+          other > 0 ? (other === 1 ? '1 unfinished checkout' : other + ' unfinished checkouts') : '',
+        ].filter(Boolean)
+        if (!window.confirm(
+          'Delete ' + ev.name + ' permanently? The show and its poster are deleted' +
+          (extras.length ? ', along with ' + extras.join(' and ') : '') + '. This can\'t be undone.'
+        )) return
       }
+
+      setRow(ev.id, 'saving')
+      const { res, data } = await send({ action: 'delete', confirmName })
+      if (res.status === 409 && data.needs === 'confirm_name') {
+        // A ticket sold since the check, or the typed name didn't match.
+        setRow(ev.id, 'idle')
+        setConfirmError(confirmName === undefined ? null : 'That name doesn\'t match. Type it exactly as shown.')
+        return setConfirming({ ev, realOrders: data.realOrders ?? 0, realTickets: data.realTickets ?? 0 })
+      }
+      if (!res.ok) {
+        setConfirming(null)
+        return setRow(ev.id, 'error', data.error || 'Could not delete the show.')
+      }
+      setConfirming(null)
+      setRow(ev.id, 'idle')
       await refresh()
     },
     [refresh]
@@ -342,7 +399,8 @@ export default function EventsEditor({ initial, initialRecurring }: Props) {
           onToggle={() => setOpen(p => ({ ...p, [ev.id]: !p[ev.id] }))}
           onPatch={body => patch(ev.id, body)}
           onFeature={() => feature(ev.featured ? null : ev.id)}
-          onRemove={() => remove(ev)}
+          onHide={() => hide(ev)}
+          onDelete={() => deleteForever(ev)}
           onRefresh={refresh}
           setRow={setRow}
           deactivatedNote={deactivated[ev.id] ?? null}
@@ -384,7 +442,8 @@ export default function EventsEditor({ initial, initialRecurring }: Props) {
                 onToggle={() => setOpen(p => ({ ...p, [ev.id]: !p[ev.id] }))}
                 onPatch={body => patch(ev.id, body)}
                 onFeature={() => feature(ev.featured ? null : ev.id)}
-                onRemove={() => remove(ev)}
+                onHide={() => hide(ev)}
+                onDelete={() => deleteForever(ev)}
                 onRefresh={refresh}
                 setRow={setRow}
                 deactivatedNote={deactivated[ev.id] ?? null}
@@ -393,6 +452,83 @@ export default function EventsEditor({ initial, initialRecurring }: Props) {
             ))}
         </>
       )}
+
+      {confirming && (
+        <DeleteForeverDialog
+          name={confirming.ev.name}
+          realOrders={confirming.realOrders}
+          realTickets={confirming.realTickets}
+          busy={state[confirming.ev.id] === 'saving'}
+          error={confirmError}
+          onCancel={() => setConfirming(null)}
+          onConfirm={typed => deleteForever(confirming.ev, typed)}
+        />
+      )}
+    </div>
+  )
+}
+
+/**
+ * The strong confirmation for deleting a past show that real people
+ * bought tickets for. The button only works once the show's name is typed
+ * back -- and the server checks the name again, so this is a speed bump,
+ * not the lock.
+ */
+function DeleteForeverDialog({
+  name, realOrders, realTickets, busy, error, onCancel, onConfirm,
+}: {
+  name: string
+  realOrders: number
+  realTickets: number
+  busy: boolean
+  error: string | null
+  onCancel: () => void
+  onConfirm: (typed: string) => void
+}) {
+  const [typed, setTyped] = useState('')
+  const id = useId()
+  const matches = typed.trim().toLowerCase() === name.trim().toLowerCase()
+  const plural = (n: number, one: string) => n + ' ' + one + (n === 1 ? '' : 's')
+  return (
+    <div className={styles.dialogBackdrop} onClick={onCancel}>
+      <div
+        className={styles.dialog}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={id + '-title'}
+        onClick={e => e.stopPropagation()}
+      >
+        <h3 id={id + '-title'} className={styles.dialogTitle}>Delete {name} permanently?</h3>
+        <p className={styles.dialogBody}>
+          This deletes {plural(realTickets, 'real ticket')} across {plural(realOrders, 'paid order')},
+          the show itself and its poster. <strong>This can&apos;t be undone.</strong>
+        </p>
+        <p className={styles.dialogBody}>
+          Payment records stay in Stripe -- only the site&apos;s copy is deleted.
+        </p>
+        <label className={styles.field} htmlFor={id}>
+          <span className={styles.label}>Type the show&apos;s name to confirm: {name}</span>
+          <input
+            id={id}
+            className={styles.input}
+            value={typed}
+            onChange={e => setTyped(e.target.value)}
+            autoComplete="off"
+            autoFocus
+          />
+        </label>
+        {error && <div className={styles.error}>{error}</div>}
+        <div className={styles.dialogActions}>
+          <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
+          <button
+            className={styles.dangerBtn}
+            disabled={!matches || busy}
+            onClick={() => onConfirm(typed)}
+          >
+            {busy ? 'Deleting…' : 'Delete permanently'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -646,7 +782,7 @@ function Field({
 
 // ── One event ─────────────────────────────────────────────────────
 function EventRow({
-  ev, open, state, error, onToggle, onPatch, onFeature, onRemove, onRefresh, setRow,
+  ev, open, state, error, onToggle, onPatch, onFeature, onHide, onDelete, onRefresh, setRow,
   deactivatedNote, onRestore,
 }: {
   ev: AdminEvent
@@ -656,7 +792,8 @@ function EventRow({
   onToggle: () => void
   onPatch: (body: Record<string, unknown>) => Promise<boolean>
   onFeature: () => void
-  onRemove: () => void
+  onHide: () => void
+  onDelete: () => void
   onRefresh: () => Promise<void>
   setRow: (id: string, s: RowState, err?: string | null) => void
   deactivatedNote: string | null
@@ -782,18 +919,36 @@ function EventRow({
               {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : 'Save'}
             </button>
 
-            <button className={styles.ghostBtn} onClick={() => onPatch({ active: !ev.active })}>
-              {ev.active ? 'Hide from site' : 'Show on site'}
-            </button>
+            {/* Real buyers + still upcoming: the one way out is to hide it
+                (and stop sales), never delete -- they must scan in. */}
+            {ev.deletable === 'no' && ev.active ? (
+              <button className={styles.dangerBtn} onClick={onHide}>
+                Hide from site
+              </button>
+            ) : (
+              <button className={styles.ghostBtn} onClick={() => onPatch({ active: !ev.active })}>
+                {ev.active ? 'Hide from site' : 'Show on site'}
+              </button>
+            )}
 
             <button className={ev.featured ? styles.featuredOn : styles.ghostBtn} onClick={onFeature}>
               {ev.featured ? 'Featured show' : 'Make featured'}
             </button>
 
-            <button className={styles.dangerBtn} onClick={onRemove}>
-              {ev.sold > 0 ? 'Retire' : 'Delete'}
-            </button>
+            {ev.deletable !== 'no' && (
+              <button className={styles.dangerBtn} onClick={onDelete}>
+                Delete permanently
+              </button>
+            )}
           </div>
+
+          {ev.deletable === 'no' && (
+            <p className={styles.noEffectRow}>
+              Can&apos;t be deleted yet: {ev.realTickets === 1 ? '1 real ticket' : ev.realTickets + ' real tickets'}{' '}
+              {ev.realTickets === 1 ? 'has' : 'have'} to scan in at the door. Once the show has passed it can be
+              deleted permanently.
+            </p>
+          )}
 
           {/* Same fact, next to the control it applies to. Shown on any
               past show, so it heads the mistake off rather than only

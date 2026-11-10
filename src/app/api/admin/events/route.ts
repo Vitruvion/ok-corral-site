@@ -3,7 +3,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { isAdmin } from '@/lib/admin/guard'
 import {
-  deleteEvent,
+  deleteEventPermanently,
+  hideEvent,
   getEvent,
   listEvents,
   serviceClient,
@@ -290,21 +291,72 @@ export async function PATCH(req: Request) {
   }
 }
 
+/**
+ * DELETE = hide, or delete permanently. Which one is the caller's choice;
+ * WHETHER a permanent delete may happen is never the caller's -- the
+ * admin_delete_event database function decides it inside the same
+ * transaction that deletes (migration 0017), whatever buttons the editor
+ * showed:
+ *   409 'blocked'            real buyers and the show is still upcoming
+ *   409 needs 'confirm_name' real buyers, show past: send the show's name
+ */
+const DeleteBody = z.object({
+  id: z.string().uuid(),
+  // 'check' = what would a permanent delete do? Exact counts, deletes nothing.
+  action: z.enum(['hide', 'check', 'delete']),
+  confirmName: z.string().max(300).optional(),
+})
+
 export async function DELETE(req: Request) {
   if (!isAdmin()) return unauthorized()
 
-  let id: string
+  let body: z.infer<typeof DeleteBody>
   try {
-    const body = await req.json()
-    id = z.string().uuid().parse(body?.id)
+    body = DeleteBody.parse(await req.json())
   } catch {
-    return bad('Missing event id.')
+    return bad('Missing event id or action.')
   }
 
   try {
-    const outcome = await deleteEvent(id)
-    revalidatePublic()
-    return NextResponse.json(outcome)
+    if (body.action === 'hide') {
+      const outcome = await hideEvent(body.id)
+      revalidatePublic()
+      return NextResponse.json(outcome)
+    }
+
+    if (body.action === 'check') {
+      const outcome = await deleteEventPermanently(body.id, null, true)
+      return NextResponse.json(outcome, { status: outcome.mode === 'not_found' ? 404 : 200 })
+    }
+
+    const outcome = await deleteEventPermanently(body.id, body.confirmName ?? null)
+    const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`
+    switch (outcome.mode) {
+      case 'removed':
+        revalidatePublic()
+        return NextResponse.json(outcome)
+      case 'not_found':
+        return NextResponse.json({ error: 'That show no longer exists.' }, { status: 404 })
+      case 'blocked':
+        return NextResponse.json(
+          {
+            ...outcome,
+            error:
+              `This show is still coming up and has ${plural(outcome.realTickets, 'real ticket')} ` +
+              `(${plural(outcome.realOrders, 'paid order')}). Those buyers have to scan in at the door, ` +
+              'so it can only be hidden from the site until the show has passed.',
+          },
+          { status: 409 }
+        )
+      case 'needs_confirmation':
+        return NextResponse.json(
+          { ...outcome, needs: 'confirm_name', error: 'Type the show\'s name to delete it permanently.' },
+          { status: 409 }
+        )
+      default:
+        // 'would_remove' is a dry-run answer; a real delete never returns it.
+        return NextResponse.json({ error: 'Unexpected delete result.' }, { status: 500 })
+    }
   } catch (err: any) {
     console.error('[/api/admin/events DELETE]', err)
     return NextResponse.json({ error: err?.message || 'Could not remove the show.' }, { status: 500 })

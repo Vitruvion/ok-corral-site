@@ -52,6 +52,34 @@ export type AdminEvent = {
   sold: number
   /** True when the show is today or later in the venue's timezone. */
   upcoming: boolean
+  /** Real orders: paid or refunded, and not Stripe test mode (see isTestOrder). */
+  realOrders: number
+  /** Tickets issued against real orders. */
+  realTickets: number
+  /** Stripe test-mode orders (cs_test_...) -- they never block a delete. */
+  testOrders: number
+  /**
+   * What "Delete permanently" may do, for the editor's buttons only --
+   * the database function decides again at delete time.
+   *   'yes'     no real orders
+   *   'confirm' real orders, show already past: type the name to delete
+   *   'no'      real orders, show today or later: hide only
+   */
+  deletable: 'yes' | 'confirm' | 'no'
+}
+
+/**
+ * A Stripe TEST-mode purchase: no real money moved. Never blocks a delete.
+ * The same rule is in the admin_delete_event database function
+ * (migration 0017) -- that one is the one that decides.
+ */
+export function isTestOrder(stripeSessionId: string | null | undefined): boolean {
+  return typeof stripeSessionId === 'string' && stripeSessionId.startsWith('cs_test_')
+}
+
+/** Paid or refunded, and not a test-mode purchase. Door sales and comps count. */
+export function isRealOrder(o: { status: string; stripe_session_id: string | null }): boolean {
+  return (o.status === 'paid' || o.status === 'refunded') && !isTestOrder(o.stripe_session_id)
 }
 
 /**
@@ -118,6 +146,35 @@ export async function listEvents(): Promise<AdminEvent[]> {
   const admissions = await countAdmissions(rows.map((r: any) => r.id))
   const today = venueTodayParts()
 
+  // Real vs test orders per show -- ONLY to choose which buttons the
+  // editor shows. The exact numbers a person confirms against come from
+  // the database at click time (a dry run of admin_delete_event), and the
+  // delete itself re-decides; nothing here is trusted for that. Newest
+  // first, so if the API's row cap ever bites it trims old history, not
+  // the upcoming shows the buttons matter for.
+  const { data: orderRows, error: ordErr } = await sb
+    .from('ticket_orders')
+    .select('id, event_id, status, stripe_session_id')
+    .order('created_at', { ascending: false })
+  if (ordErr) throw new Error(`order lookup failed: ${ordErr.message}`)
+  const orderCounts = new Map<string, { real: number; realTickets: number; test: number; realIds: string[] }>()
+  for (const o of orderRows ?? []) {
+    const c = orderCounts.get(o.event_id) ?? { real: 0, realTickets: 0, test: 0, realIds: [] }
+    if (isRealOrder(o)) { c.real++; c.realIds.push(o.id) }
+    else if (isTestOrder(o.stripe_session_id)) c.test++
+    orderCounts.set(o.event_id, c)
+  }
+  // Ticket counts only where the editor states them: upcoming shows with
+  // real buyers ("can't be deleted yet: N tickets have to scan in").
+  const upcomingReal = rows
+    .filter((r: any) => isEventUpcoming({ date: asDate(r.date) } as EventData, today))
+    .flatMap((r: any) => orderCounts.get(r.id)?.realIds ?? [])
+  if (upcomingReal.length) {
+    const { data: tks, error: tkErr } = await sb.from('tickets').select('event_id').in('order_id', upcomingReal)
+    if (tkErr) throw new Error(`ticket lookup failed: ${tkErr.message}`)
+    for (const t of tks ?? []) { const c = orderCounts.get(t.event_id); if (c) c.realTickets++ }
+  }
+
   return rows.map((r: any) => {
     const date = asDate(r.date)
     // isEventUpcoming reads nothing but `date`; `today` is hoisted out
@@ -137,6 +194,10 @@ export async function listEvents(): Promise<AdminEvent[]> {
         r.ticket_capacity === null || r.ticket_capacity === undefined ? null : Number(r.ticket_capacity),
       sold: admissions.get(r.id)?.admitted ?? 0,
       upcoming,
+      realOrders: orderCounts.get(r.id)?.real ?? 0,
+      realTickets: orderCounts.get(r.id)?.realTickets ?? 0,
+      testOrders: orderCounts.get(r.id)?.test ?? 0,
+      deletable: !orderCounts.get(r.id)?.real ? 'yes' : upcoming ? 'no' : 'confirm',
     } as AdminEvent
   })
 }
@@ -225,103 +286,106 @@ export async function setFeatured(id: string | null): Promise<void> {
 }
 
 // ── Deletion ──────────────────────────────────────────────────────
+export type HideOutcome = { mode: 'deactivated'; realOrders: number; realTickets: number }
+
+/**
+ * "Hide from site": the show stays, so every ticket for it still scans at
+ * the door, but it is off the public site, unfeatured and no longer on
+ * sale (checkout reads tickets_on_sale, not active, so a hidden show
+ * would otherwise still be buyable through an old link). Restore it any
+ * time. The poster stays in Storage so a restored show keeps its image.
+ */
+export async function hideEvent(id: string): Promise<HideOutcome> {
+  const sb = serviceClient()
+  const { data: orders, error: oErr } = await sb
+    .from('ticket_orders')
+    .select('id, status, stripe_session_id')
+    .eq('event_id', id)
+  if (oErr) throw new Error(`order check failed: ${oErr.message}`)
+  const real = (orders ?? []).filter(isRealOrder)
+  let realTickets = 0
+  if (real.length) {
+    const { count, error } = await sb
+      .from('tickets')
+      .select('id', { count: 'exact', head: true })
+      .in('order_id', real.map(o => o.id))
+    if (error) throw new Error(`ticket check failed: ${error.message}`)
+    realTickets = count ?? 0
+  }
+  const { error } = await sb
+    .from('events')
+    .update({ active: false, featured: false, tickets_on_sale: false })
+    .eq('id', id)
+  if (error) throw new Error(`hide failed: ${error.message}`)
+  return { mode: 'deactivated', realOrders: real.length, realTickets }
+}
+
 export type DeleteOutcome =
   | {
       mode: 'removed'
-      /** Abandoned checkouts deleted along with the show. */
-      pendingOrdersRemoved: number
+      ordersRemoved: number
+      ticketsRemoved: number
+      testOrders: number
+      realOrders: number
       /** The Storage key that was cleaned up, if there was a poster. */
       posterRemoved: string | null
     }
+  | { mode: 'blocked'; realOrders: number; realTickets: number }
+  | { mode: 'needs_confirmation'; name: string; realOrders: number; realTickets: number }
   | {
-      mode: 'deactivated'
-      /** Ticket rows issued for this show. */
-      tickets: number
-      /** Orders that are not abandoned checkouts: paid or refunded. */
-      settledOrders: number
+      mode: 'would_remove'
+      name: string
+      realOrders: number
+      realTickets: number
+      testOrders: number
+      ordersRemoved: number
+      ticketsRemoved: number
     }
+  | { mode: 'not_found' }
 
 /**
- * Removes a show, or retires it if anyone actually holds something.
- *
- * WHAT COUNTS AS "SOMEONE HOLDS SOMETHING" -- and it is NOT simply the
- * existence of a ticket_orders row. An abandoned checkout leaves a
- * 'pending' order with no tickets: the Stripe session expires in 30
- * minutes and nobody paid. Treating that as a reason to keep the show
- * forever means a stranger who changed their mind can make a show
- * undeletable, which is what happened.
- *
- * So the test is:
- *   any row in `tickets`      -> a code exists that may be scanned
- *   any order NOT 'pending'   -> money moved: 'paid', or 'refunded',
- *                                which is financial history worth
- *                                keeping even though the money came back
- * Either of those means soft delete. Otherwise the show goes, and the
- * abandoned pending orders go with it -- they have to, because
- * ticket_orders references events ON DELETE RESTRICT.
+ * "Delete permanently". The rules -- and the delete itself -- live in the
+ * admin_delete_event database function (migration 0017), so they are
+ * checked and applied in one transaction, never trusting what the
+ * editor's buttons showed:
+ *   no real orders (none, abandoned checkouts, cs_test_ orders only)
+ *       -> the show, all its orders and tickets are deleted
+ *   real paid/refunded orders, show today or later -> 'blocked'
+ *   real orders, show past -> deleted only with the show's name typed
+ *       back (confirmName); otherwise 'needs_confirmation'
+ * The poster can't be in the transaction: it is removed from Storage
+ * after the rows are gone. An orphaned object costs a few KB; deleting
+ * one a row still pointed at would show a broken image.
  */
-export async function deleteEvent(id: string): Promise<DeleteOutcome> {
+export async function deleteEventPermanently(
+  id: string,
+  confirmName: string | null,
+  dryRun = false
+): Promise<DeleteOutcome> {
   const sb = serviceClient()
-
-  const { count: ticketCount, error: tErr } = await sb
-    .from('tickets')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', id)
-  if (tErr) throw new Error(`ticket check failed: ${tErr.message}`)
-
-  const { data: orders, error: oErr } = await sb
-    .from('ticket_orders')
-    .select('id, status')
-    .eq('event_id', id)
-  if (oErr) throw new Error(`order check failed: ${oErr.message}`)
-
-  const tickets = ticketCount ?? 0
-  const settled = (orders ?? []).filter(o => o.status !== 'pending')
-  const pending = (orders ?? []).filter(o => o.status === 'pending')
-
-  // ── Soft delete ──────────────────────────────────────────────
-  if (tickets > 0 || settled.length > 0) {
-    const { error } = await sb
-      .from('events')
-      .update({ active: false, featured: false, tickets_on_sale: false })
-      .eq('id', id)
-    if (error) throw new Error(`deactivate failed: ${error.message}`)
-    // The poster is deliberately left in Storage: the show can be
-    // restored, and it would come back with a broken image.
-    return { mode: 'deactivated', tickets, settledOrders: settled.length }
-  }
-
-  // ── Hard delete ──────────────────────────────────────────────
-  // Read the poster before the row goes; afterwards there is nothing
-  // left to read the URL from.
-  const { data: event, error: evErr } = await sb
-    .from('events')
-    .select('poster_url')
-    .eq('id', id)
-    .maybeSingle()
-  if (evErr) throw new Error(`event lookup failed: ${evErr.message}`)
-  const posterKey = storageKeyFromUrl(event?.poster_url)
-
-  if (pending.length > 0) {
-    const { error } = await sb
-      .from('ticket_orders')
-      .delete()
-      .eq('event_id', id)
-      .eq('status', 'pending')
-    if (error) throw new Error(`could not clear abandoned checkouts: ${error.message}`)
-  }
-
-  const { error } = await sb.from('events').delete().eq('id', id)
+  const { data, error } = await sb.rpc('admin_delete_event', {
+    p_event_id: id,
+    p_confirm_name: confirmName,
+    p_dry_run: dryRun,
+  })
   if (error) throw new Error(`delete failed: ${error.message}`)
+  const r = (data ?? {}) as Record<string, any>
 
-  // Only now, and only on a hard delete. An orphaned object costs a few
-  // KB; deleting one the row still points at would show a broken image.
+  if (r.mode !== 'removed') return r as DeleteOutcome
+
+  const posterKey = storageKeyFromUrl(r.posterUrl)
   let posterRemoved: string | null = null
   if (posterKey) {
     const { error: rmErr } = await sb.storage.from(POSTER_BUCKET).remove([posterKey])
     if (rmErr) console.warn('[events-repo] could not remove poster', posterKey, rmErr.message)
     else posterRemoved = posterKey
   }
-
-  return { mode: 'removed', pendingOrdersRemoved: pending.length, posterRemoved }
+  return {
+    mode: 'removed',
+    ordersRemoved: Number(r.ordersRemoved ?? 0),
+    ticketsRemoved: Number(r.ticketsRemoved ?? 0),
+    testOrders: Number(r.testOrders ?? 0),
+    realOrders: Number(r.realOrders ?? 0),
+    posterRemoved,
+  }
 }
