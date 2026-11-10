@@ -330,8 +330,9 @@ function CardClientInner() {
                 <h3 className={styles.stepTitle}>Sign Up</h3>
                 <p className={styles.stepBody}>
                   <em>
-                    Name and phone — that&apos;s it. We use the number to link your
-                    card to your tab. No texts, no marketing list.
+                    Name and phone — that&apos;s it. They go on your pass, which is
+                    made right then and saved to your phone. We don&apos;t keep a copy.
+                    No texts, no marketing list.
                   </em>
                 </p>
               </div>
@@ -412,7 +413,7 @@ function CardClientInner() {
                     placeholder="(530) 555-0142"
                   />
                   <span className={styles.fieldHint}>
-                    <em>Used to link your card to your tab. We won&apos;t text you.</em>
+                    <em>Printed on your pass. We don&apos;t keep it, and we won&apos;t text you.</em>
                   </span>
                 </div>
 

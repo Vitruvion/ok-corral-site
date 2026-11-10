@@ -174,6 +174,10 @@ export async function POST(req: NextRequest) {
       expires_at:
         Math.floor(Date.now() / 1000) +
         Math.max(SESSION_TTL_MINUTES, MIN_STRIPE_TTL_MINUTES) * 60,
+      // Stripe's required "I agree to the Terms of Service" checkbox. Needs
+      // a Terms URL in the Stripe Dashboard's public details (set by Brady,
+      // November 2026) -- without one, Stripe rejects the session.
+      consent_collection: { terms_of_service: 'required' },
       custom_text: { submit: { message: CHECKOUT_TERMS_TEXT } },
       success_url: `${origin}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?tickets=cancel`,

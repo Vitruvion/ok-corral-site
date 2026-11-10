@@ -26,11 +26,21 @@
   background: var(--ink-3);
 }
 
-/* width/height on the tag give the ratio before load; this only scales. */
+/* The hero photo (portrait, 1920x2560) in a 4:3 box. Because the box is
+   wider than the photo, `cover` always shows the photo's FULL WIDTH -- no
+   one can be cut off at the sides at any screen width -- and the window
+   is the same slice at every width: 1440 of its 2560 rows, starting 88%
+   of the way down the spare height (~row 985). That is just under the
+   big sign, with the cowboy (hat ~row 1365, feet ~1990), the dog
+   (~1786-2067) and the truck's front all inside. If the photo is ever
+   replaced, re-check this against the new subject. */
 .photo img {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 50% 88%;
 }
 
 .lead {

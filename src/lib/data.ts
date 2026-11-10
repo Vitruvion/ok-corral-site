@@ -89,6 +89,12 @@ export function dailyHours(): string | null {
  * The listing facts below are as of November 2026; the stay section and the
  * footer render from here. Opening hours come from HOURS, not from here.
  */
+/**
+ * The photo at the top of the homepage (Hero.tsx), reused in Stay the Night.
+ * One URL, so the second use is served from the browser's cache.
+ */
+export const HERO_PHOTO = { src: '/assets/gallery/storefront.jpg', width: 1920, height: 2560 }
+
 export const HARVEST_HOSTS = {
   listingUrl: 'https://www.harvesthosts.com/hosts/california/the-ok-corral',
   /**

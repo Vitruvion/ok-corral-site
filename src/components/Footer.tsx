@@ -100,7 +100,9 @@ function Newsletter() {
             Upcoming shows.<br /><em>No spam, ever.</em>
           </h3>
           <p className={styles.newsDesc}>
-            <em>One email a month. Shows, specials, and what&apos;s coming up at the bar.</em>
+            {/* No frequency promise: nothing sends to this list yet (see
+                CLAUDE.md §17 before wiring a mailing service). */}
+            <em>Occasional word on big shows and what&apos;s coming up at the bar.</em>
           </p>
         </div>
         <div className={styles.newsRight}>

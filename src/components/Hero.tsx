@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { BRAND, SHOW_MERCH, type EventData } from '@/lib/data'
+import { BRAND, HERO_PHOTO, SHOW_MERCH, type EventData } from '@/lib/data'
 import styles from './Hero.module.css'
 
 export default function Hero({ events = [] }: { events?: EventData[] } = {}) {
@@ -89,7 +89,7 @@ export default function Hero({ events = [] }: { events?: EventData[] } = {}) {
         <img
           ref={bgRef}
           className={styles.bg}
-          src="/assets/gallery/storefront.jpg"
+          src={HERO_PHOTO.src}
           alt=""
           aria-hidden="true"
           decoding="async"

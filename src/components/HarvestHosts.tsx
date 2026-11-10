@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, type ReactNode, type SVGProps } from 'react'
-import { HARVEST_HOSTS, dailyHours } from '@/lib/data'
+import { HARVEST_HOSTS, HERO_PHOTO, dailyHours } from '@/lib/data'
 import type { HostBadge } from '@/lib/host-badge'
 import { excludeFromGrain } from '@/lib/grain-hole'
 import styles from './HarvestHosts.module.css'
@@ -146,16 +146,23 @@ export default function HarvestHosts({ badge }: Props) {
         <div className={styles.grid}>
           <div className={styles.story}>
             <figure className={styles.photo}>
-              {/* Real pixel size on the tag: the box is reserved before the
-                  photo arrives, so nothing below it moves (the anchor-jump
-                  fix from 2af4ac8). */}
+              {/* The hero's own photo -- the SAME URL as Hero.tsx, so the
+                  browser already has it and makes no second request. Cropped
+                  differently (see .photo img): the cowboy, his dog and the
+                  truck, not the sign the hero leads with. The tag carries the
+                  file's real size and the CSS gives the box its 4:3 shape, so
+                  the space is reserved before load and nothing below moves. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/assets/gallery/car-show.jpg"
-                alt="The OK Corral and its lot, with classic cars lined up out front"
-                width={2400}
-                height={1659}
-                loading="lazy"
+                src={HERO_PHOTO.src}
+                alt="A cowboy in a white hat sits on the bumper of an old pickup in front of The OK Corral, his dog sitting in the lot beside him"
+                width={HERO_PHOTO.width}
+                height={HERO_PHOTO.height}
+                // NOT loading="lazy": WebKit treats a lazy image as a fresh
+                // request and downloads the 830KB photo a second time
+                // (measured at the server). Eager, it reuses the hero's --
+                // and the hero already fetches this file first, at high
+                // priority, so eager here costs nothing.
                 decoding="async"
               />
             </figure>
@@ -164,8 +171,8 @@ export default function HarvestHosts({ badge }: Props) {
               <em>
                 Harvest Hosts is a membership for folks who travel by RV: overnight stays at
                 wineries, farms, breweries &mdash; and now one Western bar in Cottonwood.
-                Members stay free. The custom is to come in and spend a little with your host,
-                and around here that means a round at the bar.
+                Members stay free. Pull up a stool, meet the regulars, and spend a little time
+                with your hosts and the local townsfolk.
               </em>
             </p>
 

@@ -46,7 +46,8 @@ export default function TermsPage() {
       </ul>
       <p>
         To get a refund, email {mail} within 14 days of the cancellation or rescheduling being
-        announced.
+        announced. Refunds go back to your original payment method, typically within 5&ndash;10
+        business days of being approved.
       </p>
 
       <h3>Changes to the show</h3>
@@ -78,6 +79,9 @@ export default function TermsPage() {
         </li>
         <li>
           <strong>Refunds</strong> for returns go back to your original payment method.
+        </li>
+        <li>
+          <strong>Damaged or incorrect items</strong> are replaced or refunded at our cost.
         </li>
         <li>
           <strong>Pickup orders</strong> are held at the bar for 30 days.

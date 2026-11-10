@@ -241,6 +241,8 @@ async function handleMerch(
       kind: 'merch',
       item_count: String(lines.reduce((n, l) => n + l.qty, 0)),
     },
+    // Required Terms checkbox -- see /api/tickets/checkout.
+    consent_collection: { terms_of_service: 'required' },
     custom_text: { submit: { message: CHECKOUT_TERMS_TEXT } },
     success_url: successBase,
     cancel_url: cancelUrl,

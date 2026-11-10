@@ -667,6 +667,14 @@ the last nav item, labelled **"RV Stays"** ("Harvest Hosts" did not fit the
 top bar); the drawer adds "via Harvest Hosts" under it. The footer also keeps
 an external link to the listing, with the socials.
 
+- **The photo is the hero's photo** (`HERO_PHOTO` in `data.ts`, the same URL
+  as `Hero.tsx`, so it is downloaded once), cropped in `HarvestHosts.module.css`:
+  a 4:3 box with `object-fit: cover; object-position: 50% 88%`. The box is
+  wider than the portrait photo, so its full width always shows and the
+  visible slice (rows ~986-2426 of 2560) is the same at every screen width --
+  the cowboy, his dog and the truck, below the sign. **Not `loading="lazy"`:**
+  WebKit treats a lazy image as a new request and downloaded the 830KB file a
+  second time (counted at the server); eager, it reuses the hero's.
 - **Members book through Harvest Hosts, never the bar** -- the copy says so
   next to the button, so the phone doesn't ring with reservation attempts.
 - Listing facts live in `HARVEST_HOSTS` in `data.ts` (URL, spaces, surface,
@@ -713,9 +721,26 @@ carry the same line beside the pay button (`custom_text.submit`,
 - **Policies are the owners'.** Refund, return and entry rules came from
   Brady -- don't add or soften one. Gift-card terms are deliberately absent
   while `SHOW_GIFT_CARDS` is false: write them before flipping it.
-- Stripe's own Terms checkbox (`consent_collection.terms_of_service`) is NOT
-  used: it errors unless a Terms URL is set in the Stripe Dashboard's public
-  details, which is Brady's to set.
+- **Stripe's required "I agree to the Terms" checkbox is on** for ticket and
+  merch checkout (`consent_collection.terms_of_service: 'required'`). Its link
+  comes from the Terms URL Brady set in the Stripe Dashboard's public details
+  (November 2026). Remove that URL and Stripe rejects every checkout session.
+- **Retention:** the policy says "as long as we need it" plus deletion on
+  request. Nothing deletes data automatically -- don't promise time limits,
+  and don't add a cleanup job without Brady.
+- **Mailing list.** Nothing sends to the Bulletin list (`newsletter`) or to
+  ticket buyers who opted in, so the footer promises no frequency. If a
+  mailing service is ever added, `/privacy` must name it, and every email
+  needs an unsubscribe link.
+- **Before `SHOW_MERCH` or `SHOW_GIFT_CARDS` is turned on**, finish the
+  Terms: what happens to a pickup order after its 30-day hold, exchanges,
+  and the whole gift-card section -- including California's rules on gift
+  card expiry (most may not expire). Damaged or incorrect merch is already
+  covered (replaced or refunded at our cost).
+- **`/card` says what happens today:** name and phone go on the pass, made on
+  the spot and saved to the phone; nothing is stored. When the Square
+  Loyalty work (Phase 2) lands, update `/privacy` and the `/card` wording in
+  the same change.
 - The legal entity is `BRAND.legalName` (SIX SHOT LLC); `BRAND.siteUrl` is
   the canonical origin for absolute links.
 
@@ -892,5 +917,5 @@ Vestaboard-style animated marquee hero with flip cards. Branch `hero-vestaboard`
 - **Percentage `max-width`/`max-height` on an image inside a grid frame sized by `aspect-ratio` does not work** -- both engines ignore the percentage height (the grid area's height is not definite), and WebKit can resolve the percentage width against a stale width. This is what broke event posters in November 2026. Size images from their known pixel size instead (`PosterImage`).
 - **`.expand { animation: fade-up }` in `Events.module.css` never runs** -- the CSS Modules keyframes trap again (the name is hashed, the keyframes live in `globals.css`). The panel simply appears. Harmless, but if it is ever "fixed", it animates `transform`, which moves bounding rects during the first 400ms -- measure after it.
 - **The film grain (`body::before`, z 9999) sits above every fixed element on the site** except the AgeGate (10000). Anything that must be grain-free gets a mask hole (`lib/grain-hole.ts`), not a z-index above 9999 -- a raised element paints over the Topbar and every overlay.
-- **Never fade the FOUC reveal in.** The inline head style hides `<body>` (opacity 0) until styles load; the reveal must be instant. WebKit does not render a page that has painted nothing, and a transition only advances on rendered frames, so `transition: opacity` from 0 never started: with any image still loading the page stayed invisible -- and requestAnimationFrame, ResizeObserver and hash landing all stalled -- until window.load (measured November 2026; the old "WebKit harness quirks" -- fonts.ready never resolving, deferred smooth anchor scrolls -- were this).
+- **Never fade the FOUC reveal in.** The inline head style hides `<body>` (opacity 0) until styles load; the reveal must be instant. WebKit does not render a page that has painted nothing, and a transition only advances on rendered frames, so `transition: opacity` from 0 never started: with any image still loading the page stayed invisible -- and requestAnimationFrame, ResizeObserver and hash landing all stalled -- until window.load (measured November 2026; the old "WebKit harness quirks" -- fonts.ready never resolving, deferred smooth anchor scrolls -- were this). Measured with every image held 8s: first visible text in WebKit at 8.1s with the fade (the moment the images finished), 0.75-0.85s without it. Any reveal effect on `<body>` -- a fade, a transform, an animation -- brings it back.
 - **Don't trust math alone for visual layout fixes:** Multiple commits in the poster history had correct math but wrong visual results because of subpixel rounding, scaled rendering, or constraint conflicts. Always render and visually verify; ideally also measure the actual rendered geometry via DOM bounding rects.
