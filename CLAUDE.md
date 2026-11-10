@@ -400,9 +400,12 @@ resolving, so do not delete or redirect it. Its copy says only what
 happens today: a Wallet pass with your name, Newcomer, 0 points and a share
 QR, which doesn't change after it's added. **When Square Loyalty lands:**
 restore the links and indexing, rewrite the copy for what then works, and
-update `/privacy` in the same change (§17). Still promised and not
-delivered, flagged to Brady: the tier rewards in `tiers.ts` (birthday shot,
-koozie, hat, tee) and the pass's back-of-card "how it works" text.
+update `/privacy` in the same change (§17), and rewrite the pass's back
+fields in `pass-builder.ts` -- "How It Works" (now: name + share QR, points
+not tracked, the pass won't change) and the "Next: <tier> -- N points away"
+line. Passes already in Wallets keep the text they were made with (no push
+updates until Phase 3). Still listed and not deliverable while parked: the
+tier rewards in `tiers.ts` (birthday shot, koozie, hat, tee).
 
 **5-tier ladder:** Newcomer (0) → Regular (500) → Local (1500) → Familiar Face (3500) → One of Ours (7500)
 
@@ -414,7 +417,7 @@ koozie, hat, tee) and the pass's back-of-card "how it works" text.
 5. **Form** — framed enrollment card
 6. **Sticky mobile CTA** — hides on form-in-view via IntersectionObserver
 
-**QR purpose pivot (commit `13dda90`):** QR on the pass is a SHARE LINK, not a point-attribution code. Encodes `https://okcorralsaloon.com/card?ref=<serial>`. Points are tracked by phone number (eventually via Square Loyalty in Phase 2). All UX copy reflects this — `how_it_works` back field on the pass explicitly says "give the bartender the phone number you used to sign up" (NOT "pay with this card" — Wallet storeCards can't process payments, that copy misled users).
+**QR purpose pivot (commit `13dda90`):** QR on the pass is a SHARE LINK, not a point-attribution code. Encodes `https://okcorralsaloon.com/card?ref=<serial>`. Points will be tracked by phone number via Square Loyalty in Phase 2 -- not yet (see PARKED above). Never write "pay with this card" anywhere: Wallet storeCards can't process payments, and that copy once sent customers to tap their phone at the register.
 
 **Per-tier wallet pass colors** (`tiers.ts` `pass.*` blocks):
 - Newcomer: bg `rgb(38, 30, 22)` (warm charcoal), fg `rgb(220, 205, 180)`, label `rgb(168, 148, 120)`
@@ -488,6 +491,8 @@ Real posts from `@okcorralsaloon` render on the homepage in InstagramStrip. Toke
 - All "Doors" references removed from public copy, but `doors` is still a real field: the ticket confirmation email and the door manifest both read it
 - Only one event may be `featured` at a time, enforced by a partial unique index. Featuring is a **swap**, done atomically by `set_featured_event(uuid)` — not a toggle, and not two UPDATEs
 - **Posters are sized on the server, before the page is sent.** `fetchAll()` runs every event and weekly special through `withPosterSizes()` (`src/lib/poster-size.ts`), which reads the image header -- a 64KB ranged request to Storage, or a file read for `/assets/...` -- with `image-size`, memoised per server instance (Storage URLs are immutable). Every poster renders through `src/components/PosterImage.tsx`: with a size, `width`/`height` go on the `<img>` and the box is computed from the ratio, capped by `--poster-max-w` / `--poster-max-h` set on an ancestor -- exact before load, never cropped, never letterboxed. Without one (lookup failed), a fixed-ratio frame with the image absolutely positioned inside, so it still cannot overflow or overlap. Used by the expanded event, the weekly flyer thumbnail, the lightbox and the admin preview -- do not size a poster any other way. No DB column: sizes are not stored.
+- **Action buttons in the expanded event:** a ticketed show is one column -- the purchase group (`TicketPurchase`: stepper + Get Tickets, with its price and Terms lines directly under it) as the primary action, then Add to Calendar + Share together on the same left edge. On a phone Get Tickets takes its own full-width line under the stepper ("Get Tickets · $15 →" doesn't fit beside it, and a nowrap row widened the whole panel past the screen) and Calendar/Share share the row. A free show keeps its single row (badge, Calendar, Share), unchanged
+- **No heading over nothing:** "◆ About the night" renders only when the description has text. The other blocks in the panel (related links, video, tags) have no headings and already render only with content. A show with no poster still shows the grey "<name> · Poster 3:4" placeholder box
 - **The expanded panel is mounted on open and unmounted on close, with no height ever set on it.** Nothing measures it. Keep it that way: a panel locked to a measured height is how posters end up overflowing onto the text below.
 - History of the poster box, so nobody walks back into it: `fde2ac8` natural sizing (no reserved box → anchor jumps landed short); `2af4ac8` a fixed 3:4 grid frame (the poster's `max-height: 100%` is ignored inside a grid item whose container is sized by `aspect-ratio`, so tall posters spilled out of the frame over the text below whenever `80vh` clamped it, and in WebKit a poster that arrived after the open row narrowed its column was laid out at the stale wider width). Both are replaced by the server-side size.
 
@@ -594,6 +599,15 @@ and the success URL is guessable.
   NOTHING`, so a second delivery inserts nothing. Claiming an order is a single
   conditional UPDATE (`where status = 'pending'`), so exactly one delivery wins.
   Keep both properties if you touch `src/lib/tickets/complete.ts`.
+- **No pay-later on tickets; merch allows it.** The ticket session is
+  card-only, and the one pay-later route left -- "Klarna on Link", a "Pay
+  later" plan Link offers US customers inside hosted Checkout -- has no
+  per-session switch (Klarna inside Link is a Dashboard-wide setting, and
+  `excluded_payment_method_types` cannot exclude Link). So the ticket session
+  sets `wallet_options: { link: { display: 'never' } }`: cards, Apple Pay and
+  Google Pay still work, Link's saved-card checkout doesn't. Merch
+  (`/api/checkout`) keeps Link and its pay-later. Deliberate -- don't "fix"
+  either side to match the other.
 - **`src/lib/tickets/occupancy.ts` is THE count.** Sold = non-void `tickets`
   rows + `sum(quantity)` of paid door orders. Six call sites read it. Do not
   count tickets anywhere else.
@@ -717,9 +731,9 @@ an external link to the listing, with the socials.
 home link, one ~70-character column, small footer). Linked from the footer's
 bottom row, and "By purchasing you agree to our Terms" sits under the ticket
 button (`TicketPurchase.tsx`) and the cart's checkout button
-(`CartDrawer.tsx`), opening in a new tab. Ticket and merch Stripe sessions
-carry the same line beside the pay button (`custom_text.submit`,
-`CHECKOUT_TERMS_TEXT` in `src/lib/legal.ts`).
+(`CartDrawer.tsx`), opening in a new tab. On Stripe's own page the required
+consent checkbox (below) links the Terms and Privacy Policy -- there is
+deliberately no extra `custom_text` line repeating it with a raw URL.
 
 - **The privacy policy describes what the code does -- keep it that way.**
   Adding or removing a form, field, embed, cookie, email or vendor means

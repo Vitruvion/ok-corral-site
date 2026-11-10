@@ -123,7 +123,7 @@ export default function TicketPurchase({ eventId, eventName, price, blurb }: Pro
 
         <button
           type="button"
-          className="btn btn-primary"
+          className={`btn btn-primary ${styles.buy}`}
           onClick={buy}
           disabled={busy}
           aria-label={`Get tickets for ${eventName}`}

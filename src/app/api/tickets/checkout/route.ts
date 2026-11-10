@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { CHECKOUT_TERMS_TEXT } from '@/lib/legal'
 import {
   checkSaleable,
   MARKETING_FIELD_KEY,
@@ -176,9 +175,17 @@ export async function POST(req: NextRequest) {
         Math.max(SESSION_TTL_MINUTES, MIN_STRIPE_TTL_MINUTES) * 60,
       // Stripe's required "I agree to the Terms of Service" checkbox. Needs
       // a Terms URL in the Stripe Dashboard's public details (set by Brady,
-      // November 2026) -- without one, Stripe rejects the session.
+      // November 2026) -- without one, Stripe rejects the session. (No extra
+      // custom_text line: the checkbox already links the Terms.)
       consent_collection: { terms_of_service: 'required' },
-      custom_text: { submit: { message: CHECKOUT_TERMS_TEXT } },
+      // NO PAY-LATER ON TICKETS (merch keeps it -- /api/checkout). With
+      // payment_method_types ['card'] the only pay-later left is "Klarna on
+      // Link": Link offers US customers a "Pay later" plan inside hosted
+      // Checkout. Stripe has no per-session switch for Klarna inside Link
+      // (it is a Dashboard-wide setting, and excluded_payment_method_types
+      // cannot exclude Link), so this session hides Link itself. Cards,
+      // Apple Pay and Google Pay are unaffected.
+      wallet_options: { link: { display: 'never' } },
       success_url: `${origin}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?tickets=cancel`,
     })

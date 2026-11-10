@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { getSupabase } from '@/lib/supabase'
-import { CHECKOUT_TERMS_TEXT } from '@/lib/legal'
 import {
   shippingCentsForSubtotal,
   shipLabelForSubtotal,
@@ -241,9 +240,9 @@ async function handleMerch(
       kind: 'merch',
       item_count: String(lines.reduce((n, l) => n + l.qty, 0)),
     },
-    // Required Terms checkbox -- see /api/tickets/checkout.
+    // Required Terms checkbox -- see /api/tickets/checkout. Link (and its
+    // pay-later option) stays on for merch, unlike tickets.
     consent_collection: { terms_of_service: 'required' },
-    custom_text: { submit: { message: CHECKOUT_TERMS_TEXT } },
     success_url: successBase,
     cancel_url: cancelUrl,
   })

@@ -184,10 +184,16 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                     </div>
 
                     <div className={styles.expandRight}>
-                      <h4 className={styles.expandHeading}>◆ About the night</h4>
-                      <p className={styles.expandDesc}>
-                        {linkify(ev.description, ev.related_links, 'description')}
-                      </p>
+                      {/* No heading over nothing: a show saved without a
+                          description shows no "About the night" at all. */}
+                      {ev.description?.trim() && (
+                        <>
+                          <h4 className={styles.expandHeading}>◆ About the night</h4>
+                          <p className={styles.expandDesc}>
+                            {linkify(ev.description, ev.related_links, 'description')}
+                          </p>
+                        </>
+                      )}
 
                       {/* Optional YouTube embed — lazy-loaded so it doesn't
                           block first paint for visitors who don't expand the
@@ -210,8 +216,8 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                         )
                       })()}
 
-                      <div className={styles.expandActions}>
-                        {ev.signup_url && (
+                      {(() => {
+                        const signup = ev.signup_url && (
                           <a
                             href={ev.signup_url}
                             target="_blank"
@@ -221,40 +227,62 @@ export default function Events({ events = [], recurring = [] }: Props = {}) {
                           >
                             Sign Up for the Contest →
                           </a>
-                        )}
-                        {/* Two states now, not three. Eventbrite is retired:
-                            a show either sells tickets here or it is free
-                            entry. There is deliberately no third path -- a
-                            fallback link was how a show could end up selling
-                            somewhere nobody was watching. */}
-                        {ev.tickets_on_sale ? (
-                          <TicketPurchase
-                            eventId={ev.id}
-                            eventName={ev.name}
-                            price={ev.ticket_price ?? null}
-                            blurb={ev.ticket_blurb ?? null}
-                          />
-                        ) : (
-                          <span
-                            className={styles.freeBadge}
-                            onClick={(e) => e.stopPropagation()}
+                        )
+                        const calendar = (
+                          <button
+                            className="btn btn-ghost"
+                            onClick={(e) => { e.stopPropagation(); onAddToCalendar(ev) }}
                           >
-                            ◆ Free Admission · No Cover
-                          </span>
-                        )}
-                        <button
-                          className="btn btn-ghost"
-                          onClick={(e) => { e.stopPropagation(); onAddToCalendar(ev) }}
-                        >
-                          Add to Calendar
-                        </button>
-                        <button
-                          className="btn btn-ghost"
-                          onClick={(e) => { e.stopPropagation(); onShare(ev) }}
-                        >
-                          Share
-                        </button>
-                      </div>
+                            Add to Calendar
+                          </button>
+                        )
+                        const share = (
+                          <button
+                            className="btn btn-ghost"
+                            onClick={(e) => { e.stopPropagation(); onShare(ev) }}
+                          >
+                            Share
+                          </button>
+                        )
+                        /* Two states now, not three. Eventbrite is retired:
+                           a show either sells tickets here or it is free
+                           entry. There is deliberately no third path -- a
+                           fallback link was how a show could end up selling
+                           somewhere nobody was watching. */
+                        return ev.tickets_on_sale ? (
+                          // Ticketed: the purchase group (stepper + Get
+                          // Tickets, with its price and Terms lines right
+                          // under it) is the primary action; Add to Calendar
+                          // and Share sit together beneath it, on the same
+                          // left edge.
+                          <div className={`${styles.expandActions} ${styles.expandActionsTicketed}`}>
+                            <TicketPurchase
+                              eventId={ev.id}
+                              eventName={ev.name}
+                              price={ev.ticket_price ?? null}
+                              blurb={ev.ticket_blurb ?? null}
+                            />
+                            <div className={styles.secondaryActions}>
+                              {signup}
+                              {calendar}
+                              {share}
+                            </div>
+                          </div>
+                        ) : (
+                          // Free entry: one row, as it has always been.
+                          <div className={styles.expandActions}>
+                            {signup}
+                            <span
+                              className={styles.freeBadge}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              ◆ Free Admission · No Cover
+                            </span>
+                            {calendar}
+                            {share}
+                          </div>
+                        )
+                      })()}
                       {ev.tags.length > 0 && (
                         <div className={styles.tags}>
                           {ev.tags.map(t => (

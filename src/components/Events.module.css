@@ -363,6 +363,33 @@
   align-items: center;
 }
 
+.expandActionsTicketed {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Add to Calendar + Share under a ticketed show's purchase group. */
+.secondaryActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Phone: the purchase group and the secondary row both take the full
+   width, and Add to Calendar / Share split it evenly -- big targets. */
+@media (max-width: 760px) {
+  .expandActionsTicketed {
+    align-items: stretch;
+  }
+
+  .secondaryActions > * {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
+
 .freeBadge {
   display: inline-flex;
   align-items: center;

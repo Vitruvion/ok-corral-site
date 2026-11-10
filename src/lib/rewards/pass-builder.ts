@@ -167,16 +167,18 @@ export function buildPass(member: MemberInput): BuiltPass {
         {
           key: 'how_it_works',
           label: 'How It Works',
-          // Important: Apple Wallet storeCards are NOT Apple Pay payment
-          // passes — they can't process transactions. Earlier copy said
-          // "Pay with this card at the bar" which led customers to try
-          // tapping their phone at the register. The pass is purely a
-          // membership/rank display; points are tracked by phone number.
-          value: 'At checkout, just give the bartender the phone number you used to sign up. Your points are tracked to your account — no scanning, no app to open. This pass shows your current rank and perks.',
+          // Says only what happens today (loyalty is PARKED until Square
+          // Loyalty lands -- CLAUDE.md §3). Points are not tracked, so this
+          // must not send anyone to the bartender asking for them. Also:
+          // Wallet storeCards are NOT Apple Pay passes -- never say "pay
+          // with this card". Passes already issued keep the text they were
+          // made with; only new passes get this.
+          value: 'This card has your name on it and a QR code to share with friends. Points aren’t being tracked yet, so it shows Newcomer and 0 points, and it won’t change after you add it.',
         },
         {
           key: 'phone',
-          label: 'Phone on File',
+          // "on File" was untrue: nothing stores the number (see /privacy).
+          label: 'Phone',
           value: member.phone,
         },
         {

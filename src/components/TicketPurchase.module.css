@@ -1,15 +1,14 @@
 /*
- * Buy-tickets widget. Sits inside .expandActions on the event card, so
- * it has to survive being one flex item among Add to Calendar / Share.
+ * Buy-tickets widget: the primary group of a ticketed show's actions
+ * (Events.module.css .expandActionsTicketed), with Add to Calendar / Share
+ * as a separate row beneath it. Price, remaining, blurb and the Terms line
+ * sit directly under the stepper + button.
  */
 .wrap {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* Takes the full row when the actions wrap on a phone, so the stepper
-     and the buy button never end up on separate lines from each other. */
-  flex: 1 1 auto;
-  min-width: 260px;
+  min-width: 0;
 }
 
 .row {
@@ -17,6 +16,14 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* Phone: "Get Tickets · $15 →" doesn't fit beside the stepper (124 + 12
+   + ~230px against a 312px panel at 360), and a nowrap row would widen the
+   whole event panel past the screen. So the button takes its own line,
+   full width, directly under the stepper -- the biggest target there is. */
+@media (max-width: 760px) {
+  .buy { flex: 1 1 100%; justify-content: center; }
 }
 
 .stepper {
