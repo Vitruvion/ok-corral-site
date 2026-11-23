@@ -629,6 +629,12 @@ a price edited at `/admin/menu` reaches the screen without anyone touching it.
     in a flexed box is not honoured by both engines -- it rendered at natural
     size and overflowed); the art takes whatever height the text leaves.
     Measured: 492px square at 1080p, 983px at 4K.
+  - **The name never ends on a lone word.** On the board only,
+    `boardFeatureName()` joins the last two words of a 3+ word name with a
+    non-breaking space, and the heading has `text-wrap: balance`: "Damn Good
+    Old Fashioned" sets as DAMN GOOD / OLD FASHIONED. One- and two-word names
+    are untouched, and a name that fits stays on one line. The stored name,
+    the homepage and `/admin/menu` never see the change.
   - Art belongs to its drink: changing the pick without uploading new art drops
     the old art (and its Storage object); the bundled art shows only beside the
     drink it depicts. With no art the text is shown on its own.

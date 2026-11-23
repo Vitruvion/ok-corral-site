@@ -284,6 +284,10 @@
   text-transform: uppercase;
   color: var(--bone);
   margin: 0;
+  /* Even lines when it wraps. With boardFeatureName() keeping the last two
+     words together, "Damn Good Old Fashioned" sets as DAMN GOOD / OLD
+     FASHIONED. A browser without balance still never strands the last word. */
+  text-wrap: balance;
 }
 
 /* A reading size, unlike the one-line taglines in the lists: this is the

@@ -67,6 +67,22 @@ export function artUrlFor(drinkName: string, artUrl: string | null): string | nu
   return drinkName === DEFAULT_COCKTAIL.name ? DEFAULT_COCKTAIL.art.src : null
 }
 
+/**
+ * The feature name as the BOARD sets it: with three or more words, the last
+ * two are joined by a non-breaking space, so a name never ends on a lone
+ * word ("DAMN GOOD / OLD FASHIONED", not "DAMN GOOD OLD / FASHIONED"). With
+ * text-wrap: balance on the heading the lines also split evenly, and a name
+ * that fits on one line stays on one line. One- and two-word names are
+ * returned unchanged.
+ *
+ * Display only: the stored name, the homepage and /admin/menu never see it.
+ */
+export function boardFeatureName(name: string): string {
+  const words = name.trim().split(/\s+/)
+  if (words.length < 3) return name
+  return words.slice(0, -2).join(' ') + ' ' + words.slice(-2).join('\u00A0')
+}
+
 /** What the board renders in the feature column. */
 export type CocktailFeature = {
   name: string

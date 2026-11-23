@@ -3,7 +3,7 @@ import { orderDrinkCategories } from '@/lib/queries'
 // Column placement and the board-only exclusion list live in their own
 // module so /admin/menu can read them without importing this component.
 import { buildColumns, FEATURE_COLUMN, FEATURE_REPLACES } from './board-columns'
-import type { CocktailFeature } from '@/lib/cocktail-of-month'
+import { boardFeatureName, type CocktailFeature } from '@/lib/cocktail-of-month'
 import { BOARD_QR_LABEL } from './qr'
 import styles from './menu-board.module.css'
 
@@ -134,8 +134,10 @@ function Feature({ feature }: { feature: CocktailFeature }) {
           />
         </div>
       )}
+      {/* data-board-item keeps the stored name (OverflowGuard reports it);
+          only the visible text keeps its last two words together. */}
       <h2 className={styles.featureName} data-board-item={feature.name}>
-        {feature.name}
+        {boardFeatureName(feature.name)}
       </h2>
       {feature.description && <p className={styles.featureDesc}>{feature.description}</p>}
       <span className={styles.featurePrice}>{feature.price}</span>
