@@ -41,7 +41,8 @@ export default function MenuBoardView({
   )
 
   return (
-    <div className={`${styles.columns} ${feature ? styles.columnsFeature : ''}`}>
+    // No trailing space in the fallback: its markup is the old board's, byte for byte.
+    <div className={feature ? `${styles.columns} ${styles.columnsFeature}` : styles.columns}>
       {columns.map((categories, i) => (
         // data-board-* hooks are read by OverflowGuard. They're plain
         // attributes rather than class names on purpose: CSS module classes
@@ -111,7 +112,7 @@ export default function MenuBoardView({
 function Feature({ feature }: { feature: CocktailFeature }) {
   return (
     <section
-      className={`${styles.feature} ${feature.art ? '' : styles.featureNoArt}`}
+      className={feature.art ? styles.feature : `${styles.feature} ${styles.featureNoArt}`}
       data-board-category="Cocktail of the Month"
     >
       <span className={styles.featureLabel}>Cocktail of the Month</span>
