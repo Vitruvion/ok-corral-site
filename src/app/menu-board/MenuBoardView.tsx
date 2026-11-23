@@ -2,7 +2,8 @@ import type { DrinkData } from '@/lib/data'
 import { orderDrinkCategories } from '@/lib/queries'
 // Column placement and the board-only exclusion list live in their own
 // module so /admin/menu can read them without importing this component.
-import { buildColumns } from './board-columns'
+import { buildColumns, FEATURE_COLUMN, FEATURE_REPLACES } from './board-columns'
+import type { CocktailFeature } from '@/lib/cocktail-of-month'
 import { BOARD_QR_LABEL } from './qr'
 import styles from './menu-board.module.css'
 
@@ -22,21 +23,33 @@ const QR_COLUMN = 1
 export default function MenuBoardView({
   drinks,
   qrSvg = null,
+  feature = null,
 }: {
   drinks: Record<string, DrinkData[]>
   /** Inline SVG from getBoardQrSvg(), or null — null renders no panel. */
   qrSvg?: string | null
+  /**
+   * The Cocktail of the Month from getCocktailOfMonth(). Null when it can't
+   * be shown: column 1 then lists every Saloon Cocktail, as before.
+   */
+  feature?: CocktailFeature | null
 }) {
-  const columns = buildColumns(drinks, orderDrinkCategories(drinks))
+  const columns = buildColumns(
+    drinks,
+    orderDrinkCategories(drinks),
+    feature ? { reserved: FEATURE_COLUMN } : { restore: [FEATURE_REPLACES] }
+  )
 
   return (
-    <div className={styles.columns}>
+    <div className={`${styles.columns} ${feature ? styles.columnsFeature : ''}`}>
       {columns.map((categories, i) => (
         // data-board-* hooks are read by OverflowGuard. They're plain
         // attributes rather than class names on purpose: CSS module classes
         // are hashed, so matching on them would break the moment the build
         // hashes differently.
         <div key={i} className={styles.column} data-board-column={i}>
+          {i === FEATURE_COLUMN && feature && <Feature feature={feature} />}
+
           {categories.map(category => (
             <section
               key={category}
@@ -85,5 +98,46 @@ export default function MenuBoardView({
         </div>
       ))}
     </div>
+  )
+}
+
+/**
+ * Column 1 when there is a Cocktail of the Month: label, artwork, name,
+ * description, price, stacked and centred. The artwork takes whatever
+ * height the text leaves (it is the star of the board), so a longer
+ * description shrinks the picture rather than pushing anything off the
+ * bottom -- the board clips silently.
+ */
+function Feature({ feature }: { feature: CocktailFeature }) {
+  return (
+    <section
+      className={`${styles.feature} ${feature.art ? '' : styles.featureNoArt}`}
+      data-board-category="Cocktail of the Month"
+    >
+      <span className={styles.featureLabel}>Cocktail of the Month</span>
+      {feature.art && (
+        <div className={styles.featureArt}>
+          {/* A plain <img>: next/image would re-encode the artwork, and it
+              must be shown as supplied. Its real size is on the tag, so the
+              box exists before the bytes arrive and nothing moves. The art is
+              drawn on pure black, which mix-blend-mode: lighten turns into
+              the board's own background -- no square shows around it. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className={styles.featureImg}
+            src={feature.art.src}
+            width={feature.art.w}
+            height={feature.art.h}
+            alt=""
+            decoding="async"
+          />
+        </div>
+      )}
+      <h2 className={styles.featureName} data-board-item={feature.name}>
+        {feature.name}
+      </h2>
+      {feature.description && <p className={styles.featureDesc}>{feature.description}</p>}
+      <span className={styles.featurePrice}>{feature.price}</span>
+    </section>
   )
 }

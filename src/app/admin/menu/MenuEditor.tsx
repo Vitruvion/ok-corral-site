@@ -46,7 +46,14 @@ const dirty = (a: Draft, b: Draft) =>
   a.category !== b.category ||
   a.active !== b.active
 
-export default function MenuEditor({ initialDrinks }: { initialDrinks: AdminDrink[] }) {
+export default function MenuEditor({
+  initialDrinks,
+  featuredId = null,
+}: {
+  initialDrinks: AdminDrink[]
+  /** The Cocktail of the Month the board is showing, if any (CocktailCard). */
+  featuredId?: string | null
+}) {
   const [drinks, setDrinks] = useState<AdminDrink[]>(initialDrinks)
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() =>
     Object.fromEntries(initialDrinks.map(d => [d.id, draftOf(d)]))
@@ -224,6 +231,11 @@ export default function MenuEditor({ initialDrinks }: { initialDrinks: AdminDrin
                       key={d.id}
                       className={`${styles.row} ${draft.active ? '' : styles.rowOff}`}
                     >
+                      {/* Its category is "website only", but this one IS on
+                          the TV -- say so, or the label above reads false. */}
+                      {d.id === featuredId && (
+                        <span className={styles.onBoard}>Cocktail of the Month · on the board</span>
+                      )}
                       <div className={styles.rowTop}>
                         <input
                           className={styles.inputName}

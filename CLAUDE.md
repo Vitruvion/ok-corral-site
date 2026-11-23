@@ -200,7 +200,7 @@ key, but the anon key still reaches the same production database, and
 | `/` | The site. Hero, events, drinks, gallery, Instagram strip. ISR, `revalidate = 60`. |
 | `/card` | Corral Rewards — Apple Wallet pass landing + enrollment. **Parked:** unlinked and noindexed until Square Loyalty lands (§3). |
 | `/tickets/success` | Where Stripe returns a ticket buyer. Shows no codes; those go by email. |
-| `/menu-board` | The TV behind the bar. Fixed 3-column board, self-refreshing every 5 min. No chrome, no login. |
+| `/menu-board` | The TV behind the bar. Fixed 3-column board -- Cocktail of the Month, Shots & Bombs + QR, Cigars (§12) -- self-refreshing every 5 min. No chrome, no login. |
 | `/poster/dustin-gaspard` + `/instagram` | Print and 4:5 social poster for one show. |
 | `/privacy` + `/terms` | Privacy Policy and Terms of Service (§16). Not age-gated -- Stripe's reviewers must be able to read them. |
 
@@ -220,7 +220,7 @@ cookie itself rather than trusting middleware.
 `/api/tickets/availability`, `/api/stripe/webhook` (merch AND tickets, branched
 on `metadata.kind`), `/api/order-summary`, `/api/card/pass`,
 `/api/booking-notify`, `/api/cron/refresh-instagram-token`, and under
-`/api/admin/`: `drinks`, `events`, `events/sales`, `events/poster`, `recurring`,
+`/api/admin/`: `drinks`, `cocktail`, `events`, `events/sales`, `events/poster`, `recurring`,
 `door/manifest`, `door/scan`, `door/sale`, `login`, `logout`.
 
 ---
@@ -238,6 +238,9 @@ any seeded database they are a **no-op**. They exist only to bootstrap a
 completely empty database. To deliberately reset, empty the table first.
 
 Anything else in seed.sql (merch, settings) is still authoritative in the file.
+The exception is the `cocktail_of_month` row in `site_settings` (§12): it is
+written only by `/admin/menu`, and seed.sql must never insert it -- seed.sql
+upserts only its own keys (`hours`, `contact`), so it leaves that row alone.
 
 **Eventbrite is retired.** Nothing reads `events.eventbrite_url` and nothing
 renders from it. The column and its values are kept as a record of past shows —
@@ -592,7 +595,38 @@ a price edited at `/admin/menu` reaches the screen without anyone touching it.
 
 - `BOARD_EXCLUDED_CATEGORIES` keeps some categories off the board. `/admin/menu`
   labels those rows **website only** by importing that same list — do not
-  re-declare it.
+  re-declare it. Today: Featured Beer, and Saloon Cocktails (replaced by the
+  Cocktail of the Month below). The homepage still lists every drink.
+- **Column 1 is the Cocktail of the Month** (November 2026): one Saloon
+  Cocktail with its artwork, name, description and price, centred, in a wider
+  column (`1.3fr 1fr 1fr`). Column 2 is Shots & Bombs + the QR panel, column 3
+  Cigars, as before.
+  - **Data, no migration:** one `site_settings` row, key `cocktail_of_month`,
+    value `{ "drink_id": "<drinks.id>", "art_url": "<url>" | null }`. The drink
+    is an ordinary `drinks` row -- its name, price and description are edited
+    like any other. Written only by `/api/admin/cocktail` (service role);
+    read publicly by `getCocktailOfMonth()` in `lib/queries.ts`. Rules and the
+    default live in `lib/cocktail-of-month.ts`.
+  - **Default, with nothing saved:** "Damn Good Old Fashioned" by name, with the
+    bundled art `public/assets/menu-board/old-fashioned-black.webp` (1254x1254;
+    the `.png` beside it is the same pixels). The default lives in code and is
+    never written to the database. Its fallback description is used only if the
+    drink's own is empty.
+  - **Fallback:** if the pick is hidden, deleted or no longer in Saloon
+    Cocktails, the board lists every Saloon Cocktail exactly as it did before
+    (`buildColumns(..., { restore })`), so the column is never empty. Verified
+    pixel-identical to the pre-feature board.
+  - **Artwork must be on a pure black background.** The board draws it with
+    `mix-blend-mode: lighten`, which turns the black into the board's own
+    `--ink` so no square shows around it -- art on any other background WILL
+    show a box. Never add a filter, crop or recolouring to it. The image is
+    absolutely positioned inside a flexed box (a percentage height on an image
+    in a flexed box is not honoured by both engines -- it rendered at natural
+    size and overflowed); the art takes whatever height the text leaves.
+    Measured: 492px square at 1080p, 983px at 4K.
+  - Art belongs to its drink: changing the pick without uploading new art drops
+    the old art (and its Storage object); the bundled art shows only beside the
+    drink it depicts. With no art the text is shown on its own.
 - The board cannot scroll, so extra drinks silently fall off the bottom. An
   overflow guard measures each column against the content floor after mount and
   `console.warn`s; in dev it also draws a visible marker. It never throws — a
@@ -668,7 +702,18 @@ owners edit from behind the bar — with per-row saves rather than one big form.
 - Poster upload resizes **in the browser** before upload (quality ladder, then
   edge ladder, until under 500KB). The endpoint re-checks the cookie, sniffs
   magic bytes rather than trusting the client's content-type, and caps size
-  server-side. Bucket: `event-posters`, public read.
+  server-side. Bucket: `event-posters`, public read. The server half -- sniff,
+  cap, put a NEW object, point the row at it, then remove the old one (or the
+  new one, if pointing failed) -- is `lib/admin/poster-upload.ts`, shared by
+  `/api/admin/events/poster` and `/api/admin/cocktail`.
+- **Cocktail of the Month card** at the top of `/admin/menu`
+  (`CocktailCard.tsx`): current pick with thumbnail, a picker of live Saloon
+  Cocktails, an artwork upload (same resize; stored under `cocktails/` in
+  `event-posters`), "Artwork should be on a black background." One Save sends
+  pick and art together -- nothing uploads before it -- and revalidates `/` and
+  `/menu-board`. Save stays disabled until something changes, so the default is
+  never written by re-saving it. The featured row in the drinks list is tagged
+  "on the board", since its category reads "website only". See §12.
 - Changes with money or attendance consequences — moving a date, changing price,
   cutting capacity below tickets sold, stopping sales — return **409 until
   explicitly confirmed**, decided server-side so the client cannot skip it.
@@ -821,18 +866,19 @@ C:\Projects\ok-corral-site\
 │   └── assets\
 │       ├── wallet\                   # OK monogram for .pkpass (icon + logo, 1x/2x/3x)
 │       ├── posters\                  # dustin-gaspard.jpg + dustin-gaspard-qr.svg
+│       ├── menu-board\               # old-fashioned-black.webp/.png: default Cocktail of the Month art (on pure black)
 │       └── gallery\                  # site photos + event poster thumbs
 └── src\
     ├── middleware.ts                 # gates /admin/* on the corral_admin cookie
     ├── app\
     │   ├── layout.tsx                # Metadata: icons + manifest wiring
     │   ├── page.tsx                  # home → fetchAll() → ClientShell
-    │   ├── menu-board\               # the TV board + its overflow guard
+    │   ├── menu-board\               # the TV board + its overflow guard; column 1 = Cocktail of the Month
     │   ├── tickets\success\          # Stripe return page (shows no codes)
     │   ├── privacy\ + terms\          # legal pages (§16), framed by components/LegalPage.tsx
     │   ├── admin\
     │   │   ├── login\
-    │   │   ├── menu\                 # drinks editor
+    │   │   ├── menu\                 # drinks editor + Cocktail of the Month card (CocktailCard.tsx)
     │   │   ├── events\               # events editor + poster upload
     │   │   ├── tickets\              # sales + will-call sheet
     │   │   └── door\                 # scanner PWA: page + DoorClient + DoorPwa
@@ -851,7 +897,7 @@ C:\Projects\ok-corral-site\
     │       ├── checkout\route.ts     # Stripe Checkout Sessions (merch + gift cards)
     │       ├── stripe\webhook\       # merch AND tickets, branched on metadata.kind
     │       ├── tickets\              # checkout + availability
-    │       ├── admin\                # drinks, events(+sales,poster), door(manifest,scan,sale), login, logout
+    │       ├── admin\                # drinks, cocktail, events(+sales,poster), door(manifest,scan,sale), login, logout
     │       ├── booking-notify\route.ts
     │       └── cron\refresh-instagram-token\route.ts
     ├── components\
@@ -874,8 +920,9 @@ C:\Projects\ok-corral-site\
         ├── recurring.ts              # weekly specials: days, time format/parse, THE order
         ├── legal.ts                  # effective dates for /privacy + /terms, Stripe checkout terms line
         ├── poster-size.ts            # server-side poster header read (image-size), memoised
+        ├── cocktail-of-month.ts      # the board's feature: setting key, default, rules (§12)
         ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
-        ├── admin\                    # drinks-repo, events-repo, recurring-repo, session/guard, image-resize, rate-limit
+        ├── admin\                    # drinks-repo, events-repo, recurring-repo, cocktail-repo, poster-upload, session/guard, image-resize, rate-limit
         ├── supabase.ts               # getSupabase() + getServiceSupabase()
         ├── queries.ts                # fetchAll() + unmojibake()
         ├── instagram.ts              # token reader + media fetcher

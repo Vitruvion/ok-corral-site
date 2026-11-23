@@ -44,7 +44,19 @@ export const COLUMN_MAP: readonly (readonly string[])[] = [
  * so nobody reads "1/1 live" as "on the board" and starts toggling rows off
  * trying to fix a TV that was never going to show them.
  */
-export const BOARD_EXCLUDED_CATEGORIES: readonly string[] = ['Featured Beer']
+export const BOARD_EXCLUDED_CATEGORIES: readonly string[] = ['Featured Beer', 'Saloon Cocktails']
+
+/**
+ * Saloon Cocktails is on the list above because the board no longer LISTS
+ * them: column 1 features one of them instead, the Cocktail of the Month
+ * (lib/cocktail-of-month.ts), with artwork. When that feature can't be
+ * shown -- its drink hidden or deleted -- the board restores the full list
+ * through buildColumns' `restore` option, exactly as it looked before, so
+ * the column is never empty. The homepage lists every cocktail regardless.
+ */
+export const FEATURE_REPLACES = 'Saloon Cocktails'
+/** The column the feature occupies (Saloon Cocktails' own column). */
+export const FEATURE_COLUMN = 0
 
 /** Whether a category is deliberately kept off the board. */
 export const isBoardExcluded = (category: string) =>
@@ -68,11 +80,20 @@ const weigh = (drinks: Record<string, DrinkData[]>, category: string) =>
  */
 export function buildColumns(
   drinks: Record<string, DrinkData[]>,
-  ordered: string[]
+  ordered: string[],
+  {
+    restore = [],
+    reserved = null,
+  }: {
+    /** Excluded categories to put back for this render (the feature fallback). */
+    restore?: readonly string[]
+    /** A column that holds something else (the feature): never a fallback target. */
+    reserved?: number | null
+  } = {}
 ): string[][] {
   const columns: string[][] = Array.from({ length: COLUMN_MAP.length }, () => [])
   const mapped = new Set(COLUMN_MAP.flat())
-  const excluded = new Set(BOARD_EXCLUDED_CATEGORIES)
+  const excluded = new Set(BOARD_EXCLUDED_CATEGORIES.filter(c => !restore.includes(c)))
 
   COLUMN_MAP.forEach((categories, i) => {
     for (const category of categories) {
@@ -86,8 +107,8 @@ export function buildColumns(
     // category would be treated as unmapped and placed back on the board.
     if (excluded.has(category)) continue
     if (mapped.has(category)) continue
-    const weights = columns.map(col =>
-      col.reduce((total, c) => total + weigh(drinks, c), 0)
+    const weights = columns.map((col, i) =>
+      i === reserved ? Infinity : col.reduce((total, c) => total + weigh(drinks, c), 0)
     )
     columns[weights.indexOf(Math.min(...weights))].push(category)
   }

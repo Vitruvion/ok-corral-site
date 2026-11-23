@@ -2,7 +2,15 @@ import { getSupabase } from './supabase'
 import { fetchInstagramPosts } from './instagram'
 import { filterUpcomingEvents } from './events'
 import { sortRecurring } from './recurring'
-import { withPosterSizes } from './poster-size'
+import { getPosterSize, withPosterSizes } from './poster-size'
+import {
+  COCKTAIL_CATEGORY,
+  COCKTAIL_SETTING_KEY,
+  DEFAULT_COCKTAIL,
+  artUrlFor,
+  parseCocktailSetting,
+  type CocktailFeature,
+} from './cocktail-of-month'
 import {
   MERCH as FALLBACK_MERCH,
   DRINK_TABS,
@@ -208,6 +216,63 @@ export async function getDrinks(): Promise<DrinksByCategory> {
     })
   }
   return grouped
+}
+
+/**
+ * The board's Cocktail of the Month (see lib/cocktail-of-month.ts), or
+ * null when it cannot be shown -- the board then lists every Saloon
+ * Cocktail instead, exactly as it did before the feature existed.
+ *
+ * Null means "the drink is not showable": the saved pick is hidden,
+ * deleted or moved out of Saloon Cocktails, or, with nothing saved, there
+ * is no active "Damn Good Old Fashioned". A FAILED query throws instead,
+ * same contract as getDrinks(): the board lets it propagate so ISR keeps
+ * the last good board rather than caching one built on a blip.
+ */
+export async function getCocktailOfMonth(): Promise<CocktailFeature | null> {
+  const sb = getSupabase()
+  if (!sb) throw new Error('cocktail of the month unavailable: Supabase is not configured')
+
+  const setting = await sb
+    .from('site_settings')
+    .select('value')
+    .eq('key', COCKTAIL_SETTING_KEY)
+    .maybeSingle()
+  if (setting.error) throw new Error(`site_settings query failed: ${setting.error.message}`)
+  // A missing or malformed value both mean "nothing saved": the default.
+  const saved = parseCocktailSetting(setting.data?.value)
+
+  // RLS shows the public only active drinks; the filter says so anyway.
+  let q = sb
+    .from('drinks')
+    .select('id, name, tagline, price, description')
+    .eq('active', true)
+    .eq('category', COCKTAIL_CATEGORY)
+  q = saved ? q.eq('id', saved.drink_id) : q.eq('name', DEFAULT_COCKTAIL.name)
+  const { data, error } = await q.order('sort_order', { ascending: true }).limit(1)
+  if (error) throw new Error(`cocktail query failed: ${error.message}`)
+  const row = data?.[0]
+  if (!row) return null
+
+  const name = m(row.name)
+  const isDefaultDrink = name === DEFAULT_COCKTAIL.name
+  const description =
+    m(row.description) || (isDefaultDrink ? DEFAULT_COCKTAIL.description : m(row.tagline))
+
+  const src = artUrlFor(name, saved?.art_url ?? null)
+  let art: CocktailFeature['art'] = null
+  if (src === DEFAULT_COCKTAIL.art.src) {
+    // Bundled: its size is known, so nothing is read at request time.
+    art = DEFAULT_COCKTAIL.art
+  } else if (src) {
+    // Uploaded: read from the image header, like every poster. If that
+    // fails, a square box -- the image is contained inside it, so the
+    // layout still cannot move when it loads.
+    const size = await getPosterSize(src)
+    art = { src, w: size?.w ?? 1000, h: size?.h ?? 1000 }
+  }
+
+  return { name, price: m(row.price), description, art }
 }
 
 /**

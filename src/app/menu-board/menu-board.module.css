@@ -197,6 +197,123 @@
   overflow: hidden;
 }
 
+/* ── Column 1: the Cocktail of the Month ───────────────────────── */
+/* With a feature the first column is wider: it holds a picture, not a
+   list. Without one (the fallback) the board keeps its old equal columns. */
+.columnsFeature {
+  grid-template-columns: 1.3fr 1fr 1fr;
+}
+
+/* Label, art, name, description, price, stacked and centred. The column
+   is a full-height flex column, so this fills it and the artwork takes
+   every pixel the text does not need. */
+.feature {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* No artwork: the text sits in the middle of the column on its own. */
+.featureNoArt { justify-content: center; }
+
+/* The site's .section-label treatment -- mono, tracked, ember, a rotated
+   square before it -- scaled in vw like everything else on the board. */
+.featureLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.7vw;
+  font-family: var(--ff-mono);
+  font-size: 1vw;
+  line-height: 1.2;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+  flex: 0 0 auto;
+}
+
+.featureLabel::before {
+  content: '';
+  width: 0.55vw;
+  height: 0.55vw;
+  background: var(--ember);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* The art's box: whatever height is left once the text has its share.
+   Its size comes from the flex layout alone, never from the image, so the
+   image can't push the text off the bottom -- the board clips silently. */
+.featureArt {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  margin: 1.2vh 0 0.6vh;
+  position: relative;
+}
+
+/* Fills the box; contain keeps the picture's proportions and centres it,
+   whichever limit -- the column's width or the space left -- wins.
+   Absolutely positioned because a percentage height on an image in a
+   flexed box is not honoured by both engines (it rendered at its natural
+   1254px and overflowed). The width/height attributes still give the
+   ratio before the bytes arrive; nothing depends on them for layout.
+   The artwork is drawn on pure black and lighten keeps the brighter of the
+   two, so its black becomes the board's own --ink and no square edge shows.
+   No filter, no crop, no recolouring: the pixels are the supplied ones. */
+.featureImg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: lighten;
+}
+
+/* Display face, larger than a category header (2.2vw): it is the headline
+   of the board. */
+.featureName {
+  flex: 0 0 auto;
+  font-family: var(--ff-display);
+  font-weight: 400;
+  font-size: 3.2vw;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--bone);
+  margin: 0;
+}
+
+/* A reading size, unlike the one-line taglines in the lists: this is the
+   only paragraph on the board. Three lines at most, so a long description
+   can never push the price off the bottom. */
+.featureDesc {
+  flex: 0 0 auto;
+  font-family: var(--ff-sans);
+  font-weight: 300;
+  font-size: 1.15vw;
+  line-height: 1.4;
+  color: var(--bone-dim);
+  max-width: 34em;
+  margin: 1.2vh 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featurePrice {
+  flex: 0 0 auto;
+  font-family: var(--ff-display);
+  font-size: 2.6vw;
+  line-height: 1;
+  color: var(--ember);
+  font-variant-numeric: tabular-nums;
+  margin-top: 1.4vh;
+}
+
 /* ── Error backstop (see error.tsx) ────────────────────────────── */
 .fallback {
   position: fixed;
