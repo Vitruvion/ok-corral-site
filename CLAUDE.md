@@ -608,8 +608,13 @@ a price edited at `/admin/menu` reaches the screen without anyone touching it.
     read publicly by `getCocktailOfMonth()` in `lib/queries.ts`. Rules and the
     default live in `lib/cocktail-of-month.ts`.
   - **Default, with nothing saved:** "Damn Good Old Fashioned" by name, with the
-    bundled art `public/assets/menu-board/old-fashioned-black.webp` (1254x1254;
-    the `.png` beside it is the same pixels). The default lives in code and is
+    bundled art `public/assets/menu-board/old-fashioned-black.webp` (1254x1254).
+    The `.png` beside it is the original lossless master; the `.webp` the board
+    loads is made from it with **near-lossless** WebP (level 60, every pixel
+    within 2 levels, 869KB). Not lossy: lossy WebP halves colour resolution and
+    smeared the thin glass rim lines (up to 78 levels off at q95). Regenerate
+    it from the PNG the same way: sharp `webp({ nearLossless: true, quality: 60,
+    effort: 6 })`. The default lives in code and is
     never written to the database. Its fallback description is used only if the
     drink's own is empty.
   - **Fallback:** if the pick is hidden, deleted or no longer in Saloon
@@ -866,7 +871,7 @@ C:\Projects\ok-corral-site\
 │   └── assets\
 │       ├── wallet\                   # OK monogram for .pkpass (icon + logo, 1x/2x/3x)
 │       ├── posters\                  # dustin-gaspard.jpg + dustin-gaspard-qr.svg
-│       ├── menu-board\               # old-fashioned-black.webp/.png: default Cocktail of the Month art (on pure black)
+│       ├── menu-board\               # old-fashioned-black.png (lossless master) + .webp (near-lossless, what the board loads): default Cocktail of the Month art, on pure black
 │       └── gallery\                  # site photos + event poster thumbs
 └── src\
     ├── middleware.ts                 # gates /admin/* on the corral_admin cookie
