@@ -193,6 +193,25 @@
   outline-offset: 1px;
 }
 
+/* A labelled box with a line under it saying where the text shows
+   (lib/drink-display.ts). */
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.fieldLabel {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+.fieldHint {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--bone-mute);
+}
+
 /* ── Actions ──────────────────────────────────────────────────── */
 .rowActions {
   display: flex;

@@ -725,6 +725,18 @@ owners edit from behind the bar — with per-row saves rather than one big form.
   `/menu-board`. Save stays disabled until something changes, so the default is
   never written by re-saving it. The featured row in the drinks list is tagged
   "on the board", since its category reads "website only". See §12.
+- **Short line and description, labelled by where they show.** Each drink row
+  in `/admin/menu` labels its two text boxes "Short line" (`tagline`) and
+  "Description", with a line under each saying where that text appears for the
+  row's category. The rules are `drinkTextHints()` in `src/lib/drink-display.ts`,
+  derived from `DRINK_TABS` (homepage tabs), `BOARD_EXCLUDED_CATEGORIES` (TV
+  list) and the Cocktail of the Month -- update it if any of those displays
+  changes. As of November 2026 the description shows on the homepage drink card
+  for every category with a tab (Shots & Bombs included), under the Cocktail of
+  the Month on the TV, and in TV list rows only when the short line is empty;
+  nothing else (no structured data or email) reads either field. The
+  description box is hidden only for a category where it shows nowhere -- none
+  today. Hidden never clears it: the stored text is sent back unchanged on save.
 - Changes with money or attendance consequences — moving a date, changing price,
   cutting capacity below tickets sold, stopping sales — return **409 until
   explicitly confirmed**, decided server-side so the client cannot skip it.
@@ -932,6 +944,7 @@ C:\Projects\ok-corral-site\
         ├── legal.ts                  # effective dates for /privacy + /terms, Stripe checkout terms line
         ├── poster-size.ts            # server-side poster header read (image-size), memoised
         ├── cocktail-of-month.ts      # the board's feature: setting key, default, rules (§12)
+        ├── drink-display.ts          # where a drink's short line / description show, per category (§15)
         ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
         ├── admin\                    # drinks-repo, events-repo, recurring-repo, cocktail-repo, poster-upload, session/guard, image-resize, rate-limit
         ├── supabase.ts               # getSupabase() + getServiceSupabase()

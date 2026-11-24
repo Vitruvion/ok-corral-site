@@ -6,6 +6,9 @@ import type { AdminDrink } from '@/lib/admin/drinks-repo'
 // were maintained separately they would eventually disagree, and the whole
 // point of the label is that it tells the truth about the TV.
 import { isBoardExcluded } from '@/app/menu-board/board-columns'
+// Where the short line and description really show, from the same lists
+// the homepage and the board render from.
+import { drinkTextHints } from '@/lib/drink-display'
 import styles from './menu.module.css'
 
 /**
@@ -226,6 +229,9 @@ export default function MenuEditor({
                   const draft = drafts[d.id] ?? draftOf(d)
                   const rowState = state[d.id] ?? 'idle'
                   const changed = dirty(draft, draftOf(d))
+                  // From the category as typed, so the hints follow a drink
+                  // that is being moved to another category.
+                  const text = drinkTextHints(draft.category)
                   return (
                     <div
                       key={d.id}
@@ -255,26 +261,41 @@ export default function MenuEditor({
                         />
                       </div>
 
-                      <input
-                        className={styles.input}
-                        value={draft.tagline}
-                        placeholder="Tagline (shown under the name)"
-                        onChange={e =>
-                          setDrafts(p => ({ ...p, [d.id]: { ...draft, tagline: e.target.value } }))
-                        }
-                        aria-label="Tagline"
-                      />
+                      <label className={styles.field}>
+                        <span className={styles.fieldLabel}>Short line</span>
+                        <input
+                          className={styles.input}
+                          value={draft.tagline}
+                          onChange={e =>
+                            setDrafts(p => ({ ...p, [d.id]: { ...draft, tagline: e.target.value } }))
+                          }
+                          aria-describedby={'tl-hint-' + d.id}
+                        />
+                        <span id={'tl-hint-' + d.id} className={styles.fieldHint}>
+                          {text.shortLine.hint}
+                        </span>
+                      </label>
 
-                      <textarea
-                        className={styles.textarea}
-                        value={draft.description}
-                        placeholder="Description"
-                        rows={3}
-                        onChange={e =>
-                          setDrafts(p => ({ ...p, [d.id]: { ...draft, description: e.target.value } }))
-                        }
-                        aria-label="Description"
-                      />
+                      {/* Only where the description shows somewhere. Hidden is
+                          not cleared: the stored text stays in the draft and is
+                          sent back unchanged with every save. */}
+                      {text.description.shown && (
+                        <label className={styles.field}>
+                          <span className={styles.fieldLabel}>Description</span>
+                          <textarea
+                            className={styles.textarea}
+                            value={draft.description}
+                            rows={3}
+                            onChange={e =>
+                              setDrafts(p => ({ ...p, [d.id]: { ...draft, description: e.target.value } }))
+                            }
+                            aria-describedby={'desc-hint-' + d.id}
+                          />
+                          <span id={'desc-hint-' + d.id} className={styles.fieldHint}>
+                            {text.description.hint}
+                          </span>
+                        </label>
+                      )}
 
                       <input
                         className={styles.input}
