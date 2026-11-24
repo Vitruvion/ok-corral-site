@@ -1,4 +1,3 @@
-import { DRINK_TABS } from './data'
 import { COCKTAIL_CATEGORY } from './cocktail-of-month'
 import { isBoardExcluded } from '../app/menu-board/board-columns'
 
@@ -9,9 +8,10 @@ import { isBoardExcluded } from '../app/menu-board/board-columns'
  *
  * Derived from the same lists the pages render from, never typed separately:
  *
- *   Homepage drinks section (components/Drinks.tsx): one tab per DRINK_TABS
- *     category, each card showing the short line AND the description.
- *     A category not in DRINK_TABS gets no tab, so nothing of it shows.
+ *   Homepage drinks section (components/Drinks.tsx): one tab for EVERY
+ *     category with an active drink (lib/drink-categories.ts), each card
+ *     showing the short line AND the description. So for a drink that is on,
+ *     both always reach the website, whatever its category.
  *   TV board list rows (menu-board/MenuBoardView.tsx): every category not in
  *     BOARD_EXCLUDED_CATEGORIES; a row shows the short line, or the
  *     description only when the short line is empty.
@@ -33,27 +33,22 @@ export type FieldHint = {
 
 export function drinkTextHints(category: string): { shortLine: FieldHint; description: FieldHint } {
   const cat = category.trim()
-  const onWebsite = DRINK_TABS.includes(cat)
+  // Every category with an active drink has a homepage tab, so both fields
+  // always reach the website; the TV is what varies by category.
   const onTvList = !isBoardExcluded(cat)
   const isFeature = cat === COCKTAIL_CATEGORY
 
-  const shortLine: FieldHint =
-    onWebsite && onTvList
-      ? { shown: true, hint: 'Shows under the name on the TV and the website.' }
-      : onWebsite
-        ? { shown: true, hint: 'Shows under the name on the website.' }
-        : onTvList
-          ? { shown: true, hint: 'Shows under the name on the TV. This category has no tab on the website.' }
-          : { shown: true, hint: 'Not shown anywhere at the moment.' }
+  const shortLine: FieldHint = onTvList
+    ? { shown: true, hint: 'Shows under the name on the TV and the website.' }
+    : { shown: true, hint: 'Shows under the name on the website.' }
 
-  const places: string[] = []
-  if (onWebsite) places.push("on the website's drink card")
+  const places = ["on the website's drink card"]
   if (isFeature) places.push('under the name on the TV when this drink is the Cocktail of the Month')
   else if (onTvList) places.push('on the TV only if the short line is empty')
 
-  const description: FieldHint = places.length
-    ? { shown: true, hint: 'Shows ' + places.join(', and ') + '.' }
-    : { shown: false, hint: '' }
+  // Always shown today (the website shows every description); the flag stays
+  // so the editor hides the box by itself if a display rule ever changes.
+  const description: FieldHint = { shown: true, hint: 'Shows ' + places.join(', and ') + '.' }
 
   return { shortLine, description }
 }

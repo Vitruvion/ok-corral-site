@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { DRINK_TABS, type DrinkData } from '@/lib/data'
+import { orderDrinkCategories } from '@/lib/drink-categories'
 import styles from './Drinks.module.css'
 
 type Props = {
@@ -10,8 +11,11 @@ type Props = {
 // Default is empty, not a hardcoded menu: drinks live in Supabase now, and a
 // fallback here would render stale prices as if they were current.
 export default function DrinkMenu({ drinks = {} }: Props = {}) {
+  // One tab per category with at least one active drink, in THE order
+  // (DRINK_TABS first, then any category made at /admin/menu) -- the same
+  // function the TV board uses. With no drinks at all, the curated tabs.
   const tabs = useMemo(() => {
-    const present = DRINK_TABS.filter(t => drinks[t]?.length)
+    const present = orderDrinkCategories(drinks)
     return present.length > 0 ? present : DRINK_TABS
   }, [drinks])
   const [tab, setTab] = useState(tabs[0] || 'Saloon Cocktails')

@@ -13,7 +13,6 @@ import {
 } from './cocktail-of-month'
 import {
   MERCH as FALLBACK_MERCH,
-  DRINK_TABS,
   SHOW_MERCH,
   type EventData,
   type RecurringEvent,
@@ -195,8 +194,11 @@ export async function getDrinks(): Promise<DrinksByCategory> {
     .from('drinks')
     .select('category, name, tagline, price, description')
     .eq('active', true)
-    .order('category', { ascending: true })
+    // sort_order first: a category is then first seen at its earliest drink,
+    // which is the order orderDrinkCategories() keeps for new categories.
+    // Within a category this is the same order as before.
     .order('sort_order', { ascending: true })
+    .order('category', { ascending: true })
 
   if (error) throw new Error(`drinks query failed: ${error.message}`)
 
@@ -275,21 +277,9 @@ export async function getCocktailOfMonth(): Promise<CocktailFeature | null> {
   return { name, price: m(row.price), description, art }
 }
 
-/**
- * Category display order, shared by the homepage tabs and the menu board so
- * the two never disagree.
- *
- * DRINK_TABS first, in its curated order, then any category the editor has
- * since invented — appended alphabetically rather than dropped, so a new
- * category created at /admin/menu shows up instead of silently vanishing.
- */
-export function orderDrinkCategories(drinks: DrinksByCategory): string[] {
-  const known = DRINK_TABS.filter(t => drinks[t]?.length)
-  const extra = Object.keys(drinks)
-    .filter(c => !DRINK_TABS.includes(c) && drinks[c]?.length)
-    .sort()
-  return [...known, ...extra]
-}
+/** THE category order -- see lib/drink-categories.ts (client-safe, so the
+ *  homepage's client component can use the same function as the board). */
+export { orderDrinkCategories } from './drink-categories'
 
 export async function fetchMerch(): Promise<MerchItem[]> {
   const sb = getSupabase()

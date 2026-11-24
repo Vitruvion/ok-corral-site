@@ -561,7 +561,20 @@ Master brand files in `/brand/`:
 ### 8. Drinks (deployed)
 
 - Hucklebeer featured beer card (replaced old Scorpion Shot)
-- Tabs: `Saloon Cocktails` / `Shots & Bombs` / `Featured Beer`
+- **Tabs follow the data:** one tab per category with at least one active
+  drink, an empty one gets none. `DRINK_TABS` sets the order of the known
+  categories (Saloon Cocktails / Shots & Bombs / Featured Beer / Cigars); a
+  category created at `/admin/menu` follows them, in the order it first appears
+  by `sort_order` (`getDrinks()` reads by `sort_order`, then category). The
+  order is `orderDrinkCategories()` in `src/lib/drink-categories.ts`, shared by
+  the homepage tabs and the TV board. Every card shows the short line AND the
+  description, Shots & Bombs included -- intended.
+- **A new category on the TV does not fit today.** The board puts an unmapped
+  category in the lightest column by item count, which is Shots & Bombs -- but
+  that column also holds the QR panel, and one drink in a new category clipped
+  it by 81px at 1080p (162px at 4K; the overflow guard warns). Same in
+  production before the tabs change. Map it in `COLUMN_MAP` or exclude it
+  before adding drinks to a new category.
 - **Supabase is the only source.** The old `data.ts` fallback is gone — `fetchDrinks()` throws rather than quietly serving stale hardcoded prices to the bar
 - Edited at `/admin/menu`; a subset is excluded from the TV board (see §12)
 - Mobile fix: Hucklebeer meta grid `white-space: normal; word-break: break-word; line-height: 1.15` at ≤760px
@@ -732,7 +745,7 @@ owners edit from behind the bar — with per-row saves rather than one big form.
   derived from `DRINK_TABS` (homepage tabs), `BOARD_EXCLUDED_CATEGORIES` (TV
   list) and the Cocktail of the Month -- update it if any of those displays
   changes. As of November 2026 the description shows on the homepage drink card
-  for every category with a tab (Shots & Bombs included), under the Cocktail of
+  for every category (each one with an active drink has a tab), under the Cocktail of
   the Month on the TV, and in TV list rows only when the short line is empty;
   nothing else (no structured data or email) reads either field. The
   description box is hidden only for a category where it shows nowhere -- none
@@ -945,6 +958,7 @@ C:\Projects\ok-corral-site\
         ├── poster-size.ts            # server-side poster header read (image-size), memoised
         ├── cocktail-of-month.ts      # the board's feature: setting key, default, rules (§12)
         ├── drink-display.ts          # where a drink's short line / description show, per category (§15)
+        ├── drink-categories.ts       # THE drink category order: homepage tabs + TV board (§8)
         ├── tickets\                  # codes, complete (issuance), occupancy (THE count), door, manifest, scan, emails
         ├── admin\                    # drinks-repo, events-repo, recurring-repo, cocktail-repo, poster-upload, session/guard, image-resize, rate-limit
         ├── supabase.ts               # getSupabase() + getServiceSupabase()
