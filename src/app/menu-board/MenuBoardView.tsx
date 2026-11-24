@@ -1,5 +1,4 @@
 import type { DrinkData } from '@/lib/data'
-import { orderDrinkCategories } from '@/lib/queries'
 // Column placement and the board-only exclusion list live in their own
 // module so /admin/menu can read them without importing this component.
 import { buildColumns, FEATURE_COLUMN, FEATURE_REPLACES } from './board-columns'
@@ -34,11 +33,8 @@ export default function MenuBoardView({
    */
   feature?: CocktailFeature | null
 }) {
-  const columns = buildColumns(
-    drinks,
-    orderDrinkCategories(drinks),
-    feature ? { reserved: FEATURE_COLUMN } : { restore: [FEATURE_REPLACES] }
-  )
+  // Only the categories COLUMN_MAP places; anything else stays off the TV.
+  const columns = buildColumns(drinks, feature ? {} : { restore: [FEATURE_REPLACES] })
 
   return (
     // No trailing space in the fallback: its markup is the old board's, byte for byte.

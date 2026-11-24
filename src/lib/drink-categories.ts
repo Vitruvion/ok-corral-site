@@ -1,10 +1,10 @@
 import { DRINK_TABS, type DrinkData } from './data'
 
 /**
- * THE category order for drinks, shared by the homepage tabs
- * (components/Drinks.tsx) and the TV board (menu-board/MenuBoardView.tsx),
- * so the two never disagree. Client-safe: plain data, one pure function --
- * the homepage component is a client component and cannot import queries.ts.
+ * THE order of the homepage drink tabs (components/Drinks.tsx). Client-safe:
+ * plain data, one pure function -- the homepage component is a client
+ * component and cannot import queries.ts. (The TV board does not use this:
+ * it shows only what menu-board/board-columns.ts places, in its own order.)
  *
  * Every category with at least one active drink is included; an empty one
  * never is. DRINK_TABS first, in its curated order. Any other category -- one

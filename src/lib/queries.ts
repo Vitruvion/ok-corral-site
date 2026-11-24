@@ -195,7 +195,7 @@ export async function getDrinks(): Promise<DrinksByCategory> {
     .select('category, name, tagline, price, description')
     .eq('active', true)
     // sort_order first: a category is then first seen at its earliest drink,
-    // which is the order orderDrinkCategories() keeps for new categories.
+    // which is the order orderDrinkCategories() keeps for new homepage tabs.
     // Within a category this is the same order as before.
     .order('sort_order', { ascending: true })
     .order('category', { ascending: true })
@@ -277,9 +277,6 @@ export async function getCocktailOfMonth(): Promise<CocktailFeature | null> {
   return { name, price: m(row.price), description, art }
 }
 
-/** THE category order -- see lib/drink-categories.ts (client-safe, so the
- *  homepage's client component can use the same function as the board). */
-export { orderDrinkCategories } from './drink-categories'
 
 export async function fetchMerch(): Promise<MerchItem[]> {
   const sb = getSupabase()

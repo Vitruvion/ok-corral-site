@@ -12,8 +12,10 @@ import { isBoardExcluded } from '../app/menu-board/board-columns'
  *     category with an active drink (lib/drink-categories.ts), each card
  *     showing the short line AND the description. So for a drink that is on,
  *     both always reach the website, whatever its category.
- *   TV board list rows (menu-board/MenuBoardView.tsx): every category not in
- *     BOARD_EXCLUDED_CATEGORIES; a row shows the short line, or the
+ *   TV board list rows (menu-board/MenuBoardView.tsx): only the categories
+ *     COLUMN_MAP places and does not exclude (isBoardExcluded() is false) --
+ *     today Shots & Bombs and Cigars; any other category, including one made
+ *     at /admin/menu, is website only. A row shows the short line, or the
  *     description only when the short line is empty.
  *   Cocktail of the Month (lib/cocktail-of-month.ts): the featured Saloon
  *     Cocktail's description, large, under its name on the TV.
